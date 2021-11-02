@@ -170,10 +170,10 @@ INSERT INTO account VALUES
 DROP TABLE IF EXISTS customer;
 CREATE TABLE customer(
     username VARCHAR(50) NOT NULL,
-    location VARCHAR(50) NOT NULL,
+    location VARCHAR(50),
     cvv CHAR(3) NOT NULL,
     expiration_date DATE NOT NULL,
-    credit_card_number CHAR(16) NOT NULL,
+    credit_card_number CHAR(19) NOT NULL,
     PRIMARY KEY (username),
     UNIQUE KEY (credit_card_number),
     CONSTRAINT FOREIGN KEY (username) REFERENCES account (email)
@@ -298,3 +298,28 @@ CREATE TABLE review(
 
 -- Dumping data for table review
 
+-- Table structure for table rates
+DROP TABLE IF EXISTS rates;
+CREATE TABLE rates(
+    owner VARCHAR(50) NOT NULL,
+    customer VARCHAR(50) NOT NULL,
+    score INT NOT NULL CHECK (score >= 1 AND score <= 5),
+    PRIMARY KEY (owner, customer),
+    CONSTRAINT FOREIGN KEY (owner) REFERENCES owner (username),
+    CONSTRAINT FOREIGN KEY (customer) REFERENCES customer (username)
+) ENGINE=InnoDB;
+
+-- Dumping data for table rates
+
+-- Table structure for table rated_by
+DROP TABLE IF EXISTS rated_by;
+CREATE TABLE rated_by(
+    owner VARCHAR(50) NOT NULL,
+    customer VARCHAR(50) NOT NULL,
+    score INT NOT NULL CHECK (score >= 1 AND score <= 5),
+    PRIMARY KEY (owner, customer),
+    CONSTRAINT FOREIGN KEY (owner) REFERENCES owner (username),
+    CONSTRAINT FOREIGN KEY (customer) REFERENCES customer (username)
+) ENGINE=InnoDB;
+
+-- Dumping data for table rated_by
