@@ -181,20 +181,20 @@ CREATE TABLE customer(
 
 -- Dumping data for table customer
 INSERT INTO customer VALUES
-('scooper3@gmail.com',NULL,'551',' Feb 2024','6518 5559 7446 1663'),
-('mgeller5@gmail.com',NULL,'644',' March 2024','2328 5670 4310 1965'),
-('cbing10@gmail.com',NULL,'201',' Feb 2023','8387 9523 9827 9291'),
-('hwmit@gmail.com',NULL,'102',' April 2023','6558 8596 9852 5299'),
-('swilson@gmail.com',NULL,'455',' Aug 2022','9383 3212 4198 1836'),
-('aray@tiktok.com',NULL,'744',' Aug 2022','3110 2669 7949 5605'),
-('cdemilio@tiktok.com',NULL,'606',' Feb 2025','2272 3555 4078 4744'),
-('bshelton@gmail.com',NULL,'862',' Sept 2023','9276 7639 7883 4273'),
-('lbryan@gmail.com',NULL,'258',' May 2023','4652 3726 8864 3798'),
-('tswift@gmail.com',NULL,'857',' Dec 2024','5478 8420 4436 7471'),
-('jseinfeld@gmail.com',NULL,'295',' June 2022','3616 8977 1296 3372'),
-('maddiesmith@gmail.com',NULL,'794',' July 2022','9954 5698 6355 6952'),
-('johnthomas@gmail.com',NULL,'269',' Oct 2025','7580 3274 3724 5356'),
-('boblee15@gmail.com',NULL,'858',' Nov 2025','7907 3513 7161 4248');
+('scooper3@gmail.com',NULL,'551','2024-02-01','6518 5559 7446 1663'),
+('mgeller5@gmail.com',NULL,'644','2024-03-01','2328 5670 4310 1965'),
+('cbing10@gmail.com',NULL,'201','2023-02-01','8387 9523 9827 9291'),
+('hwmit@gmail.com',NULL,'102','2023-04-01','6558 8596 9852 5299'),
+('swilson@gmail.com',NULL,'455','2022-08-01','9383 3212 4198 1836'),
+('aray@tiktok.com',NULL,'744','2022-08-01','3110 2669 7949 5605'),
+('cdemilio@tiktok.com',NULL,'606','2025-02-01','2272 3555 4078 4744'),
+('bshelton@gmail.com',NULL,'862','2023-09-01','9276 7639 7883 4273'),
+('lbryan@gmail.com',NULL,'258','2023-05-01','4652 3726 8864 3798'),
+('tswift@gmail.com',NULL,'857','2024-12-01','5478 8420 4436 7471'),
+('jseinfeld@gmail.com',NULL,'295','2022-06-01','3616 8977 1296 3372'),
+('maddiesmith@gmail.com',NULL,'794','2022-07-01','9954 5698 6355 6952'),
+('johnthomas@gmail.com',NULL,'269','2025-10-01','7580 3274 3724 5356'),
+('boblee15@gmail.com',NULL,'858','2025-11-01','7907 3513 7161 4248');
 
 -- Table structure for table owner
 DROP TABLE IF EXISTS owner;
