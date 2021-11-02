@@ -61,7 +61,7 @@ INSERT INTO airport VALUES
 ('LGA','Laguardia Airport','EST','790 Airport St','Queens','NY','11371'),
 ('LAX','Lost Angeles International Airport','PST','1 World Way','Los Angeles','CA','90045'),
 ('SJC','Norman Y. Mineta San Jose International Airport','PST','1702 Airport Blvd','San Jose','CA','95110'),
-('ORD','O'Hare International Airport','CST','10000 W O'Hare Ave','Chicago','IL','60666'),
+('ORD','O\'Hare International Airport','CST','10000 W O\'Hare Ave','Chicago','IL','60666'),
 ('MIA','Miami International Airport','EST','2100 NW 42nd Ave','Miami','FL','33126'),
 ('DFW','Dallas International Airport','CST','2400 Aviation DR','Dallas','TX','75261');
 
@@ -113,7 +113,6 @@ CREATE TABLE flight(
 
 -- Dumping data for table flight TIME FORMAT NOT COMPLETE
 INSERT INTO flight VALUES
-('airline','flight_num','departure_time','arrival_time','date','cost','capacity','to','from'),
 ('Delta Airlines','1',' 10:00 AM',' 12:00 PM',2021-10-18,400,150,'JFK','ATL'),
 ('Southwest Airlines','2',' 10:30 AM',' 2:30 PM',2021-10-18,350,125,'MIA','ORD'),
 ('American Airlines','3',' 1:00 PM',' 4:00 PM',2021-10-18,350,125,'DFW','MIA'),
