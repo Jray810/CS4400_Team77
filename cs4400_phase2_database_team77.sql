@@ -170,14 +170,14 @@ INSERT INTO account VALUES
 -- Table structure for table customer
 DROP TABLE IF EXISTS customer;
 CREATE TABLE customer(
-    username varchar(50) NOT NULL,
-    location NOT NULL,
-    cvv NOT NULL,
-    expiration_date NOT NULL,
-    credit_card_number NOT NULL,
+    username VARCHAR(50) NOT NULL,
+    location VARCHAR(50) NOT NULL,
+    cvv CHAR(3) NOT NULL,
+    expiration_date DATE NOT NULL,
+    credit_card_number CHAR(16) NOT NULL,
     PRIMARY KEY (username),
-    KEY (credit_card_number),
-    CONSTRAINT ?? FOREIGN KEY (username) REFERENCES client (username)
+    UNIQUE KEY (credit_card_number),
+    CONSTRAINT FOREIGN KEY (username) REFERENCES account (email)
 ) ENGINE=InnoDB;
 
 -- Dumping data for table customer
@@ -197,21 +197,31 @@ INSERT INTO customer VALUES
 ('johnthomas@gmail.com',NULL,'269',' Oct 2025','7580 3274 3724 5356'),
 ('boblee15@gmail.com',NULL,'858',' Nov 2025','7907 3513 7161 4248');
 
+-- Table structure for table owner
+DROP TABLE IF EXISTS owner;
+CREATE TABLE owner(
+    username VARCHAR(50) NOT NULL,
+    PRIMARY KEY (username),
+    CONSTRAINT FOREIGN KEY (username) REFERENCES account (email)
+) ENGINE=InnoDB;
+
+-- Dumping data for table owner
+
 -- Table structure for table property
 DROP TABLE IF EXISTS property;
 CREATE TABLE property(
-    owner NOT NULL,
-    name NOT NULL,
-    description NOT NULL,
-    street NOT NULL,
-    city NOT NULL,
-    state NOT NULL,
-    zip NOT NULL,
-    cost_per_night_per_person NOT NULL,
-    capacity NOT NULL,
+    owner VARCHAR(50) NOT NULL,
+    name VARCHAR(50) NOT NULL,
+    description VARCHAR(300) NOT NULL,
+    street VARCHAR(50) NOT NULL,
+    city VARCHAR(50) NOT NULL,
+    state CHAR(2) NOT NULL,
+    zip CHAR(5) NOT NULL,
+    cost_per_night_per_person DECIMAL(8,2) NOT NULL CHECK (cost_per_night_per_person >= 0),
+    capacity INT NOT NULL,
     PRIMARY KEY (owner, name),
     KEY (street, city, state, zip),
-    CONSTRAINT ?? FOREIGN KEY (owner) REFERENCES client (username)
+    CONSTRAINT FOREIGN KEY (owner) REFERENCES owner (username)
 ) ENGINE=InnoDB;
 
 -- Dumping data for table property
@@ -219,32 +229,27 @@ CREATE TABLE property(
 -- Table structure for table amenity
 DROP TABLE IF EXISTS amenity;
 CREATE TABLE amenity(
-    owner NOT NULL,
-    property NOT NULL,
-    name NOT NULL,
-    description NOT NULL,
+    owner VARCHAR(50) NOT NULL,
+    property VARCHAR(50) NOT NULL,
+    name VARCHAR(50) NOT NULL,
     PRIMARY KEY (owner, property, name),
-    CONSTRAINT ?? FOREIGN KEY (owner) REFERENCES property (owner),
-    CONSTRAINT ?? FOREIGN KEY (property) REFERENECS property (name)
+    CONSTRAINT FOREIGN KEY (owner, property) REFERENCES property (owner, name)
 ) ENGINE=InnoDB;
 
 -- Dumping data for table amenity
-
-
 
 -- RELATIONSHIPS BEGIN HERE
 
 -- Table structure for table booking
 DROP TABLE IF EXISTS booking;
 CREATE TABLE booking(
-    customer NOT NULL,
-    airline NOT NULL,
-    flight_number NOT NULL,
-    number_seats NOT NULL,
+    customer VARCHAR(50) NOT NULL,
+    airline VARCHAR(50) NOT NULL,
+    flight_number CHAR(5) NOT NULL,
+    number_seats INT NOT NULL,
     PRIMARY KEY (customer, airline, flight_number),
-    CONSTRAINT ?? FOREIGN KEY (customer) REFERENCES customer (username),
-    CONSTRAINT ?? FOREIGN KEY (airline) REFERENCES flight (airline),
-    CONSTRAINT ?? FOREIGN KEY (flight_number) REFERENCES flight (flight_number)
+    CONSTRAINT FOREIGN KEY (customer) REFERENCES customer (username),
+    CONSTRAINT FOREIGN KEY (airline, flight_number) REFERENCES flight (airline, flight_number)
 ) ENGINE=InnoDB;
 
 -- Dumping data for table booking
@@ -252,14 +257,13 @@ CREATE TABLE booking(
 -- Table structure for table nearby
 DROP TABLE IF EXISTS nearby;
 CREATE TABLE nearby(
-    owner NOT NULL,
-    property NOT NULL,
-    airport NOT NULL,
-    distance NOT NULL,
+    owner VARCHAR(50) NOT NULL,
+    property VARCHAR(50) NOT NULL,
+    airport CHAR(3) NOT NULL,
+    distance INT NOT NULL CHECK (distance >= 0 AND distance < 50),
     PRIMARY KEY (owner, property, airport),
-    CONSTRAINT ?? FOREIGN KEY (owner) REFERENCES property (owner),
-    CONSTRAINT ?? FOREIGN KEY (property) REFERENCES property (name),
-    CONSTRAINT ?? FOREIGN KEY (airport) REFERENCES airport (airport_ID)
+    CONSTRAINT FOREIGN KEY (owner, property) REFERENCES property (owner, name),
+    CONSTRAINT FOREIGN KEY (airport) REFERENCES airport (airport_ID)
 ) ENGINE=InnoDB;
 
 -- Dumping data for table nearby
@@ -267,15 +271,15 @@ CREATE TABLE nearby(
 -- Table structure for table reservation
 DROP TABLE IF EXISTS reservation;
 CREATE TABLE reservation(
-    customer NOT NULL,
-    owner NOT NULL,
-    property NOT NULL,
-    start_date NOT NULL,
-    end_date NOT NULL,
-    num_guests NOT NULL,
+    customer VARCHAR(50) NOT NULL,
+    owner VARCHAR(50) NOT NULL,
+    property VARCHAR(50) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    num_guests INT NOT NULL,
     PRIMARY KEY (customer, owner, property),
-    CONSTRAINT ?? FOREIGN KEY (customer) REFERENCES customer (username),
-    CONSTRAINT ?? FOREIGN KEY (owner, property) REFERENCES property (owner, name)
+    CONSTRAINT FOREIGN KEY (customer) REFERENCES customer (username),
+    CONSTRAINT FOREIGN KEY (owner, property) REFERENCES property (owner, name)
 ) ENGINE=InnoDB;
 
 -- Dumping data for table reservation
@@ -283,14 +287,14 @@ CREATE TABLE reservation(
 -- Table structure for table review
 DROP TABLE IF EXISTS review;
 CREATE TABLE review(
-    customer NOT NULL,
-    owner NOT NULL,
-    property NOT NULL,
-    content NOT NULL,
-    score NOT NULL,
+    customer VARCHAR(50) NOT NULL,
+    owner VARCHAR(50) NOT NULL,
+    property VARCHAR(50) NOT NULL,
+    content VARCHAR(500) NOT NULL,
+    score INT NOT NULL CHECK (score >= 1 AND score <=5),
     PRIMARY KEY (customer, owner, property),
-    CONSTRAINT ?? FOREIGN KEY (customer) REFERENCES customer (username),
-    CONSTRAINT ?? FOREIGN KEY (owner, property) REFERENCES property (owner, name)
+    CONSTRAINT FOREIGN KEY (customer) REFERENCES customer (username),
+    CONSTRAINT FOREIGN KEY (owner, property) REFERENCES property (owner, name)
 ) ENGINE=InnoDB;
 
 -- Dumping data for table review
