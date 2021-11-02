@@ -113,18 +113,18 @@ CREATE TABLE flight(
 
 -- Dumping data for table flight TIME FORMAT NOT COMPLETE
 INSERT INTO flight VALUES
-('Delta Airlines','1',' 10:00 AM',' 12:00 PM',2021-10-18,400,150,'JFK','ATL'),
-('Southwest Airlines','2',' 10:30 AM',' 2:30 PM',2021-10-18,350,125,'MIA','ORD'),
-('American Airlines','3',' 1:00 PM',' 4:00 PM',2021-10-18,350,125,'DFW','MIA'),
-('United Airlines','4',' 4:30 PM',' 6:30 PM',2021-10-18,400,100,'LGA','ATL'),
-('JetBlue Airways','5',' 11:00 AM',' 1:00 PM',2021-10-19,400,130,'ATL','LGA'),
-('Spirit Airlines','6',' 12:30 PM',' 9:30 PM',2021-10-19,650,140,'ATL','SJC'),
-('WestJet','7',' 1:00 PM',' 4:00 PM',2021-10-19,700,100,'SJC','LGA'),
-('Interjet','8',' 7:30 PM',' 9:30 PM',2021-10-19,350,125,'ORD','MIA'),
-('Delta Airlines','9',' 8:00 AM',' 10:00 AM',2021-10-20,375,150,'ATL','JFK'),
-('Delta Airlines','10',' 9:15 AM',' 6:15 PM',2021-10-20,700,110,'ATL','LAX'),
-('Southwest Airlines','11',' 12:07 PM',' 7:07 PM',2021-10-20,600,95,'ORD','LAX'),
-('United Airlines','12',' 3:35 PM',' 5:35 PM',2021-10-20,275,115,'ATL','MIA');
+('Delta Airlines','1',10:00:00 ,12:00:00 ,2021-10-18,400,150,'JFK','ATL'),
+('Southwest Airlines','2',10:30:00 ,14:30:00 ,2021-10-18,350,125,'MIA','ORD'),
+('American Airlines','3',13:00:00 ,16:00:00 ,2021-10-18,350,125,'DFW','MIA'),
+('United Airlines','4',16:30:00 ,18:30:00 ,2021-10-18,400,100,'LGA','ATL'),
+('JetBlue Airways','5',11:00:00 ,13:00:00 ,2021-10-19,400,130,'ATL','LGA'),
+('Spirit Airlines','6',12:30:00 ,21:30:00 ,2021-10-19,650,140,'ATL','SJC'),
+('WestJet','7',13:00:00 ,16:00:00 ,2021-10-19,700,100,'SJC','LGA'),
+('Interjet','8',19:30:00 ,21:30:00 ,2021-10-19,350,125,'ORD','MIA'),
+('Delta Airlines','9',8:00:00 ,10:00:00 ,2021-10-20,375,150,'ATL','JFK'),
+('Delta Airlines','10',9:15:00 ,18:15:00 ,2021-10-20,700,110,'ATL','LAX'),
+('Southwest Airlines','11',12:07:00 ,19:07:00 ,2021-10-20,600,95,'ORD','LAX'),
+('United Airlines','12',15:35:00 ,17:35:00 ,2021-10-20,275,115,'ATL','MIA');
 
 -- Table structure for table account
 DROP TABLE IF EXISTS account;
