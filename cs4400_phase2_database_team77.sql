@@ -264,6 +264,24 @@ CREATE TABLE amenity(
 ) ENGINE=InnoDB;
 
 -- Dumping data for table amenity
+INSERT INTO amenity VALUES
+('scooper3@gmail.com','Atlanta Great Property','A/C & Heating'),
+('scooper3@gmail.com','Atlanta Great Property','Pets allowed'),
+('scooper3@gmail.com','Atlanta Great Property','Wifi & TV'),
+('scooper3@gmail.com','Atlanta Great Property','Washer and Dryer'),
+('gburdell3@gmail.com','House near Georgia Tech','Wifi & TV'),
+('gburdell3@gmail.com','House near Georgia Tech','Washer and Dryer'),
+('gburdell3@gmail.com','House near Georgia Tech','Full Kitchen'),
+('cbing10@gmail.com','New York City Property','A/C & Heating'),
+('cbing10@gmail.com','New York City Property','Wifi & TV'),
+('mgeller5@gmail.com','Statue of Libery Property','A/C & Heating'),
+('mgeller5@gmail.com','Statue of Libery Property','Wifi & TV'),
+('arthurread@gmail.com','Los Angeles Property','A/C & Heating'),
+('arthurread@gmail.com','Los Angeles Property','Pets allowed'),
+('arthurread@gmail.com','Los Angeles Property','Wifi & TV'),
+('arthurread@gmail.com','LA Kings House','A/C & Heating'),
+('arthurread@gmail.com','LA Kings House','Wifi & TV'),
+('arthurread@gmail.com','LA Kings House','Washer and Dryer');
 
 -- RELATIONSHIPS BEGIN HERE
 
@@ -294,6 +312,24 @@ CREATE TABLE nearby(
 ) ENGINE=InnoDB;
 
 -- Dumping data for table nearby
+INSERT INTO nearby VALUES
+('scooper3@gmail.com','Atlanta Great Property','ATL',12),
+('gburdell3@gmail.com','House near Georgia Tech','ATL',7),
+('cbing10@gmail.com','New York City Property','JFK',10),
+('mgeller5@gmail.com','Statue of Libery Property','JFK',8),
+('cbing10@gmail.com','New York City Property','LGA',25),
+('mgeller5@gmail.com','Statue of Libery Property','LGA',19),
+('arthurread@gmail.com','Los Angeles Property','LAX',9),
+('arthurread@gmail.com','LA Kings House','LAX',12),
+('arthurread@gmail.com','Beautiful San Jose Mansion','SJC',8),
+('arthurread@gmail.com','Beautiful San Jose Mansion','LAX',30),
+('lebron6@gmail.com','LA Lakers Property','LAX',6),
+('hwmit@gmail.com','Chicago Blackhawks House','ORD',11),
+('mj23@gmail.com','Chicago Romantic Getaway','ORD',13),
+('msmith5@gmail.com','Beautiful Beach Property','MIA',21),
+('ellie2@gmail.com','Family Beach House','MIA',19),
+('mscott22@gmail.com','Texas Roadhouse','DFW',8),
+('mscott22@gmail.com','Texas Longhorns House','DFW',17);
 
 -- Table structure for table reservation
 DROP TABLE IF EXISTS reservation;
