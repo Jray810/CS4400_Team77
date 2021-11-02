@@ -205,6 +205,19 @@ CREATE TABLE owner(
 ) ENGINE=InnoDB;
 
 -- Dumping data for table owner
+INSERT INTO owner VALUES
+('mscott22@gmail.com'),
+('arthurread@gmail.com'),
+('jwayne@gmail.com'),
+('gburdell3@gmail.com'),
+('mj23@gmail.com'),
+('lebron6@gmail.com'),
+('msmith5@gmail.com'),
+('ellie2@gmail.com'),
+('scooper3@gmail.com'),
+('mgeller5@gmail.com'),
+('cbing10@gmail.com'),
+('hwmit@gmail.com');
 
 -- Table structure for table property
 DROP TABLE IF EXISTS property;
@@ -224,6 +237,21 @@ CREATE TABLE property(
 ) ENGINE=InnoDB;
 
 -- Dumping data for table property
+INSERT INTO property VALUES
+('scooper3@gmail.com','Atlanta Great Property','This is right in the middle of Atlanta near many attractions!','2nd St','ATL','GA','30008',600,4),
+('gburdell3@gmail.com','House near Georgia Tech','Super close to bobby dodde stadium!','North Ave','ATL','GA','30008',275,3),
+('cbing10@gmail.com','New York City Property','A view of the whole city. Great property!','123 Main St','NYC','NY','10008',750,2),
+('mgeller5@gmail.com','Statue of Libery Property','You can see the statue of liberty from the porch','1st St','NYC','NY','10009',1,000,5),
+('arthurread@gmail.com','Los Angeles Property',NULL,'10th St','LA','CA','90008',700,3),
+('arthurread@gmail.com','LA Kings House','This house is super close to the LA kinds stadium!','Kings St','La','CA','90011',750,4),
+('arthurread@gmail.com','Beautiful San Jose Mansion','Huge house that can sleep 12 people. Totally worth it!','Golden Bridge Pkwt','San Jose','CA','90001',900,12),
+('lebron6@gmail.com','LA Lakers Property','This house is right near the LA lakers stadium. You might even meet Lebron James!','Lebron Ave','LA','CA','90011',850,4),
+('hwmit@gmail.com','Chicago Blackhawks House','This is a great property!','Blackhawks St','Chicago','IL','60176',775,3),
+('mj23@gmail.com','Chicago Romantic Getaway','This is a great property!','23rd Main St','Chicago','IL','60176',1,050,2),
+('msmith5@gmail.com','Beautiful Beach Property','You can walk out of the house and be on the beach!','456 Beach Ave','Miami','FL','33101',975,2),
+('ellie2@gmail.com','Family Beach House','You can literally walk onto the beach and see it from the patio!','1132 Beach Ave','Miami','FL','33101',850,6),
+('mscott22@gmail.com','Texas Roadhouse','This property is right in the center of Dallas, Texas!','17th Street','Dallas','TX','75043',450,3),
+('mscott22@gmail.com','Texas Longhorns House','You can walk to the longhorns stadium from here!','1125 Longhorns Way','Dallas','TX','75001',600,10);
 
 -- Table structure for table amenity
 DROP TABLE IF EXISTS amenity;
