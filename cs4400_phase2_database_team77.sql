@@ -298,6 +298,16 @@ CREATE TABLE booking(
 ) ENGINE=InnoDB;
 
 -- Dumping data for table booking
+INSERT INTO booking VALUES
+('swilson@gmail.com','JetBlue Airways','5',3),
+('aray@tiktok.com','Delta Airlines','1',2),
+('bshelton@gmail.com','United Airlines','4',4),
+('lbryan@gmail.com','WestJet','7',2),
+('tswift@gmail.com','WestJet','7',2),
+('jseinfeld@gmail.com','WestJet','7',4),
+('maddiesmith@gmail.com','Interjet','8',2),
+('cbing10@gmail.com','Southwest Airlines','2',2),
+('hwmit@gmail.com','Southwest Airlines','2',5);
 
 -- Table structure for table nearby
 DROP TABLE IF EXISTS nearby;
@@ -346,6 +356,18 @@ CREATE TABLE reservation(
 ) ENGINE=InnoDB;
 
 -- Dumping data for table reservation
+INSERT INTO reservation VALUES
+('swilson@gmail.com','gburdell3@gmail.com','House near Georgia Tech','2021-10-19','2021-10-25',3),
+('aray@tiktok.com','cbing10@gmail.com','New York City Property','2021-10-18','2021-10-23',2),
+('cdemilio@tiktok.com','cbing10@gmail.com','New York City Property','2021-10-24','2021-10-30',2),
+('bshelton@gmail.com','mgeller5@gmail.com','Statue of Libery Property','2021-10-18','2021-10-22',4),
+('lbryan@gmail.com','arthurread@gmail.com','Los Angeles Property','2021-10-19','2021-10-25',2),
+('tswift@gmail.com','arthurread@gmail.com','Beautiful San Jose Mansion','2021-10-19','2021-10-22',10),
+('jseinfeld@gmail.com','lebron6@gmail.com','LA Lakers Property','2021-10-19','2021-10-24',4),
+('maddiesmith@gmail.com','hwmit@gmail.com','Chicago Blackhawks House','2021-10-19','2021-10-23',2),
+('aray@tiktok.com','mj23@gmail.com','Chicago Romantic Getaway','2021-11-01','2021-11-07',2),
+('cbing10@gmail.com','msmith5@gmail.com','Beautiful Beach Property','2021-10-18','2021-10-25',2),
+('hwmit@gmail.com','ellie2@gmail.com','Family Beach House','2021-10-18','2021-10-28',5);
 
 -- Table structure for table review
 DROP TABLE IF EXISTS review;
@@ -361,6 +383,14 @@ CREATE TABLE review(
 ) ENGINE=InnoDB;
 
 -- Dumping data for table review
+INSERT INTO review VALUES
+('swilson@gmail.com','gburdell3@gmail.com','House near Georgia Tech','This was so much fun. I went and saw the coke factory, the falcons play, GT play, and the Georgia aquarium. Great time! Would highly recommend!',5),
+('aray@tiktok.com','cbing10@gmail.com','New York City Property','This was the best 5 days ever! I saw so much of NYC!',5),
+('bshelton@gmail.com','mgeller5@gmail.com','Statue of Libery Property','This was truly an excellent experience. I really could see the Statue of Liberty from the property!',4),
+('lbryan@gmail.com','arthurread@gmail.com','Los Angeles Property','I had an excellent time!',4),
+('tswift@gmail.com','arthurread@gmail.com','Beautiful San Jose Mansion','We had a great time, but the house wasn\'t fully cleaned when we arrived',3),
+('jseinfeld@gmail.com','lebron6@gmail.com','LA Lakers Property','I was disappointed that I did not meet lebron james',2),
+('maddiesmith@gmail.com','hwmit@gmail.com','Chicago Blackhawks House','This was awesome! I met one player on the chicago blackhawks!',5);
 
 -- Table structure for table rates
 DROP TABLE IF EXISTS rates;
