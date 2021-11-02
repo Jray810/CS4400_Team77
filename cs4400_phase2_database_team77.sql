@@ -24,7 +24,7 @@ USE travel_reservations;
 -- Table structure for table airline
 DROP TABLE IF EXISTS airline;
 CREATE TABLE airline (
-	name VARCHAR(50) NOT NULL,
+    name VARCHAR(50) NOT NULL,
     rating DECIMAL(2, 1) NOT NULL CHECK (rating >= 0 AND rating <= 5),
     PRIMARY KEY (name)
 ) ENGINE=InnoDB;
@@ -34,7 +34,7 @@ CREATE TABLE airline (
 -- Table structure for table airport
 DROP TABLE IF EXISTS airport;
 CREATE TABLE airport (
-	airport_ID CHAR(3) NOT NULL,
+    airport_ID CHAR(3) NOT NULL,
     name VARCHAR(50) NOT NULL,
     time_zone CHAR(5) NOT NULL,
     street VARCHAR(50) NOT NULL,
@@ -97,7 +97,7 @@ CREATE TABLE account(
 DROP TABLE IF EXISTS customer;
 CREATE TABLE customer(
     username VARCHAR(50) NOT NULL,
-    location VARCHAR(50) NOT NULL,
+    location VARCHAR(50),
     cvv CHAR(3) NOT NULL,
     expiration_date DATE NOT NULL,
     credit_card_number CHAR(16) NOT NULL,
