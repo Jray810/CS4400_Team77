@@ -404,6 +404,14 @@ CREATE TABLE rates(
 ) ENGINE=InnoDB;
 
 -- Dumping data for table rates
+INSERT INTO rates VALUES
+('gburdell3@gmail.com','swilson@gmail.com',5),
+('cbing10@gmail.com','aray@tiktok.com',5),
+('mgeller5@gmail.com','bshelton@gmail.com',3),
+('arthurread@gmail.com','lbryan@gmail.com',4),
+('arthurread@gmail.com','tswift@gmail.com',4),
+('lebron6@gmail.com','jseinfeld@gmail.com',1),
+('hwmit@gmail.com','maddiesmith@gmail.com',2);
 
 -- Table structure for table rated_by
 DROP TABLE IF EXISTS rated_by;
@@ -417,3 +425,11 @@ CREATE TABLE rated_by(
 ) ENGINE=InnoDB;
 
 -- Dumping data for table rated_by
+INSERT INTO rated_by VALUES
+('gburdell3@gmail.com','swilson@gmail.com',5),
+('cbing10@gmail.com','aray@tiktok.com',5),
+('mgeller5@gmail.com','bshelton@gmail.com',4),
+('arthurread@gmail.com','lbryan@gmail.com',4),
+('arthurread@gmail.com','tswift@gmail.com',3),
+('lebron6@gmail.com','jseinfeld@gmail.com',2),
+('hwmit@gmail.com','maddiesmith@gmail.com',5);
