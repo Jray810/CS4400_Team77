@@ -52,7 +52,7 @@ CREATE TABLE airport (
     zip CHAR(5) NOT NULL,
     PRIMARY KEY (airport_ID),
     UNIQUE KEY (name),
-    KEY (street, city, state, zip)
+    UNIQUE KEY (street, city, state, zip)
 ) ENGINE=InnoDB;
 
 -- Dumping data for table airport
@@ -233,7 +233,7 @@ CREATE TABLE property(
     cost_per_night_per_person DECIMAL(8,2) NOT NULL CHECK (cost_per_night_per_person >= 0),
     capacity INT NOT NULL,
     PRIMARY KEY (owner, name),
-    KEY (street, city, state, zip),
+    UNIQUE KEY (street, city, state, zip),
     CONSTRAINT FOREIGN KEY (owner) REFERENCES owner (username)
 ) ENGINE=InnoDB;
 
