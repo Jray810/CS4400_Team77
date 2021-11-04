@@ -51,7 +51,8 @@ CREATE TABLE airport (
     state CHAR (2) NOT NULL,
     zip CHAR(5) NOT NULL,
     PRIMARY KEY (airport_ID),
-    KEY (name, street, city, state, zip)
+    UNIQUE KEY (name),
+    KEY (street, city, state, zip)
 ) ENGINE=InnoDB;
 
 -- Dumping data for table airport
