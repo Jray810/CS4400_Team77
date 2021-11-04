@@ -376,7 +376,7 @@ CREATE TABLE review(
     customer VARCHAR(50) NOT NULL,
     owner VARCHAR(50) NOT NULL,
     property VARCHAR(50) NOT NULL,
-    content VARCHAR(500) NOT NULL,
+    content VARCHAR(500),
     score INT NOT NULL CHECK (score >= 1 AND score <=5),
     PRIMARY KEY (customer, owner, property),
     CONSTRAINT FOREIGN KEY (customer) REFERENCES customer (username),
