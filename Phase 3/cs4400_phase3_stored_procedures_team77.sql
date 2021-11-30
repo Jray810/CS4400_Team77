@@ -275,7 +275,7 @@ sp_main: BEGIN
 	DECLARE duration INTEGER;
     DECLARE nightly_cost DECIMAL;
 	DECLARE total_cost DECIMAL;
-    SELECT (End_Date - Start_Date) FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email INTO duration;
+    SELECT (End_Date - Start_Date + 1) FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email INTO duration;
     SELECT Cost FROM property WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email INTO nightly_cost;
     SET total_cost = nightly_cost * duration;
     IF EXISTS(SELECT * FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email AND Was_Cancelled = 0)
@@ -283,6 +283,60 @@ sp_main: BEGIN
         LEAVE sp_main;
 	END IF;
     RETURN (total_cost * 0.2);
+END //
+delimiter ;
+
+-- For checking for overlapping reservations
+DROP FUNCTION IF EXISTS overlap_check;
+delimiter //
+CREATE FUNCTION overlap_check (
+	i_customer_email VARCHAR(50),
+    i_start_date DATE,
+    i_end_date DATE
+)
+RETURNS BOOLEAN
+DETERMINISTIC
+sp_main: BEGIN
+	-- Make sure all reservation start/end dates are either both before the start date or both after the end date
+    IF EXISTS(SELECT * FROM reserve WHERE Customer = i_customer_email AND Was_Cancelled = 0 AND NOT ((Start_Date < i_start_date AND End_Date < i_start_date) OR (Start_Date > i_end_date AND End_Date > i_end_date)))
+		THEN RETURN TRUE;
+        LEAVE sp_main;
+	END IF;
+    RETURN FALSE;
+END //
+delimiter ;
+
+-- For checking for capacity conflicts in reservations
+DROP FUNCTION IF EXISTS capacity_check;
+delimiter //
+CREATE FUNCTION capacity_check (
+	i_property_name VARCHAR(50),
+    i_owner_email VARCHAR(50),
+    i_start_date DATE,
+    i_end_date DATE,
+    i_num_guests INTEGER
+)
+RETURNS BOOLEAN
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE max_guests INTEGER;
+    DECLARE total_guests INTEGER;
+    DECLARE this_date DATE;
+    SELECT Capacity FROM property WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email INTO max_guests;
+    SET this_date = i_start_date;
+	lp_dates: LOOP
+		IF (this_date > i_end_date)
+			THEN LEAVE lp_dates;
+		END IF;
+        SELECT SUM(Num_Guests) FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Was_Cancelled = 0 AND this_date BETWEEN Start_Date AND End_Date INTO total_guests;
+        SET total_guests = IFNULL(total_guests, 0);
+        IF (max_guests < (total_guests + i_num_guests))
+			THEN RETURN FALSE;
+            LEAVE sp_main;
+		END IF;
+        SET this_date = DATE_ADD(this_date, INTERVAL 1 DAY);
+	END LOOP lp_dates;
+    RETURN TRUE;
 END //
 delimiter ;
 
@@ -489,8 +543,13 @@ create procedure cancel_flight_booking (
 )
 sp_main: begin
 -- TODO: Implement your solution here
-	IF EXISTS(SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Flight_Num = F.Flight_Num AND B.Airline_Name = F.Airline_Name WHERE B.Customer = i_customer_email AND B.Flight_Num = i_flight_num AND B.Airline_Name AND i_airline_name AND i_current_date < F.Flight_Date)
-		THEN UPDATE book SET Was_Cancelled = 1 WHERE Customer = i_customer_email AND Flight_Num = i_flight_num AND Airline_Name = i_airline_name;
+	-- Check if booking exists
+    IF NOT EXISTS(SELECT * FROM book WHERE Flight_Num = i_flight_num AND Airline_Name = i_airline_name AND Customer = i_customer_email AND Was_Cancelled = 0)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check if flight is in the future
+    IF EXISTS(SELECT * FROM flight WHERE Flight_Num = i_flight_num AND Airline_Name = i_airline_name AND Flight_Date > i_current_date)
+		THEN UPDATE book SET Was_Cancelled = 1 WHERE Flight_Num = i_flight_num AND Airline_Name = i_airline_name AND Customer = i_customer_email;
 	END IF;
 end //
 delimiter ;
@@ -581,7 +640,25 @@ create procedure reserve_property (
 )
 sp_main: begin
 -- TODO: Implement your solution here
-
+	-- Check for existing reservation
+    IF EXISTS(SELECT * FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check that reservation is for future
+    IF (i_current_date >= i_start_date)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check for overlapping reservations
+    IF overlap_check(i_customer_email, i_start_date, i_end_date)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check for capacity conflict
+    IF NOT capacity_check(i_property_name, i_owner_email, i_start_date, i_end_date, i_num_guests)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Book the reservation!
+    INSERT INTO reserve (Property_Name, Owner_Email, Customer, Start_Date, End_Date, Num_Guests, Was_Cancelled)
+		VALUES (i_property_name, i_owner_email, i_customer_email, i_start_date, i_end_date, i_num_guests, 0);
 end //
 delimiter ;
 
@@ -669,7 +746,6 @@ sp_main: begin
     -- TODO: replace this select query with your solution
     SELECT R.Property_Name AS property_name, Start_Date AS start_date, End_Date AS end_date, R.Customer AS customer_email, (SELECT Phone_Number FROM clients WHERE Email = R.Customer) AS customer_phone_num, reservation_cost(R.Property_Name, R.Owner_Email, R.Customer) AS total_booking_cost, Score AS rating_score, Content AS review FROM reserve AS R LEFT OUTER JOIN review AS V ON R.Property_Name = V.Property_Name AND R.Owner_Email = V.Owner_Email AND R.Customer = V.Customer
 		WHERE R.Property_Name = i_property_name AND R.Owner_Email = i_owner_email;
-
 end //
 delimiter ;
 
@@ -777,6 +853,7 @@ create procedure process_date (
 )
 sp_main: begin
 -- TODO: Implement your solution here
-    
+    UPDATE customer AS C
+    SET Location = (SELECT A.State FROM book AS B LEFT OUTER JOIN flight AS F ON B.Airline_Name = F.Airline_Name AND B.Flight_Num = F.Flight_Num LEFT OUTER JOIN airport AS A ON F.To_Airport = A.Airport_Id WHERE F.Flight_Date = i_current_date AND B.Customer = C.Email AND B.Was_Cancelled = 0);
 end //
 delimiter ;
