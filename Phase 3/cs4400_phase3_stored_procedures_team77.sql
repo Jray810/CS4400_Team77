@@ -290,7 +290,9 @@ delimiter ;
 -- End Custom Functions Section
 -- --------------------------------------------------------------------------
 
-
+-- --------------------------------------------------------------------------
+-- Stored Procedures
+-- --------------------------------------------------------------------------
 -- ID: 1a
 -- Name: register_customer
 drop procedure if exists register_customer;
@@ -457,8 +459,8 @@ sp_main: begin
     IF NOT EXISTS(SELECT * FROM flight WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num AND i_num_seats <= capacity - seats_booked(Airline_Name, Flight_Num) AND Flight_Date > i_current_date)
 		THEN LEAVE sp_main;
 	END IF;
-    -- Check if customer already has a flight today (that is not the desired flight)
-    IF EXISTS(SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Flight_Num = F.Flight_Num AND B.Airline_Name = F.Airline_Name WHERE B.Customer = i_customer_email AND NOT (B.Airline_Name = i_airline_name AND B.Flight_Num = i_flight_num) AND B.Was_Cancelled = 0 AND F.Flight_Date = fl_date(i_airline_name, i_flight_date))
+    -- Check if customer already has a flight on this date (that is not the desired flight)
+    IF EXISTS(SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Flight_Num = F.Flight_Num AND B.Airline_Name = F.Airline_Name WHERE B.Customer = i_customer_email AND NOT (B.Airline_Name = i_airline_name AND B.Flight_Num = i_flight_num) AND B.Was_Cancelled = 0 AND F.Flight_Date = fl_date(i_airline_name, i_flight_num))
 		THEN LEAVE sp_main;
 	END IF;
     -- Check if customer already cancelled a booking for this flight
