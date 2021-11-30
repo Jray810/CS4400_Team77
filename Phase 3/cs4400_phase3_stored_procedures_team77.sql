@@ -205,10 +205,10 @@ CREATE FUNCTION seat_count (
 )
 RETURNS INTEGER
 DETERMINISTIC
-sp_main BEGIN
-	DECLARE num_seats INTEGER;
-    SELECT SUM(Num_Seats) FROM book WHERE Customer = i_customer_email INTO num_seats;
-    RETURN num_seats;
+sp_main: BEGIN
+	DECLARE seats INTEGER;
+    SELECT SUM(Num_Seats) FROM book WHERE Customer = i_customer_email INTO seats;
+    RETURN IFNULL(seats, 0);
 END //
 delimiter ;
 
@@ -254,8 +254,10 @@ RETURNS DECIMAL (5,4)
 DETERMINISTIC
 sp_main: BEGIN
 	DECLARE total_rating DECIMAL;
+    DECLARE rating_count DECIMAL;
     SELECT SUM(Score) FROM review WHERE Owner_Email = i_owner_email INTO total_rating;
-    RETURN (total_rating / property_count(i_owner_email));
+    SELECT COUNT(*) FROM review WHERE Owner_Email = i_owner_email INTO rating_count;
+    RETURN (total_rating / rating_count);
 END //
 delimiter ;
 
@@ -636,7 +638,8 @@ sp_main: begin
         review varchar(500)
     ) as
     -- TODO: replace this select query with your solution
-    select 'col1', 'col2', 'col3', 'col4', 'col5', 'col6', 'col7', 'col8' from reserve;
+    SELECT R.Property_Name AS property_name, Start_Date AS start_date, End_Date AS end_date, R.Customer AS customer_email, (SELECT Phone_Number FROM clients WHERE Email = R.Customer) AS customer_phone_num, reservation_cost(R.Property_Name, R.Owner_Email, R.Customer) AS total_booking_cost, Score AS rating_score, Content AS review FROM reserve AS R LEFT OUTER JOIN review AS V ON R.Property_Name = V.Property_Name AND R.Owner_Email = V.Owner_Email AND R.Customer = V.Customer
+		WHERE R.Property_Name = i_property_name AND R.Owner_Email = i_owner_email;
 
 end //
 delimiter ;
