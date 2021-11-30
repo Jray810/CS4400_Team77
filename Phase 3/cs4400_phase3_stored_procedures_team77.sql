@@ -261,6 +261,31 @@ sp_main: BEGIN
 END //
 delimiter ;
 
+-- For calculating reservation costs
+DROP FUNCTION IF EXISTS reservation_cost;
+delimiter //
+CREATE FUNCTION reservation_cost (
+	i_property_name VARCHAR(50),
+    i_owner_email VARCHAR(50),
+    i_customer_email VARCHAR(50)
+)
+RETURNS DECIMAL (10,3)
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE duration INTEGER;
+    DECLARE nightly_cost DECIMAL;
+	DECLARE total_cost DECIMAL;
+    SELECT (End_Date - Start_Date) FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email INTO duration;
+    SELECT Cost FROM property WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email INTO nightly_cost;
+    SET total_cost = nightly_cost * duration;
+    IF EXISTS(SELECT * FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email AND Was_Cancelled = 0)
+		THEN RETURN total_cost;
+        LEAVE sp_main;
+	END IF;
+    RETURN (total_cost * 0.2);
+END //
+delimiter ;
+
 -- --------------------------------------------------------------------------
 -- End Custom Functions Section
 -- --------------------------------------------------------------------------
@@ -350,7 +375,9 @@ sp_main: begin
 	END IF;
     -- Check if owner only exists as an owner
     IF i_owner_email NOT IN (SELECT Email FROM customer)
-		THEN DELETE FROM accounts WHERE Email = i_owner_email;
+		THEN DELETE FROM owners WHERE Email = i_owner_email;
+        DELETE FROM clients WHERE Email = i_owner_email;
+        DELETE FROM accounts WHERE Email = i_owner_email;
 	END IF;
 end //
 delimiter ;
@@ -406,8 +433,8 @@ sp_main: begin
 -- TODO: Implement your solution here
     -- Check departure date and remove flight and bookings
     IF EXISTS(SELECT * FROM flight WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num AND Flight_Date > i_current_date)
-		THEN DELETE FROM flight WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num;
-        DELETE FROM book WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num;
+		THEN DELETE FROM book WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num;
+        DELETE FROM flight WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num;
 	END IF;
 end //
 delimiter ;
