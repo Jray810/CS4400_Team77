@@ -47,6 +47,218 @@ sp_main: BEGIN
 END //
 delimiter ;
 
+-- For determining amount spent by a flight booking
+DROP FUNCTION IF EXISTS book_spent;
+delimiter //
+CREATE FUNCTION book_spent (
+	i_cost DECIMAL,
+    i_flight_num CHAR(5),
+    i_airline_name VARCHAR(50)
+)
+RETURNS DECIMAL (8,3)
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE num_full_price DECIMAL;
+    DECLARE num_cancelled DECIMAL;
+    DECLARE total_spent DECIMAL;
+    SELECT SUM(Num_Seats) FROM book WHERE Flight_Num = i_flight_num AND Airline_Name = i_airline_name AND Was_Cancelled = 0 INTO num_full_price;
+    SELECT SUM(Num_Seats) FROM book WHERE Flight_Num = i_flight_num AND Airline_Name = i_airline_name AND Was_Cancelled = 1 INTO num_cancelled;
+    SET total_spent = i_cost * IFNULL(num_full_price, 0) + i_cost * 0.200 * IFNULL(num_cancelled, 0);
+    RETURN (total_spent);
+END //
+delimiter ;
+
+-- For determining average rating of a property
+DROP FUNCTION IF EXISTS avg_review;
+delimiter //
+CREATE FUNCTION avg_review (
+	i_property_name VARCHAR(50)
+)
+RETURNS DECIMAL (5,4)
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE avg_rating DECIMAL (5,4);
+    DECLARE total_rating DECIMAL;
+    DECLARE rating_count DECIMAL;
+    SELECT SUM(Score) FROM review WHERE Property_Name = i_property_name INTO total_rating;
+    SELECT COUNT(*) FROM review WHERE Property_Name = i_property_name INTO rating_count;
+    SET avg_rating = total_rating / rating_count;
+    RETURN (avg_rating);
+END //
+delimiter ;
+
+-- For determining number of arrival flights
+DROP FUNCTION IF EXISTS arrival_count;
+delimiter //
+CREATE FUNCTION arrival_count (
+	i_airport_id CHAR(3)
+)
+RETURNS INTEGER
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE arrival_cnt INTEGER;
+    SELECT COUNT(*) FROM flight WHERE To_Airport = i_airport_id INTO arrival_cnt;
+    RETURN IFNULL(arrival_cnt, 0);
+END //
+delimiter ;
+
+-- For determining number of departure flights
+DROP FUNCTION IF EXISTS departure_count;
+delimiter //
+CREATE FUNCTION departure_count (
+	i_airport_id CHAR(3)
+)
+RETURNS INTEGER
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE departure_cnt INTEGER;
+    SELECT COUNT(*) FROM flight WHERE From_Airport = i_airport_id INTO departure_cnt;
+    RETURN IFNULL(departure_cnt, 0);
+END //
+delimiter ;
+
+-- For determining average cost of departure flights
+DROP FUNCTION IF EXISTS avg_departure_cost;
+delimiter //
+CREATE FUNCTION avg_departure_cost (
+	i_airport_id CHAR(3)
+)
+RETURNS DECIMAL (9,6)
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE total_cost DECIMAL;
+    SELECT SUM(Cost) FROM flight WHERE From_Airport = i_airport_id INTO total_cost;
+	RETURN (total_cost / departure_count(i_airport_id));
+END //
+delimiter ;
+
+
+-- For determining number of flights by airline
+DROP FUNCTION IF EXISTS num_airline_flights;
+delimiter //
+CREATE FUNCTION num_airline_flights (
+	i_airline_name VARCHAR(50)
+)
+RETURNS INTEGER
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE num_flights INTEGER;
+    SELECT COUNT(*) FROM flight WHERE Airline_Name = i_airline_name INTO num_flights;
+    RETURN num_flights;
+END //
+delimiter ;
+
+-- For determining minimum flight cost by an airline
+DROP FUNCTION IF EXISTS min_cost_airline;
+delimiter //
+CREATE FUNCTION min_cost_airline (
+	i_airline_name VARCHAR(50)
+)
+RETURNS DECIMAL (5,2)
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE min_cost DECIMAL (5,2);
+    SELECT MIN(Cost) FROM flight WHERE Airline_Name = i_airline_name INTO min_cost;
+    RETURN min_cost;
+END //
+delimiter ;
+
+-- For determining average customer rating
+DROP FUNCTION IF EXISTS customer_rating;
+delimiter //
+CREATE FUNCTION customer_rating (
+	i_customer_email VARCHAR(50)
+)
+RETURNS DECIMAL (5,4)
+DETERMINISTIC
+sp_main: BEGIN
+    DECLARE total_rating DECIMAL;
+    DECLARE rating_count DECIMAL;
+    SELECT SUM(Score) FROM owners_rate_customers WHERE Customer = i_customer_email INTO total_rating;
+    SELECT COUNT(*) FROM owners_rate_customers WHERE Customer = i_customer_email INTO rating_count;
+    RETURN (total_rating / rating_count);
+END //
+delimiter ;
+
+-- For determining if customer is also an owner
+DROP FUNCTION IF EXISTS owner_check;
+delimiter //
+CREATE FUNCTION owner_check (
+	i_customer_email VARCHAR(50)
+)
+RETURNS BOOLEAN
+DETERMINISTIC
+sp_main: BEGIN
+	IF EXISTS(SELECT * FROM owners WHERE Email = i_customer_email)
+		THEN RETURN 1;
+        LEAVE sp_main;
+	END IF;
+    RETURN 0;
+END //
+delimiter ;
+
+-- For counting number of reserved seats
+DROP FUNCTION IF EXISTS seat_count;
+delimiter //
+CREATE FUNCTION seat_count (
+	i_customer_email VARCHAR(50)
+)
+RETURNS INTEGER
+DETERMINISTIC
+sp_main BEGIN
+	DECLARE num_seats INTEGER;
+    SELECT SUM(Num_Seats) FROM book WHERE Customer = i_customer_email INTO num_seats;
+    RETURN num_seats;
+END //
+delimiter ;
+
+-- For determining average owner rating
+DROP FUNCTION IF EXISTS owner_rating;
+delimiter //
+CREATE FUNCTION owner_rating (
+	i_owner_email VARCHAR(50)
+)
+RETURNS DECIMAL (5,4)
+DETERMINISTIC
+sp_main: BEGIN
+    DECLARE total_rating DECIMAL;
+    DECLARE rating_count DECIMAL;
+    SELECT SUM(Score) FROM customers_rate_owners WHERE Owner_Email = i_owner_email INTO total_rating;
+    SELECT COUNT(*) FROM customers_rate_owners WHERE Owner_Email = i_owner_email INTO rating_count;
+    RETURN (total_rating / rating_count);
+END //
+delimiter ;
+
+-- For counting properties owned
+DROP FUNCTION IF EXISTS property_count;
+delimiter //
+CREATE FUNCTION property_count (
+	i_owner_email VARCHAR(50)
+)
+RETURNS INTEGER
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE num_owned INTEGER;
+    SELECT COUNT(*) FROM property WHERE Owner_Email = i_owner_email INTO num_owned;
+    RETURN num_owned;
+END //
+delimiter ;
+
+-- For calculating average property rating
+DROP FUNCTION IF EXISTS avg_property_rating;
+delimiter //
+CREATE FUNCTION avg_property_rating (
+	i_owner_email VARCHAR(50)
+)
+RETURNS DECIMAL (5,4)
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE total_rating DECIMAL;
+    SELECT SUM(Score) FROM review WHERE Owner_Email = i_owner_email INTO total_rating;
+    RETURN (total_rating / property_count(i_owner_email));
+END //
+delimiter ;
+
 -- --------------------------------------------------------------------------
 -- End Custom Functions Section
 -- --------------------------------------------------------------------------
@@ -265,7 +477,7 @@ create or replace view view_flight (
     total_spent
 ) as
 -- TODO: replace this select query with your solution
-SELECT Flight_Num, Flight_Date, Airline_Name, To_Airport, Cost, Capacity - seats_booked(Airline_Name, Flight_Num), Cost * seats_booked(Airline_Name, Flight_Num) FROM flight;
+SELECT Flight_Num, Flight_Date, Airline_Name, To_Airport, Cost, Capacity - seats_booked(Airline_Name, Flight_Num), book_spent(Cost, Flight_Num, Airline_Name) FROM flight;
 
 -- ID: 4a
 -- Name: add_property
@@ -355,7 +567,12 @@ create procedure cancel_property_reservation (
 )
 sp_main: begin
 -- TODO: Implement your solution here
-
+    -- Check if a reservation currently exists
+    IF NOT EXISTS(SELECT * FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email AND i_current_date < Start_Date AND Was_Cancelled = 0)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Cancel reservation
+    UPDATE reserve SET Was_Cancelled = 1 WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email;
 end //
 delimiter ;
 
@@ -374,7 +591,12 @@ create procedure customer_review_property (
 )
 sp_main: begin
 -- TODO: Implement your solution here
-    
+    IF EXISTS(SELECT * FROM review WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email)
+		THEN LEAVE sp_main;
+	END IF;
+    IF EXISTS(SELECT * FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email AND Was_Cancelled = 0 AND i_current_date >= Start_Date)
+		THEN INSERT INTO review (Property_Name, Owner_Email, Customer, Content, Score) VALUES (i_property_name, i_owner_email, i_customer_email, i_content, i_score);
+	END IF;
 end //
 delimiter ;
 
@@ -390,7 +612,7 @@ create or replace view view_properties (
     cost_per_night
 ) as
 -- TODO: replace this select query with your solution
-SELECT Property_Name, 'col2', Descr, CONCAT(Street, ', ', City, ', ', State, ', ', Zip), Capacity, Cost FROM property;
+SELECT Property_Name, avg_review(property_name), Descr, CONCAT(Street, ', ', City, ', ', State, ', ', Zip), Capacity, Cost FROM property;
 
 
 -- ID: 5e
@@ -432,7 +654,12 @@ create procedure customer_rates_owner (
 )
 sp_main: begin
 -- TODO: Implement your solution here
-
+	IF EXISTS(SELECT * FROM customers_rate_owners WHERE Customer = i_customer_email AND Owner_Email = i_owner_email)
+		THEN LEAVE sp_main;
+	END IF;
+    IF EXISTS(SELECT * FROM reserve WHERE Owner_Email = i_owner_email AND Customer = i_customer_email AND Was_Cancelled = 0 AND i_current_date >= Start_Date)
+		THEN INSERT INTO customers_rate_owners (Customer, Owner_Email, Score) VALUES (i_customer_email, i_owner_email, i_score);
+	END IF;
 end //
 delimiter ;
 
@@ -449,7 +676,12 @@ create procedure owner_rates_customer (
 )
 sp_main: begin
 -- TODO: Implement your solution here
-
+	IF EXISTS(SELECT * FROM owners_rate_customers WHERE Owner_Email = i_owner_email AND Customer = i_customer_email)
+		THEN LEAVE sp_main;
+	END IF;
+    IF EXISTS(SELECT * FROM reserve WHERE Owner_Email = i_owner_email AND Customer = i_customer_email AND Was_Cancelled = 0 AND i_current_date >= Start_Date)
+		THEN INSERT INTO owners_rate_customers (Owner_Email, Customer, Score) VALUES (i_owner_email, i_customer_email, i_score);
+	END IF;
 end //
 delimiter ;
 
@@ -465,7 +697,7 @@ create or replace view view_airports (
     avg_departing_flight_cost
 ) as
 -- TODO: replace this select query with your solution
-SELECT Airport_Id, Airport_Name, Time_Zone, 'col4', 'col5', 'col6' FROM airport;
+SELECT Airport_Id, Airport_Name, Time_Zone, arrival_count(Airport_Id), departure_count(Airport_Id), avg_departure_cost(Airport_Id) FROM airport;
 
 -- ID: 7b
 -- Name: view_airlines
@@ -476,7 +708,7 @@ create or replace view view_airlines (
     min_flight_cost
 ) as
 -- TODO: replace this select query with your solution
-SELECT Airline_Name, Rating, 'col3', 'col4' FROM airline;
+SELECT Airline_Name, Rating, num_airline_flights(Airline_Name), min_cost_airline(Airline_Name) FROM airline;
 
 
 -- ID: 8a
@@ -490,7 +722,7 @@ create or replace view view_customers (
 ) as
 -- TODO: replace this select query with your solution
 -- view customers
-SELECT CONCAT(First_Name, ' ', Last_Name), 'col2', 'col3', 'col4', 'col5' FROM customer AS C INNER JOIN accounts AS A ON C.Email = A.Email ORDER BY First_Name ASC;
+SELECT CONCAT(First_Name, ' ', Last_Name), customer_rating(C.Email), Location, owner_check(A.Email), seat_count(C.Email) FROM customer AS C INNER JOIN accounts AS A ON C.Email = A.Email ORDER BY First_Name ASC;
 
 -- ID: 8b
 -- Name: view_owners
@@ -501,14 +733,14 @@ create or replace view view_owners (
     avg_property_rating
 ) as
 -- TODO: replace this select query with your solution
-SELECT CONCAT(First_Name, ' ', Last_Name), 'col2', 'col3', 'col4' FROM owners AS O INNER JOIN accounts AS A ON O.Email = A.Email ORDER BY First_Name ASC;
+SELECT CONCAT(First_Name, ' ', Last_Name), owner_rating(O.Email), property_count(O.Email), avg_property_rating(O.Email) FROM owners AS O INNER JOIN accounts AS A ON O.Email = A.Email ORDER BY First_Name ASC;
 
 
 -- ID: 9a
 -- Name: process_date
 drop procedure if exists process_date;
 delimiter //
-create procedure process_date ( 
+create procedure process_date (
     in i_current_date date
 )
 sp_main: begin
