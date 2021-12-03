@@ -113,3 +113,15 @@ CALL schedule_flight(1, 'Delta Airlines', 'ATL', 'JFK', '10:00:00', '12:00:00', 
 -- Schedule Flight (Combination unique): Expect changes to flight table
 CALL schedule_flight(2, 'Delta Airlines', 'ATL', 'JFK', '10:00:00', '12:00:00', '2021-12-05', 400.00, 200, '2021-12-03');
 SELECT * FROM flight;
+
+-- --------------------------------------------------------------------------
+-- [2b] Test Procedure: remove_flight
+-- --------------------------------------------------------------------------
+-- Remove flight (Date is today): Expect 0 row(s) affected
+CALL remove_flight(1, 'Delta Airlines', '2021-10-18');
+-- Remove flight (Date is yesterday): Expect 0 row(s) affected
+CALL remove_flight(1, 'Delta Airlines', '2021-10-19');
+-- Remove flight (Date is valid): Expect changes to flight table and book table
+SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Airline_Name = F.Airline_Name AND B.Flight_Num = F.Flight_Num;
+CALL remove_flight(1, 'Delta Airlines', '2021-10-17');
+SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Airline_Name = F.Airline_Name AND B.Flight_Num = F.Flight_Num;
