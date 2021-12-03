@@ -853,6 +853,7 @@ create procedure process_date (
 )
 sp_main: begin
 -- TODO: Implement your solution here
+    SET SQL_SAFE_UPDATES=0;
     UPDATE customer AS C
     SET Location = IFNULL((SELECT A.State FROM book AS B LEFT OUTER JOIN flight AS F ON B.Airline_Name = F.Airline_Name AND B.Flight_Num = F.Flight_Num LEFT OUTER JOIN airport AS A ON F.To_Airport = A.Airport_Id WHERE F.Flight_Date = i_current_date AND B.Customer = C.Email AND B.Was_Cancelled = 0), Location);
 end //
