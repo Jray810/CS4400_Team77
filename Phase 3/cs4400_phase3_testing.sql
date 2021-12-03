@@ -98,3 +98,18 @@ INSERT INTO owners_rate_customers(Owner_Email, Customer, Score) VALUES ('jwayne@
 SELECT * FROM owners AS O LEFT OUTER JOIN property AS P ON O.Email = P.Owner_Email LEFT OUTER JOIN customers_rate_owners AS A ON O.Email = A.Owner_Email LEFT OUTER JOIN owners_rate_customers AS B ON O.Email = B.Owner_Email WHERE O.Email = 'jwayne@gmail.com';
 CALL remove_owner('jwayne@gmail.com');
 SELECT * FROM owners AS O LEFT OUTER JOIN property AS P ON O.Email = P.Owner_Email LEFT OUTER JOIN customers_rate_owners AS A ON O.Email = A.Owner_Email LEFT OUTER JOIN owners_rate_customers AS B ON O.Email = B.Owner_Email WHERE O.Email = 'jwayne@gmail.com';
+
+-- --------------------------------------------------------------------------
+-- [2a] Test Procedure: schedule_flight
+-- --------------------------------------------------------------------------
+-- Schedule Flight (To_Airport same as From_Airport): Expect 0 row(s) affected
+CALL schedule_flight(2, 'Delta Airlines', 'ATL', 'ATL', '10:00:00', '12:00:00', '2021-12-05', 400.00, 200, '2021-12-03');
+-- Schedule Flight (Flight date today): Expect 0 row(s) affected
+CALL schedule_flight(2, 'Delta Airlines', 'ATL', 'JFK', '10:00:00', '12:00:00', '2021-12-03', 400.00, 200, '2021-12-03');
+-- Schedule Flight (Flight date yesterday): Expect 0 row(s) affected
+CALL schedule_flight(2, 'Delta Airlines', 'ATL', 'JFK', '10:00:00', '12:00:00', '2021-12-02', 400.00, 200, '2021-12-03');
+-- Schedule Flight (Combination exists): Expect 0 row(s) affected
+CALL schedule_flight(1, 'Delta Airlines', 'ATL', 'JFK', '10:00:00', '12:00:00', '2021-12-05', 400.00, 200, '2021-12-03');
+-- Schedule Flight (Combination unique): Expect changes to flight table
+CALL schedule_flight(2, 'Delta Airlines', 'ATL', 'JFK', '10:00:00', '12:00:00', '2021-12-05', 400.00, 200, '2021-12-03');
+SELECT * FROM flight;
