@@ -24,26 +24,9 @@ RETURNS INT
 DETERMINISTIC
 sp_main: BEGIN
 	DECLARE o_num_seats INT;
-	DECLARE tmp_count INT;
-	SELECT SUM(Num_Seats) FROM book WHERE Flight_Num = i_flight_num AND Airline_Name = i_airline_name AND Was_Cancelled = 0 INTO tmp_count;
-	SET o_num_seats = IFNULL(tmp_count, 0);
+	SELECT SUM(Num_Seats) FROM book WHERE Flight_Num = i_flight_num AND Airline_Name = i_airline_name AND Was_Cancelled = 0 INTO o_num_seats;
+	SET o_num_seats = IFNULL(o_num_seats, 0);
     RETURN (o_num_seats);
-END //
-delimiter ;
-
--- For extracting the date of a given flight
-DROP FUNCTION IF EXISTS fl_date;
-delimiter //
-CREATE FUNCTION fl_date (
-	i_airline_name VARCHAR(50),
-    i_flight_num CHAR(5)
-)
-RETURNS DATE
-DETERMINISTIC
-sp_main: BEGIN
-	DECLARE flight_date DATE;
-    SELECT Flight_Date FROM flight WHERE Flight_Num = i_flight_num AND Airline_Name = i_airline_name INTO flight_date;
-    RETURN (flight_date);
 END //
 delimiter ;
 
@@ -525,24 +508,28 @@ create procedure book_flight (
 )
 sp_main: begin
 -- TODO: Implement your solution here
-	-- Check number of seats left is sufficient and flight date is valid
-    IF NOT EXISTS(SELECT * FROM flight WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num AND i_num_seats <= capacity - seats_booked(Airline_Name, Flight_Num) AND Flight_Date > i_current_date)
+	-- Check flight date is valid
+    IF NOT EXISTS(SELECT * FROM flight WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num AND Flight_Date > i_current_date)
 		THEN LEAVE sp_main;
 	END IF;
-    -- Check if customer already has a flight on this date (that is not the desired flight)
-    IF EXISTS(SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Flight_Num = F.Flight_Num AND B.Airline_Name = F.Airline_Name WHERE B.Customer = i_customer_email AND NOT (B.Airline_Name = i_airline_name AND B.Flight_Num = i_flight_num) AND B.Was_Cancelled = 0 AND F.Flight_Date = fl_date(i_airline_name, i_flight_num))
+    -- Check if customer already has a flight on this date that is not cancelled and a different flight
+    IF EXISTS(SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Flight_Num = F.Flight_Num AND B.Airline_Name = F.Airline_Name WHERE B.Customer = i_customer_email AND NOT (B.Airline_Name = i_airline_name AND B.Flight_Num = i_flight_num) AND B.Was_Cancelled = 0 AND F.Flight_Date IN (SELECT Flight_Date FROM flight WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num))
+		THEN LEAVE sp_main;
+	END IF;
+	-- Check number of seats left is sufficient
+    IF NOT EXISTS(SELECT * FROM flight WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num AND i_num_seats <= (capacity - seats_booked(Airline_Name, Flight_Num)))
 		THEN LEAVE sp_main;
 	END IF;
     -- Check if customer already cancelled a booking for this flight
-    IF EXISTS(SELECT * FROM book WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num AND Customer = i_customer_email AND Was_Cancelled = 1)
+	IF EXISTS(SELECT * FROM book WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num AND Customer = i_customer_email AND Was_Cancelled = 1)
 		THEN LEAVE sp_main;
 	END IF;
-    -- Check if customer has a valid booking for this flight
-    IF EXISTS(SELECT * FROM book WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num AND Customer = i_customer_email AND Was_Cancelled = 0)
+	-- Check if customer has an existing valid for this flight (not cancelled)
+	IF EXISTS(SELECT * FROM book WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num AND Customer = i_customer_email AND Was_Cancelled = 0)
 		THEN UPDATE book SET Num_Seats = Num_Seats + i_num_seats WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num AND Customer = i_customer_email;
         LEAVE sp_main;
 	END IF;
-	-- No flights booked yet on this day
+	-- Booking is new
     INSERT INTO book (Customer, Flight_Num, Airline_Name, Num_Seats, Was_Cancelled) VALUES (i_customer_email, i_flight_num, i_airline_Name, i_num_seats, 0);
 end //
 delimiter ;
