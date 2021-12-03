@@ -364,17 +364,24 @@ create procedure register_customer (
 ) 
 sp_main: begin
 -- TODO: Implement your solution here
-	-- Check if user exists as both Account and Client but not as a Customer yet
-	IF i_email IN (SELECT Email FROM accounts) AND i_phone_number IN (SELECT Phone_Number FROM clients) AND i_cc_number NOT IN (SELECT CcNumber FROM customer)
-		THEN INSERT INTO customer (Email, CcNumber, Cvv, Exp_Date, Location) VALUES (i_email, i_cc_number, i_cvv, i_exp_date, i_location);
-        LEAVE sp_main;
-    END IF;
-    -- Check if user does not exist in the system at all
+	-- Check if user is new to the database
     IF i_email NOT IN (SELECT Email FROM accounts) AND i_phone_number NOT IN (SELECT Phone_Number FROM clients) AND i_cc_number NOT IN (SELECT CcNumber FROM customer)
 		THEN INSERT INTO accounts (Email, First_Name, Last_Name, Pass) VALUES (i_email, i_first_name, i_last_name, i_password);
 		INSERT INTO clients (Email, Phone_Number) VALUES (i_email, i_phone_number);
 		INSERT INTO customer (Email, CcNumber, Cvv, Exp_Date, Location) VALUES (i_email, i_cc_number, i_cvv, i_exp_date, i_location);
+        LEAVE sp_main;
 	END IF;
+    -- Check if user exists as an Account only
+    IF (i_email, i_first_name, i_last_name, i_password) IN (SELECT Email, First_Name, Last_Name, Pass FROM accounts) AND i_phone_number NOT IN (SELECT Phone_Number FROM clients) AND i_cc_number NOT IN (SELECT CcNumber FROM customer)
+		THEN INSERT INTO clients (Email, Phone_Number) VALUES (i_email, i_phone_number);
+		INSERT INTO customer (Email, CcNumber, Cvv, Exp_Date, Location) VALUES (i_email, i_cc_number, i_cvv, i_exp_date, i_location);
+		LEAVE sp_main;
+	END IF;
+    -- Check if user exists as an Account and Client only
+    IF (i_email, i_first_name, i_last_name, i_password) IN (SELECT Email, First_Name, Last_Name, Pass FROM accounts) AND (i_email, i_phone_number) IN (SELECT Email, Phone_Number FROM clients) AND i_cc_number NOT IN (SELECT CcNumber FROM customer)
+		THEN INSERT INTO customer (Email, CcNumber, Cvv, Exp_Date, Location) VALUES (i_email, i_cc_number, i_cvv, i_exp_date, i_location);
+        LEAVE sp_main;
+    END IF;
 end //
 delimiter ;
 
