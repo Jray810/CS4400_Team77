@@ -125,3 +125,27 @@ CALL remove_flight(1, 'Delta Airlines', '2021-10-19');
 SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Airline_Name = F.Airline_Name AND B.Flight_Num = F.Flight_Num;
 CALL remove_flight(1, 'Delta Airlines', '2021-10-17');
 SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Airline_Name = F.Airline_Name AND B.Flight_Num = F.Flight_Num;
+
+-- --------------------------------------------------------------------------
+-- [2c] Test Procedure: book_flight
+-- --------------------------------------------------------------------------
+-- Book flight (Date is today): Expect 0 row(s) affected
+CALL book_flight('hwmit@gmail.com', 4, 'United Airlines', 97, '2021-10-18');
+-- Book flight (Date is yesterday): Expect 0 row(s) affected
+CALL book_flight('hwmit@gmail.com', 4, 'United Airlines', 97, '2021-10-19');
+-- Book flight (Customer has non-cancelled flight): Expect 0 row(s) affected
+CALL book_flight('aray@tiktok.com', 4, 'United Airlines', 95, '2021-10-17');
+-- Book flight (Insufficient remaining seats): Expect 0 row(s) affected
+CALL book_flight('hwmit@gmail.com', 4, 'United Airlines', 97, '2021-10-17');
+SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Airline_Name = F.Airline_Name AND B.Flight_Num = F.Flight_Num;
+-- Book flight (Previous Booking Cancelled): Expect 0 row(s) affected
+CALL book_flight('hwmit@gmail.com', 2, 'Southwest Airlines', 124, '2021-10-17');
+SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Airline_Name = F.Airline_Name AND B.Flight_Num = F.Flight_Num;
+-- Book flight (Booking is new): Expect book table update with new booking
+SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Airline_Name = F.Airline_Name AND B.Flight_Num = F.Flight_Num;
+CALL book_flight('hwmit@gmail.com', 7, 'WestJet', 95, '2021-10-17');
+SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Airline_Name = F.Airline_Name AND B.Flight_Num = F.Flight_Num;
+-- Book flight (Booking exists): Expect book table existing booking to update
+SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Airline_Name = F.Airline_Name AND B.Flight_Num = F.Flight_Num;
+CALL book_flight('hwmit@gmail.com', 7, 'WestJet', 1, '2021-10-17');
+SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Airline_Name = F.Airline_Name AND B.Flight_Num = F.Flight_Num;
