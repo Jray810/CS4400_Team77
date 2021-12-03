@@ -79,3 +79,22 @@ SELECT * FROM accounts AS A LEFT OUTER JOIN clients AS C ON A.Email = C.Email LE
 CALL register_owner('arthurread@gmail.com', 'Peter', 'Parker', 'spidermanRules', '555-234-5678');
 -- Add new owner (Exists as Account, Client, and Owner, no field changes): Expect 0 row(s) affected
 CALL register_owner('arthurread@gmail.com', 'Arthur', 'Read', 'password4', '555-234-5678');
+
+-- --------------------------------------------------------------------------
+-- [1c] Test Procedure: remove_owner
+-- --------------------------------------------------------------------------
+-- Remove owner (Owner does not exist): Expect 0 row(s) affected
+CALL remove_owner('mjackson@gmail.com');
+-- Remove owner (Owner exists, has listed properties): Expect 0 row(s) affected
+CALL remove_owner('arthurread@gmail.com');
+-- Remove owner (Owner exists, no listed properties, also a customer): Expect removal from owners table only
+CALL register_owner('aray@tiktok.com', 'Addison', 'Ray', 'password17', '770-234-5678');
+SELECT * FROM customer AS C LEFT OUTER JOIN owners AS O ON C.Email = O.Email WHERE C.Email = 'aray@tiktok.com';
+CALL remove_owner('aray@tiktok.com');
+SELECT * FROM customer AS C LEFT OUTER JOIN owners AS O ON C.Email = O.Email WHERE C.Email = 'aray@tiktok.com';
+-- Remove owner (Owner exists, no listed properties, not a customer): Expect removal from owners, clients, and accounts tables
+INSERT INTO customers_rate_owners(Customer, Owner_Email, Score) VALUES ('aray@tiktok.com', 'jwayne@gmail.com', 5);
+INSERT INTO owners_rate_customers(Owner_Email, Customer, Score) VALUES ('jwayne@gmail.com', 'aray@tiktok.com', 5);
+SELECT * FROM owners AS O LEFT OUTER JOIN property AS P ON O.Email = P.Owner_Email LEFT OUTER JOIN customers_rate_owners AS A ON O.Email = A.Owner_Email LEFT OUTER JOIN owners_rate_customers AS B ON O.Email = B.Owner_Email WHERE O.Email = 'jwayne@gmail.com';
+CALL remove_owner('jwayne@gmail.com');
+SELECT * FROM owners AS O LEFT OUTER JOIN property AS P ON O.Email = P.Owner_Email LEFT OUTER JOIN customers_rate_owners AS A ON O.Email = A.Owner_Email LEFT OUTER JOIN owners_rate_customers AS B ON O.Email = B.Owner_Email WHERE O.Email = 'jwayne@gmail.com';
