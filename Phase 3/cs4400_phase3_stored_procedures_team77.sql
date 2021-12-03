@@ -443,12 +443,10 @@ sp_main: begin
 		THEN DELETE FROM owners WHERE Email = i_owner_email;
         LEAVE sp_main;
 	END IF;
-    -- Check if owner only exists as an owner
-    IF i_owner_email NOT IN (SELECT Email FROM customer)
-		THEN DELETE FROM owners WHERE Email = i_owner_email;
-        DELETE FROM clients WHERE Email = i_owner_email;
-        DELETE FROM accounts WHERE Email = i_owner_email;
-	END IF;
+    -- Owner exists only as an owner
+	DELETE FROM owners WHERE Email = i_owner_email;
+	DELETE FROM clients WHERE Email = i_owner_email;
+	DELETE FROM accounts WHERE Email = i_owner_email;
 end //
 delimiter ;
 
