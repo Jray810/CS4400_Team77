@@ -252,13 +252,13 @@ CREATE FUNCTION reservation_cost (
     i_owner_email VARCHAR(50),
     i_customer_email VARCHAR(50)
 )
-RETURNS DECIMAL (10,3)
+RETURNS DECIMAL (20,3)
 DETERMINISTIC
 sp_main: BEGIN
 	DECLARE duration INTEGER;
     DECLARE nightly_cost DECIMAL;
 	DECLARE total_cost DECIMAL;
-    SELECT (End_Date - Start_Date + 1) FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email INTO duration;
+    SELECT ((End_Date - Start_Date + 1)*Num_Guests) FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email INTO duration;
     SELECT Cost FROM property WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email INTO nightly_cost;
     SET total_cost = nightly_cost * duration;
     IF EXISTS(SELECT * FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email AND Was_Cancelled = 0)
@@ -751,7 +751,7 @@ sp_main: begin
         end_date date,
         customer_email varchar(50),
         customer_phone_num char(12),
-        total_booking_cost decimal(6,2),
+        total_booking_cost decimal(20,2),
         rating_score int,
         review varchar(500)
     ) as
