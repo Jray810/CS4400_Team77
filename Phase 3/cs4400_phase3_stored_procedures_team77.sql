@@ -10,7 +10,326 @@
 -- Please follow all instructions for Phase III as listed on Canvas.
 -- Fill in the team number and names and GT usernames for all members above.
 
+-- --------------------------------------------------------------------------
+-- Custom Functions
+-- --------------------------------------------------------------------------
+-- For calculating the number of seats booked on a given flight
+DROP FUNCTION IF EXISTS seats_booked;
+delimiter //
+CREATE FUNCTION seats_booked (
+    i_airline_name VARCHAR(50),
+	i_flight_num CHAR(5)
+)
+RETURNS INT
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE o_num_seats INT;
+	SELECT SUM(Num_Seats) FROM book WHERE Flight_Num = i_flight_num AND Airline_Name = i_airline_name AND Was_Cancelled = 0 INTO o_num_seats;
+	SET o_num_seats = IFNULL(o_num_seats, 0);
+    RETURN (o_num_seats);
+END //
+delimiter ;
 
+-- For determining amount spent by a flight booking
+DROP FUNCTION IF EXISTS book_spent;
+delimiter //
+CREATE FUNCTION book_spent (
+	i_cost DECIMAL,
+    i_flight_num CHAR(5),
+    i_airline_name VARCHAR(50)
+)
+RETURNS DECIMAL (8,3)
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE num_full_price DECIMAL;
+    DECLARE num_cancelled DECIMAL;
+    DECLARE total_spent DECIMAL;
+    SELECT SUM(Num_Seats) FROM book WHERE Flight_Num = i_flight_num AND Airline_Name = i_airline_name AND Was_Cancelled = 0 INTO num_full_price;
+    SELECT SUM(Num_Seats) FROM book WHERE Flight_Num = i_flight_num AND Airline_Name = i_airline_name AND Was_Cancelled = 1 INTO num_cancelled;
+    SET total_spent = i_cost * IFNULL(num_full_price, 0) + i_cost * 0.200 * IFNULL(num_cancelled, 0);
+    RETURN (total_spent);
+END //
+delimiter ;
+
+-- For determining average rating of a property
+DROP FUNCTION IF EXISTS avg_review;
+delimiter //
+CREATE FUNCTION avg_review (
+	i_property_name VARCHAR(50)
+)
+RETURNS DECIMAL (5,4)
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE avg_rating DECIMAL (5,4);
+    DECLARE total_rating DECIMAL;
+    DECLARE rating_count DECIMAL;
+    SELECT SUM(Score) FROM review WHERE Property_Name = i_property_name INTO total_rating;
+    SELECT COUNT(*) FROM review WHERE Property_Name = i_property_name INTO rating_count;
+    SET avg_rating = total_rating / rating_count;
+    RETURN (avg_rating);
+END //
+delimiter ;
+
+-- For determining number of arrival flights
+DROP FUNCTION IF EXISTS arrival_count;
+delimiter //
+CREATE FUNCTION arrival_count (
+	i_airport_id CHAR(3)
+)
+RETURNS INTEGER
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE arrival_cnt INTEGER;
+    SELECT COUNT(*) FROM flight WHERE To_Airport = i_airport_id INTO arrival_cnt;
+    RETURN IFNULL(arrival_cnt, 0);
+END //
+delimiter ;
+
+-- For determining number of departure flights
+DROP FUNCTION IF EXISTS departure_count;
+delimiter //
+CREATE FUNCTION departure_count (
+	i_airport_id CHAR(3)
+)
+RETURNS INTEGER
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE departure_cnt INTEGER;
+    SELECT COUNT(*) FROM flight WHERE From_Airport = i_airport_id INTO departure_cnt;
+    RETURN IFNULL(departure_cnt, 0);
+END //
+delimiter ;
+
+-- For determining average cost of departure flights
+DROP FUNCTION IF EXISTS avg_departure_cost;
+delimiter //
+CREATE FUNCTION avg_departure_cost (
+	i_airport_id CHAR(3)
+)
+RETURNS DECIMAL (9,6)
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE total_cost DECIMAL;
+    SELECT SUM(Cost) FROM flight WHERE From_Airport = i_airport_id INTO total_cost;
+	RETURN (total_cost / departure_count(i_airport_id));
+END //
+delimiter ;
+
+
+-- For determining number of flights by airline
+DROP FUNCTION IF EXISTS num_airline_flights;
+delimiter //
+CREATE FUNCTION num_airline_flights (
+	i_airline_name VARCHAR(50)
+)
+RETURNS INTEGER
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE num_flights INTEGER;
+    SELECT COUNT(*) FROM flight WHERE Airline_Name = i_airline_name INTO num_flights;
+    RETURN num_flights;
+END //
+delimiter ;
+
+-- For determining minimum flight cost by an airline
+DROP FUNCTION IF EXISTS min_cost_airline;
+delimiter //
+CREATE FUNCTION min_cost_airline (
+	i_airline_name VARCHAR(50)
+)
+RETURNS DECIMAL (5,2)
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE min_cost DECIMAL (5,2);
+    SELECT MIN(Cost) FROM flight WHERE Airline_Name = i_airline_name INTO min_cost;
+    RETURN min_cost;
+END //
+delimiter ;
+
+-- For determining average customer rating
+DROP FUNCTION IF EXISTS customer_rating;
+delimiter //
+CREATE FUNCTION customer_rating (
+	i_customer_email VARCHAR(50)
+)
+RETURNS DECIMAL (5,4)
+DETERMINISTIC
+sp_main: BEGIN
+    DECLARE total_rating DECIMAL;
+    DECLARE rating_count DECIMAL;
+    SELECT SUM(Score) FROM owners_rate_customers WHERE Customer = i_customer_email INTO total_rating;
+    SELECT COUNT(*) FROM owners_rate_customers WHERE Customer = i_customer_email INTO rating_count;
+    RETURN (total_rating / rating_count);
+END //
+delimiter ;
+
+-- For determining if customer is also an owner
+DROP FUNCTION IF EXISTS owner_check;
+delimiter //
+CREATE FUNCTION owner_check (
+	i_customer_email VARCHAR(50)
+)
+RETURNS BOOLEAN
+DETERMINISTIC
+sp_main: BEGIN
+	IF EXISTS(SELECT * FROM owners WHERE Email = i_customer_email)
+		THEN RETURN 1;
+        LEAVE sp_main;
+	END IF;
+    RETURN 0;
+END //
+delimiter ;
+
+-- For counting number of reserved seats
+DROP FUNCTION IF EXISTS seat_count;
+delimiter //
+CREATE FUNCTION seat_count (
+	i_customer_email VARCHAR(50)
+)
+RETURNS INTEGER
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE seats INTEGER;
+    SELECT SUM(Num_Seats) FROM book WHERE Customer = i_customer_email INTO seats;
+    RETURN IFNULL(seats, 0);
+END //
+delimiter ;
+
+-- For determining average owner rating
+DROP FUNCTION IF EXISTS owner_rating;
+delimiter //
+CREATE FUNCTION owner_rating (
+	i_owner_email VARCHAR(50)
+)
+RETURNS DECIMAL (5,4)
+DETERMINISTIC
+sp_main: BEGIN
+    DECLARE total_rating DECIMAL;
+    DECLARE rating_count DECIMAL;
+    SELECT SUM(Score) FROM customers_rate_owners WHERE Owner_Email = i_owner_email INTO total_rating;
+    SELECT COUNT(*) FROM customers_rate_owners WHERE Owner_Email = i_owner_email INTO rating_count;
+    RETURN (total_rating / rating_count);
+END //
+delimiter ;
+
+-- For counting properties owned
+DROP FUNCTION IF EXISTS property_count;
+delimiter //
+CREATE FUNCTION property_count (
+	i_owner_email VARCHAR(50)
+)
+RETURNS INTEGER
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE num_owned INTEGER;
+    SELECT COUNT(*) FROM property WHERE Owner_Email = i_owner_email INTO num_owned;
+    RETURN num_owned;
+END //
+delimiter ;
+
+-- For calculating average property rating
+DROP FUNCTION IF EXISTS avg_property_rating;
+delimiter //
+CREATE FUNCTION avg_property_rating (
+	i_owner_email VARCHAR(50)
+)
+RETURNS DECIMAL (5,4)
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE total_rating DECIMAL;
+    DECLARE rating_count DECIMAL;
+    SELECT SUM(Score) FROM review WHERE Owner_Email = i_owner_email INTO total_rating;
+    SELECT COUNT(*) FROM review WHERE Owner_Email = i_owner_email INTO rating_count;
+    RETURN (total_rating / rating_count);
+END //
+delimiter ;
+
+-- For calculating reservation costs
+DROP FUNCTION IF EXISTS reservation_cost;
+delimiter //
+CREATE FUNCTION reservation_cost (
+	i_property_name VARCHAR(50),
+    i_owner_email VARCHAR(50),
+    i_customer_email VARCHAR(50)
+)
+RETURNS DECIMAL (10,3)
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE duration INTEGER;
+    DECLARE nightly_cost DECIMAL;
+	DECLARE total_cost DECIMAL;
+    SELECT (End_Date - Start_Date + 1) FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email INTO duration;
+    SELECT Cost FROM property WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email INTO nightly_cost;
+    SET total_cost = nightly_cost * duration;
+    IF EXISTS(SELECT * FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email AND Was_Cancelled = 0)
+		THEN RETURN total_cost;
+        LEAVE sp_main;
+	END IF;
+    RETURN (total_cost * 0.2);
+END //
+delimiter ;
+
+-- For checking for overlapping reservations
+DROP FUNCTION IF EXISTS overlap_check;
+delimiter //
+CREATE FUNCTION overlap_check (
+	i_customer_email VARCHAR(50),
+    i_start_date DATE,
+    i_end_date DATE
+)
+RETURNS BOOLEAN
+DETERMINISTIC
+sp_main: BEGIN
+	-- Make sure all reservation start/end dates are either both before the start date or both after the end date
+    IF EXISTS(SELECT * FROM reserve WHERE Customer = i_customer_email AND Was_Cancelled = 0 AND NOT ((Start_Date < i_start_date AND End_Date < i_start_date) OR (Start_Date > i_end_date AND End_Date > i_end_date)))
+		THEN RETURN TRUE;
+        LEAVE sp_main;
+	END IF;
+    RETURN FALSE;
+END //
+delimiter ;
+
+-- For checking for capacity conflicts in reservations
+DROP FUNCTION IF EXISTS capacity_check;
+delimiter //
+CREATE FUNCTION capacity_check (
+	i_property_name VARCHAR(50),
+    i_owner_email VARCHAR(50),
+    i_start_date DATE,
+    i_end_date DATE,
+    i_num_guests INTEGER
+)
+RETURNS BOOLEAN
+DETERMINISTIC
+sp_main: BEGIN
+	DECLARE max_guests INTEGER;
+    DECLARE total_guests INTEGER;
+    DECLARE this_date DATE;
+    SELECT Capacity FROM property WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email INTO max_guests;
+    SET this_date = i_start_date;
+	lp_dates: LOOP
+		IF (this_date > i_end_date)
+			THEN LEAVE lp_dates;
+		END IF;
+        SELECT SUM(Num_Guests) FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Was_Cancelled = 0 AND this_date BETWEEN Start_Date AND End_Date INTO total_guests;
+        SET total_guests = IFNULL(total_guests, 0);
+        IF (max_guests < (total_guests + i_num_guests))
+			THEN RETURN FALSE;
+            LEAVE sp_main;
+		END IF;
+        SET this_date = DATE_ADD(this_date, INTERVAL 1 DAY);
+	END LOOP lp_dates;
+    RETURN TRUE;
+END //
+delimiter ;
+
+-- --------------------------------------------------------------------------
+-- End Custom Functions Section
+-- --------------------------------------------------------------------------
+
+-- --------------------------------------------------------------------------
+-- Stored Procedures
+-- --------------------------------------------------------------------------
 -- ID: 1a
 -- Name: register_customer
 drop procedure if exists register_customer;
@@ -28,7 +347,24 @@ create procedure register_customer (
 ) 
 sp_main: begin
 -- TODO: Implement your solution here
-
+	-- Check if user is new to the database
+    IF i_email NOT IN (SELECT Email FROM accounts) AND i_phone_number NOT IN (SELECT Phone_Number FROM clients) AND i_cc_number NOT IN (SELECT CcNumber FROM customer)
+		THEN INSERT INTO accounts (Email, First_Name, Last_Name, Pass) VALUES (i_email, i_first_name, i_last_name, i_password);
+		INSERT INTO clients (Email, Phone_Number) VALUES (i_email, i_phone_number);
+		INSERT INTO customer (Email, CcNumber, Cvv, Exp_Date, Location) VALUES (i_email, i_cc_number, i_cvv, i_exp_date, i_location);
+        LEAVE sp_main;
+	END IF;
+    -- Check if user exists as an Account only
+    IF (i_email, i_first_name, i_last_name, i_password) IN (SELECT Email, First_Name, Last_Name, Pass FROM accounts) AND i_email NOT IN (SELECT Email FROM clients) AND i_phone_number NOT IN (SELECT Phone_Number FROM clients) AND i_cc_number NOT IN (SELECT CcNumber FROM customer)
+		THEN INSERT INTO clients (Email, Phone_Number) VALUES (i_email, i_phone_number);
+		INSERT INTO customer (Email, CcNumber, Cvv, Exp_Date, Location) VALUES (i_email, i_cc_number, i_cvv, i_exp_date, i_location);
+		LEAVE sp_main;
+	END IF;
+    -- Check if user exists as an Account and Client only
+    IF (i_email, i_first_name, i_last_name, i_password) IN (SELECT Email, First_Name, Last_Name, Pass FROM accounts) AND (i_email, i_phone_number) IN (SELECT Email, Phone_Number FROM clients) AND i_cc_number NOT IN (SELECT CcNumber FROM customer)
+		THEN INSERT INTO customer (Email, CcNumber, Cvv, Exp_Date, Location) VALUES (i_email, i_cc_number, i_cvv, i_exp_date, i_location);
+        LEAVE sp_main;
+    END IF;
 end //
 delimiter ;
 
@@ -46,7 +382,24 @@ create procedure register_owner (
 ) 
 sp_main: begin
 -- TODO: Implement your solution here
-
+	-- Check if user is new to the database
+    IF i_email NOT IN (SELECT Email FROM accounts) AND i_phone_number NOT IN (SELECT Phone_Number FROM clients)
+		THEN INSERT INTO accounts (Email, First_Name, Last_Name, Pass) VALUES (i_email, i_first_name, i_last_name, i_password);
+		INSERT INTO clients (Email, Phone_Number) VALUES (i_email, i_phone_number);
+		INSERT INTO owners (Email) VALUES (i_email);
+        LEAVE sp_main;
+	END IF;
+    -- Check if user exists as an Account only
+    IF (i_email, i_first_name, i_last_name, i_password) IN (SELECT Email, First_Name, Last_Name, Pass FROM accounts) AND i_email NOT IN (SELECT Email FROM clients) AND i_phone_number NOT IN (SELECT Phone_Number FROM clients)
+		THEN INSERT INTO clients (Email, Phone_Number) VALUES (i_email, i_phone_number);
+		INSERT INTO owners (Email) VALUES (i_email);
+		LEAVE sp_main;
+	END IF;
+    -- Check if user exists as an Account and Client only
+    IF (i_email, i_first_name, i_last_name, i_password) IN (SELECT Email, First_Name, Last_Name, Pass FROM accounts) AND (i_email, i_phone_number) IN (SELECT Email, Phone_Number FROM clients) AND i_email NOT IN (SELECT Email FROM owners)
+		THEN INSERT INTO owners (Email) VALUES (i_email);
+        LEAVE sp_main;
+    END IF;
 end //
 delimiter ;
 
@@ -60,7 +413,23 @@ create procedure remove_owner (
 )
 sp_main: begin
 -- TODO: Implement your solution here
-
+	-- Check if owner exists
+	IF i_owner_email NOT IN (SELECT Email FROM owners)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check if owner has listed properties
+	IF i_owner_email IN (SELECT Owner_Email FROM property)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check if owner exists as a customer
+    IF i_owner_email IN (SELECT Email FROM customer)
+		THEN DELETE FROM owners WHERE Email = i_owner_email;
+        LEAVE sp_main;
+	END IF;
+    -- Owner exists only as an owner
+	DELETE FROM owners WHERE Email = i_owner_email;
+	DELETE FROM clients WHERE Email = i_owner_email;
+	DELETE FROM accounts WHERE Email = i_owner_email;
 end //
 delimiter ;
 
@@ -83,7 +452,25 @@ create procedure schedule_flight (
 )
 sp_main: begin
 -- TODO: Implement your solution here
-
+	-- Check if to_airport and from_airport are the same
+    IF i_from_airport = i_to_airport
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check if flight date is in the future
+    IF i_flight_date <= i_current_date
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check if Airline and Flight Number combination already exists
+    IF (i_airline_name, i_flight_num) IN (SELECT Airline_Name, Flight_Num FROM flight)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check that Airline Name and Airports exist
+    IF i_airline_name NOT IN (SELECT Airline_Name FROM airline) OR i_from_airport NOT IN (SELECT Airport_Id FROM airport) OR i_to_airport NOT IN (SELECT Airport_Id FROM airport)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Add Airline and Flight Number combination
+    INSERT INTO flight (Flight_Num, Airline_Name, From_Airport, To_Airport, Departure_Time, Arrival_Time, Flight_Date, Cost, Capacity)
+		VALUES (i_flight_num, i_airline_name, i_from_airport, i_to_airport, i_departure_time, i_arrival_time, i_flight_date, i_cost, i_capacity);
 end //
 delimiter ;
 
@@ -99,7 +486,11 @@ create procedure remove_flight (
 ) 
 sp_main: begin
 -- TODO: Implement your solution here
-
+    -- Check departure date and remove flight and bookings
+    IF EXISTS(SELECT * FROM flight WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num AND Flight_Date > i_current_date)
+		THEN DELETE FROM book WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num;
+        DELETE FROM flight WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num;
+	END IF;
 end //
 delimiter ;
 
@@ -117,7 +508,29 @@ create procedure book_flight (
 )
 sp_main: begin
 -- TODO: Implement your solution here
-
+	-- Check flight date is valid
+    IF NOT EXISTS(SELECT * FROM flight WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num AND Flight_Date > i_current_date)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check if customer already has a flight on this date that is not cancelled and a different flight
+    IF EXISTS(SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Flight_Num = F.Flight_Num AND B.Airline_Name = F.Airline_Name WHERE B.Customer = i_customer_email AND NOT (B.Airline_Name = i_airline_name AND B.Flight_Num = i_flight_num) AND B.Was_Cancelled = 0 AND F.Flight_Date IN (SELECT Flight_Date FROM flight WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num))
+		THEN LEAVE sp_main;
+	END IF;
+	-- Check number of seats left is sufficient
+    IF NOT EXISTS(SELECT * FROM flight WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num AND i_num_seats <= (capacity - seats_booked(Airline_Name, Flight_Num)))
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check if customer already cancelled a booking for this flight
+	IF EXISTS(SELECT * FROM book WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num AND Customer = i_customer_email AND Was_Cancelled = 1)
+		THEN LEAVE sp_main;
+	END IF;
+	-- Check if customer has an existing valid for this flight (not cancelled)
+	IF EXISTS(SELECT * FROM book WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num AND Customer = i_customer_email AND Was_Cancelled = 0)
+		THEN UPDATE book SET Num_Seats = Num_Seats + i_num_seats WHERE Airline_Name = i_airline_name AND Flight_Num = i_flight_num AND Customer = i_customer_email;
+        LEAVE sp_main;
+	END IF;
+	-- Booking is new
+    INSERT INTO book (Customer, Flight_Num, Airline_Name, Num_Seats, Was_Cancelled) VALUES (i_customer_email, i_flight_num, i_airline_Name, i_num_seats, 0);
 end //
 delimiter ;
 
@@ -133,7 +546,14 @@ create procedure cancel_flight_booking (
 )
 sp_main: begin
 -- TODO: Implement your solution here
-
+	-- Check if booking exists
+    IF NOT EXISTS(SELECT * FROM book WHERE Flight_Num = i_flight_num AND Airline_Name = i_airline_name AND Customer = i_customer_email AND Was_Cancelled = 0)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check if flight is in the future
+    IF EXISTS(SELECT * FROM flight WHERE Flight_Num = i_flight_num AND Airline_Name = i_airline_name AND Flight_Date > i_current_date)
+		THEN UPDATE book SET Was_Cancelled = 1 WHERE Flight_Num = i_flight_num AND Airline_Name = i_airline_name AND Customer = i_customer_email;
+	END IF;
 end //
 delimiter ;
 
@@ -150,8 +570,7 @@ create or replace view view_flight (
     total_spent
 ) as
 -- TODO: replace this select query with your solution
--- select 'col1', 'col2', 'col3', 'col4', 'col5', 'col6', 'col7' from flight;
-SELECT Flight_Num AS flight_id FROM flight;
+SELECT Flight_Num, Flight_Date, Airline_Name, To_Airport, Cost, Capacity - seats_booked(Airline_Name, Flight_Num), book_spent(Cost, Flight_Num, Airline_Name) FROM flight;
 
 -- ID: 4a
 -- Name: add_property
@@ -172,7 +591,24 @@ create procedure add_property (
 ) 
 sp_main: begin
 -- TODO: Implement your solution here
-  
+    -- Check if property name and owner name unique
+    IF EXISTS(SELECT * FROM property WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email)
+		THEN LEAVE sp_main;
+	END IF;
+	-- Check if address is unique
+    IF EXISTS(SELECT * FROM property WHERE Street = i_street AND City = i_city AND State = i_state AND Zip = i_zip)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Add the property
+    INSERT INTO property (Property_Name, Owner_Email, Descr, Capacity, Cost, Street, City, State, Zip) VALUES (i_property_name, i_owner_email, i_description, i_capacity, i_cost, i_street, i_city, i_state, i_zip);
+    -- Check if nearest_airport_id is valid
+    IF NOT EXISTS(SELECT * FROM airport WHERE Airport_Id = i_nearest_airport_id)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check if distance is valid
+    IF i_dist_to_airport >= 0
+		THEN INSERT INTO is_close_to (Property_Name, Owner_Email, Airport, Distance) VALUES (i_property_name, i_owner_email, i_nearest_airport_id, i_dist_to_airport);
+	END IF;          
 end //
 delimiter ;
 
@@ -188,7 +624,13 @@ create procedure remove_property (
 )
 sp_main: begin
 -- TODO: Implement your solution here
-    
+    -- Check if a reservation currently exists
+    IF EXISTS(SELECT * FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND (i_current_date BETWEEN Start_Date AND END_DATE) AND Was_Cancelled = 0)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Perform deletion
+    DELETE FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email;
+    DELETE FROM property WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email;
 end //
 delimiter ;
 
@@ -208,7 +650,25 @@ create procedure reserve_property (
 )
 sp_main: begin
 -- TODO: Implement your solution here
-
+	-- Check for existing reservation
+    IF EXISTS(SELECT * FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check that reservation is for future
+    IF (i_current_date >= i_start_date)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check for overlapping reservations
+    IF overlap_check(i_customer_email, i_start_date, i_end_date)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check for capacity conflict
+    IF NOT capacity_check(i_property_name, i_owner_email, i_start_date, i_end_date, i_num_guests)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Book the reservation!
+    INSERT INTO reserve (Property_Name, Owner_Email, Customer, Start_Date, End_Date, Num_Guests, Was_Cancelled)
+		VALUES (i_property_name, i_owner_email, i_customer_email, i_start_date, i_end_date, i_num_guests, 0);
 end //
 delimiter ;
 
@@ -225,7 +685,12 @@ create procedure cancel_property_reservation (
 )
 sp_main: begin
 -- TODO: Implement your solution here
-
+    -- Check if a reservation currently exists
+    IF NOT EXISTS(SELECT * FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email AND i_current_date < Start_Date AND Was_Cancelled = 0)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Cancel reservation
+    UPDATE reserve SET Was_Cancelled = 1 WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email;
 end //
 delimiter ;
 
@@ -244,7 +709,18 @@ create procedure customer_review_property (
 )
 sp_main: begin
 -- TODO: Implement your solution here
-    
+	-- Check to make sure score is valid
+    IF NOT (1 <= i_score AND i_score <= 5)
+		THEN LEAVE sp_main;
+	END IF;
+	-- Check if a review exists
+    IF EXISTS(SELECT * FROM review WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check if a reservation exists that was not cancelled and start date is >= today
+    IF EXISTS(SELECT * FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email AND Was_Cancelled = 0 AND i_current_date >= Start_Date)
+		THEN INSERT INTO review (Property_Name, Owner_Email, Customer, Content, Score) VALUES (i_property_name, i_owner_email, i_customer_email, i_content, i_score);
+	END IF;
 end //
 delimiter ;
 
@@ -260,7 +736,7 @@ create or replace view view_properties (
     cost_per_night
 ) as
 -- TODO: replace this select query with your solution
-select 'col1', 'col2', 'col3', 'col4', 'col5', 'col6' from property;
+SELECT Property_Name, avg_review(property_name), Descr, CONCAT(Street, ', ', City, ', ', State, ', ', Zip), Capacity, Cost FROM property;
 
 
 -- ID: 5e
@@ -284,8 +760,8 @@ sp_main: begin
         review varchar(500)
     ) as
     -- TODO: replace this select query with your solution
-    select 'col1', 'col2', 'col3', 'col4', 'col5', 'col6', 'col7', 'col8' from reserve;
-
+    SELECT R.Property_Name AS property_name, Start_Date AS start_date, End_Date AS end_date, R.Customer AS customer_email, (SELECT Phone_Number FROM clients WHERE Email = R.Customer) AS customer_phone_num, reservation_cost(R.Property_Name, R.Owner_Email, R.Customer) AS total_booking_cost, Score AS rating_score, Content AS review FROM reserve AS R LEFT OUTER JOIN review AS V ON R.Property_Name = V.Property_Name AND R.Owner_Email = V.Owner_Email AND R.Customer = V.Customer
+		WHERE R.Property_Name = i_property_name AND R.Owner_Email = i_owner_email;
 end //
 delimiter ;
 
@@ -302,7 +778,18 @@ create procedure customer_rates_owner (
 )
 sp_main: begin
 -- TODO: Implement your solution here
-
+	-- Check to make sure score is valid
+    IF NOT (1 <= i_score AND i_score <= 5)
+		THEN LEAVE sp_main;
+	END IF;
+	-- Check for existing rating
+	IF EXISTS(SELECT * FROM customers_rate_owners WHERE Customer = i_customer_email AND Owner_Email = i_owner_email)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check a reservation occurred
+    IF EXISTS(SELECT * FROM reserve WHERE Owner_Email = i_owner_email AND Customer = i_customer_email AND Was_Cancelled = 0 AND i_current_date >= Start_Date)
+		THEN INSERT INTO customers_rate_owners (Customer, Owner_Email, Score) VALUES (i_customer_email, i_owner_email, i_score);
+	END IF;
 end //
 delimiter ;
 
@@ -319,7 +806,18 @@ create procedure owner_rates_customer (
 )
 sp_main: begin
 -- TODO: Implement your solution here
-
+	-- Check to make sure score is valid
+    IF NOT (1 <= i_score AND i_score <= 5)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check for existing rating
+	IF EXISTS(SELECT * FROM owners_rate_customers WHERE Owner_Email = i_owner_email AND Customer = i_customer_email)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check a reservation occurred
+    IF EXISTS(SELECT * FROM reserve WHERE Owner_Email = i_owner_email AND Customer = i_customer_email AND Was_Cancelled = 0 AND i_current_date >= Start_Date)
+		THEN INSERT INTO owners_rate_customers (Owner_Email, Customer, Score) VALUES (i_owner_email, i_customer_email, i_score);
+	END IF;
 end //
 delimiter ;
 
@@ -334,8 +832,8 @@ create or replace view view_airports (
     total_departing_flights, 
     avg_departing_flight_cost
 ) as
--- TODO: replace this select query with your solution    
-select 'col1', 'col2', 'col3', 'col4', 'col5', 'col6' from airport;
+-- TODO: replace this select query with your solution
+SELECT Airport_Id, Airport_Name, Time_Zone, arrival_count(Airport_Id), departure_count(Airport_Id), avg_departure_cost(Airport_Id) FROM airport;
 
 -- ID: 7b
 -- Name: view_airlines
@@ -346,7 +844,7 @@ create or replace view view_airlines (
     min_flight_cost
 ) as
 -- TODO: replace this select query with your solution
-select 'col1', 'col2', 'col3', 'col4' from airline;
+SELECT Airline_Name, Rating, num_airline_flights(Airline_Name), min_cost_airline(Airline_Name) FROM airline;
 
 
 -- ID: 8a
@@ -360,8 +858,7 @@ create or replace view view_customers (
 ) as
 -- TODO: replace this select query with your solution
 -- view customers
-select 'col1', 'col2', 'col3', 'col4', 'col5' from customer;
-
+SELECT CONCAT(First_Name, ' ', Last_Name), customer_rating(C.Email), Location, owner_check(A.Email), seat_count(C.Email) FROM customer AS C INNER JOIN accounts AS A ON C.Email = A.Email ORDER BY First_Name ASC;
 
 -- ID: 8b
 -- Name: view_owners
@@ -372,18 +869,20 @@ create or replace view view_owners (
     avg_property_rating
 ) as
 -- TODO: replace this select query with your solution
-select 'col1', 'col2', 'col3', 'col4' from owners;
+SELECT CONCAT(First_Name, ' ', Last_Name), owner_rating(O.Email), property_count(O.Email), avg_property_rating(O.Email) FROM owners AS O INNER JOIN accounts AS A ON O.Email = A.Email ORDER BY First_Name ASC;
 
 
 -- ID: 9a
 -- Name: process_date
 drop procedure if exists process_date;
 delimiter //
-create procedure process_date ( 
+create procedure process_date (
     in i_current_date date
 )
 sp_main: begin
 -- TODO: Implement your solution here
-    
+    SET SQL_SAFE_UPDATES=0;
+    UPDATE customer AS C
+    SET Location = IFNULL((SELECT A.State FROM book AS B LEFT OUTER JOIN flight AS F ON B.Airline_Name = F.Airline_Name AND B.Flight_Num = F.Flight_Num LEFT OUTER JOIN airport AS A ON F.To_Airport = A.Airport_Id WHERE F.Flight_Date = i_current_date AND B.Customer = C.Email AND B.Was_Cancelled = 0), Location);
 end //
 delimiter ;
