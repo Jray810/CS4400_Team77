@@ -283,6 +283,29 @@ SELECT R.Property_Name, Start_Date, End_Date, R.Customer, Phone_Number, Num_Gues
 SELECT Customer, Cost, Num_Guests, Start_Date, End_Date, Was_Cancelled FROM property NATURAL JOIN reserve WHERE Property_Name = 'House near Georgia Tech';
 
 -- --------------------------------------------------------------------------
+-- [6a] Test Procedure: customer_rates_owner
+-- --------------------------------------------------------------------------
+SELECT * FROM customers_rate_owners;
+-- Customer rates owner (Customer not in database): Expect 0 row(s) affected
+call customer_rates_owner('fakeuser@gmail.com', 'msmith5@gmail.com', 3, '2021-10-18');
+-- Customer rates owner (Owner not in database): Expect 0 row(s) affected
+call customer_rates_owner('cbing10@gmail.com', 'fakeuser@gmail.com', 3, '2021-10-18');
+-- Customer rates owner (Customer didn't reserve with owner): Expect 0 row(s) affected
+call customer_rates_owner('arthurread@gmail.com', 'msmith5@gmail.com', 3, '2021-10-18');
+-- Customer rates owner (Rating out of bounds high): Expect 0 row(s) affected
+call customer_rates_owner('cbing10@gmail.com', 'msmith5@gmail.com', 10, '2021-10-18');
+-- Customer rates owner (Rating out of bounds low): Expect 0 row(s) affected
+call customer_rates_owner('cbing10@gmail.com', 'msmith5@gmail.com', 0, '2021-10-18');
+-- Customer rates owner (Before the start date): Expect 0 row(s) affected
+call customer_rates_owner('cbing10@gmail.com', 'msmith5@gmail.com', 3, '2021-10-17');
+-- Customer rates owner (All valid): Expect the customer_rates_owners table updated
+call customer_rates_owner('cbing10@gmail.com', 'msmith5@gmail.com', 4, '2021-10-18');
+-- Customer rates owner (Already a rating) : Expect 1 row(s) affected
+call customer_rates_owner('cbing10@gmail.com', 'msmith5@gmail.com', 5, '2021-10-18');
+
+SELECT * FROM customers_rate_owners;
+
+-- --------------------------------------------------------------------------
 -- [6b] Test Procedure: owner_rates_customer
 -- --------------------------------------------------------------------------
 CALL owner_rates_customer('msmith5@gmail.com', 'cbing10@gmail.com', 4, '2021-10-18');
