@@ -331,3 +331,27 @@ CALL process_date('2021-10-20');
 -- Process Date (No Flights): Expect 0 row(s) affected
 CALL process_date('2021-10-10');
 SELECT * FROM customer;
+
+
+
+
+-- --------------------------------------------------------------------------
+-- Check Views
+-- --------------------------------------------------------------------------
+-- [3c] view_flight
+SELECT * FROM view_flight;
+
+-- [5d] view_properties
+SELECT * FROM view_properties;
+
+-- [7a] view_airports
+SELECT * FROM view_airports;
+
+-- [7b] view_aielines
+SELECT * FROM view_airlines;
+
+-- [8a] view_customers
+SELECT * FROM view_customers;
+
+-- [8b] view_owners
+SELECT * FROM view_owners;
