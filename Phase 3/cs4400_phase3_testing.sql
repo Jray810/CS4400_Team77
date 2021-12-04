@@ -275,3 +275,9 @@ SELECT * FROM view_individual_property_reservations;
 -- Should look similar to
 SELECT R.Property_Name, Start_Date, End_Date, R.Customer, Phone_Number, Num_Guests, Score, Content FROM reserve AS R INNER JOIN clients AS C ON R.Customer = C.Email RIGHT OUTER JOIN review AS Q ON R.Customer = Q.Customer WHERE R.Property_Name = 'New York City Property';
 SELECT Customer, Cost, Num_Guests, Start_Date, End_Date, Was_Cancelled FROM property NATURAL JOIN reserve WHERE Property_Name = 'New York City Property';
+-- Test it for House near Georgia Tech
+CALL view_individual_property_reservations('House near Georgia Tech', 'swilson@gmail.com');
+SELECT * FROM view_individual_property_reservations;
+-- Should look similar to
+SELECT R.Property_Name, Start_Date, End_Date, R.Customer, Phone_Number, Num_Guests, Score, Content FROM reserve AS R INNER JOIN clients AS C ON R.Customer = C.Email RIGHT OUTER JOIN review AS Q ON R.Customer = Q.Customer WHERE R.Property_Name = 'House near Georgia Tech';
+SELECT Customer, Cost, Num_Guests, Start_Date, End_Date, Was_Cancelled FROM property NATURAL JOIN reserve WHERE Property_Name = 'House near Georgia Tech';
