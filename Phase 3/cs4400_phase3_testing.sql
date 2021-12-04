@@ -300,24 +300,23 @@ call customer_rates_owner('cbing10@gmail.com', 'msmith5@gmail.com', 0, '2021-10-
 call customer_rates_owner('cbing10@gmail.com', 'msmith5@gmail.com', 3, '2021-10-17');
 -- Customer rates owner (All valid): Expect the customer_rates_owners table updated
 call customer_rates_owner('cbing10@gmail.com', 'msmith5@gmail.com', 4, '2021-10-18');
--- Customer rates owner (Already a rating) : Expect 1 row(s) affected
+-- Customer rates owner (Already a rating) : Expect 0 row(s) affected
 call customer_rates_owner('cbing10@gmail.com', 'msmith5@gmail.com', 5, '2021-10-18');
 
 SELECT * FROM customers_rate_owners;
 
 -- --------------------------------------------------------------------------
 -- [6b] Test Procedure: owner_rates_customer
--- --------------------------------------------------------------------------
-CALL owner_rates_customer('msmith5@gmail.com', 'cbing10@gmail.com', 4, '2021-10-18');
--- Owner Rates Customer (All Valid): Expect add to owners_rate_customers table
-CALL owner_rates_customer('msmith5@gmail.com', 'tswift@gmail.com', 4, '2021-10-18'); 
+-- --------------------------------------------
 -- Owner Rates Customer (Customer hasn't stayed at owner's property): Expect 0 row(s) affected
-CALL owner_rates_customer('msmith5@gmail.com', 'fuiya@gmail.com', 4, '2021-10-18'); 
+CALL owner_rates_customer('msmith5@gmail.com', 'tswift@gmail.com', 4, '2021-10-18');
 -- Owner Rates Customer (Customer doesn't exist): Expect 0 row(s) affected
-CALL owner_rates_customer('fuiya@gmail.com', 'tswift@gmail.com', 4, '2021-10-18'); 
+CALL owner_rates_customer('msmith5@gmail.com', 'fuiya@gmail.com', 4, '2021-10-18');
 -- Owner Rates Customer (Owner doesn't exist): Expect 0 row(s) affected
+CALL owner_rates_customer('fuiya@gmail.com', 'tswift@gmail.com', 4, '2021-10-18');
+-- Owner Rates Customer (All Valid): Expect add to owners_rate_customers table
 CALL owner_rates_customer('msmith5@gmail.com', 'cbing10@gmail.com', 4, '2021-10-18');
--- Owner Rates Customer (Tries to rate the same customer twice): Expect 1 row(s) affected
+-- Owner Rates Customer (Tries to rate the same customer twice): Expect 0 row(s) affected
 CALL owner_rates_customer('msmith5@gmail.com', 'cbing10@gmail.com', 4, '2021-10-18');
 
 -- --------------------------------------------------------------------------
