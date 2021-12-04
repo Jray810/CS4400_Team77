@@ -629,6 +629,7 @@ sp_main: begin
 		THEN LEAVE sp_main;
 	END IF;
     -- Perform deletion
+    DELETE FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email;
     DELETE FROM property WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email;
 end //
 delimiter ;
