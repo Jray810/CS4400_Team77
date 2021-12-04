@@ -281,3 +281,18 @@ SELECT * FROM view_individual_property_reservations;
 -- Should look similar to
 SELECT R.Property_Name, Start_Date, End_Date, R.Customer, Phone_Number, Num_Guests, Score, Content FROM reserve AS R INNER JOIN clients AS C ON R.Customer = C.Email RIGHT OUTER JOIN review AS Q ON R.Customer = Q.Customer WHERE R.Property_Name = 'House near Georgia Tech';
 SELECT Customer, Cost, Num_Guests, Start_Date, End_Date, Was_Cancelled FROM property NATURAL JOIN reserve WHERE Property_Name = 'House near Georgia Tech';
+
+-- --------------------------------------------------------------------------
+-- [6b] Test Procedure: owner_rates_customer
+-- --------------------------------------------------------------------------
+CALL owner_rates_customer('msmith5@gmail.com', 'cbing10@gmail.com', 4, '2021-10-18');
+-- Owner Rates Customer (All Valid): Expect add to owners_rate_customers table
+CALL owner_rates_customer('msmith5@gmail.com', 'tswift@gmail.com', 4, '2021-10-18'); 
+-- Owner Rates Customer (Customer hasn't stayed at owner's property): Expect 0 row(s) affected
+CALL owner_rates_customer('msmith5@gmail.com', 'fuiya@gmail.com', 4, '2021-10-18'); 
+-- Owner Rates Customer (Customer doesn't exist): Expect 0 row(s) affected
+CALL owner_rates_customer('fuiya@gmail.com', 'tswift@gmail.com', 4, '2021-10-18'); 
+-- Owner Rates Customer (Owner doesn't exist): Expect 0 row(s) affected
+CALL owner_rates_customer('msmith5@gmail.com', 'cbing10@gmail.com', 4, '2021-10-18');
+-- Owner Rates Customer (Tries to rate the same customer twice): Expect 1 row(s) affected
+CALL owner_rates_customer('msmith5@gmail.com', 'cbing10@gmail.com', 4, '2021-10-18');
