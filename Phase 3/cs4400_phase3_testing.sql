@@ -164,3 +164,23 @@ CALL cancel_flight_booking('hwmit@gmail.com', 2, 'Southwest Airlines', '2021-10-
 -- Cancel flight booking (Booking exists, flight is future, was previously cancelled): Expect book table updated
 CALL cancel_flight_booking('aray@tiktok.com', 1, 'Delta Airlines', '2021-10-17');
 SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Airline_Name = F.Airline_Name AND B.Flight_Num = F.Flight_Num;
+
+-- --------------------------------------------------------------------------
+-- [4a] Test Procedure: add_property
+-- --------------------------------------------------------------------------
+SELECT * FROM property;
+-- Add property (Property Name & Owner Not Unique): Expect 0 row(s) affected
+CALL add_property('Atlanta Great Property', 'scooper3@gmail.com', 'hello', 1, 100.00, '350 Ferst Dr', 'ATL', 'GA', '30332', 'ATL', 10);
+-- Add property (Address Not Unique): Expect 0 row(s) affected
+CALL add_property('Georgia Tech', 'gburdell3@gmail.com', 'hello', 1, 100.00, 'North Ave', 'ATL', 'GA', '30008', 'ATL', 10);
+-- Add property (Nearest Airport Id invalid): Expect property table updated
+CALL add_property('Georgia Tech', 'gburdell3@gmail.com', 'hello', 1, 100.00, '350 Ferst Dr', 'ATL', 'GA', '30332', 'BER', 10);
+-- Add property (Nearest Airport Id not given): Expect property table updated
+CALL add_property('Georgia Tech', 'gburdell3@gmail.com', 'hello', 1, 100.00, '350 Ferst Dr', 'ATL', 'GA', '30332', NULL, 10);
+-- Add property (Distance invalid): Expect property table updated
+CALL add_property('Georgia Tech', 'gburdell3@gmail.com', 'hello', 1, 100.00, '350 Ferst Dr', 'ATL', 'GA', '30332', 'ATL', -1);
+-- Add property (Distance not given): Expect property table updated
+CALL add_property('Georgia Tech', 'gburdell3@gmail.com', 'hello', 1, 100.00, '350 Ferst Dr', 'ATL', 'GA', '30332', 'ATL', NULL);
+-- Add property (All valid): Expect property and is_close_to table updated
+CALL add_property('Georgia Tech', 'gburdell3@gmail.com', 'hello', 1, 100.00, '350 Ferst Dr', 'ATL', 'GA', '30332', 'ATL', 10);
+SELECT * FROM property AS P LEFT OUTER JOIN is_close_to AS I ON P.Property_Name = I.Property_Name AND P.Owner_Email = I.Owner_Email;
