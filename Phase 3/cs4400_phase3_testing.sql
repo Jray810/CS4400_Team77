@@ -192,7 +192,6 @@ SELECT * FROM property AS P LEFT OUTER JOIN is_close_to AS I ON P.Property_Name 
 -- --------------------------------------------------------------------------
 -- [4b] Test Procedure: remove_property
 -- --------------------------------------------------------------------------
-SELECT * FROM property AS P LEFT OUTER JOIN reserve AS R ON P.Property_Name = R.Property_Name AND P.Owner_Email = R.Owner_Email WHERE P.Property_Name = 'New York City Property';
 -- Remove property (Today is beginning of reservation): Expect 0 row(s) affected
 CALL remove_property('New York City Property', 'cbing10@gmail.com', '2021-10-18');
 -- Remove property (Today is middle of reservation): Expect 0 row(s) affected
@@ -203,3 +202,30 @@ CALL remove_property('New York City Property', 'cbing10@gmail.com', '2021-10-23'
 CALL remove_property('New York City Property', 'cbing10@gmail.com', '2021-10-31');
 -- Remove property (Today is middle of cancelled reservation): Expect property, reservations, reviews, amenity, and is_close_to to be updated
 CALL remove_property('New York City Property', 'cbing10@gmail.com', '2021-11-04');
+SELECT * FROM property AS P NATURAL JOIN reserve AS R WHERE Property_Name = 'New York City Property';
+SELECT * FROM property AS P NATURAL JOIN review AS R WHERE Property_Name = 'New York City Property';
+SELECT * FROM property AS P NATURAL JOIN amenity AS R WHERE Property_Name = 'New York City Property';
+SELECT * FROM is_close_to WHERE Property_Name = 'New York City Property';
+
+-- --------------------------------------------------------------------------
+-- [5a] Test Procedure: reserve_property
+-- --------------------------------------------------------------------------
+-- Reserve property (Non-unique reservation Uncancelled): Expect 0 row(s) affected
+CALL reserve_property('Beautiful San Jose Mansion', 'arthurread@gmail.com', 'tswift@gmail.com', '2021-10-23', '2021-10-24', 2, '2021-10-22');
+-- Reserve property (Non-unique reservation Cancelled): Expect 0 row(s) affected
+CALL reserve_property('Chicago Romantic Getaway', 'mj23@gmail.com', 'aray@tiktok.com', '2021-10-23', '2021-10-24', 2, '2021-10-22');
+-- Reserve property (Start Date is today): Expect 0 row(s) affected
+CALL reserve_property('Beautiful San Jose Mansion', 'arthurread@gmail.com', 'cbing10@gmail.com', '2021-10-26', '2021-10-28', 2, '2021-10-26');
+-- Reserve property (Start Date is yesterday): Expect 0 row(s) affected
+CALL reserve_property('Beautiful San Jose Mansion', 'arthurread@gmail.com', 'cbing10@gmail.com', '2021-10-26', '2021-10-28', 2, '2021-10-27');
+-- Reserve property (Overlapping reservations): Expect 0 row(s) affected
+CALL reserve_property('Beautiful San Jose Mansion', 'arthurread@gmail.com', 'cbing10@gmail.com', '2021-10-25', '2021-10-28', 2, '2021-10-24');
+-- Reserve property (Insufficient capacity on first day): Expect 0 row(s) affected
+CALL reserve_property('Beautiful San Jose Mansion', 'arthurread@gmail.com', 'mgeller5@gmail.com', '2021-10-22', '2021-10-28', 3, '2021-10-20');
+-- Reserve property (Insufficient capacity on middle day): Expect 0 row(s) affected
+CALL reserve_property('Beautiful San Jose Mansion', 'arthurread@gmail.com', 'mgeller5@gmail.com', '2021-10-18', '2021-10-23', 3, '2021-10-17');
+-- Reserve property (Insufficient capacity on last day): Expect 0 row(s) affected
+CALL reserve_property('Beautiful San Jose Mansion', 'arthurread@gmail.com', 'mgeller5@gmail.com', '2021-10-21', '2021-10-22', 3, '2021-10-20');
+-- Reserve property (All valid): Reserve table updated
+CALL reserve_property('Beautiful San Jose Mansion', 'arthurread@gmail.com', 'mgeller5@gmail.com', '2021-10-21', '2021-10-22', 2, '2021-10-20');
+SELECT * FROM property AS P NATURAL JOIN reserve AS R WHERE Property_Name = 'Beautiful San Jose Mansion';
