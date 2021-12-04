@@ -246,3 +246,19 @@ CALL cancel_property_reservation('Beautiful San Jose Mansion', 'arthurread@gmail
 -- Cancel property reservation (All valid): Expect reserve table updated
 CALL cancel_property_reservation('Beautiful San Jose Mansion', 'arthurread@gmail.com', 'tswift@gmail.com', '2021-10-18');
 SELECT * FROM property AS P NATURAL JOIN reserve AS R WHERE Property_Name = 'Beautiful San Jose Mansion';
+
+-- --------------------------------------------------------------------------
+-- [5c] Test Procedure: customer_review_property
+-- --------------------------------------------------------------------------
+-- Customer review property (Existing review): Expect 0 row(s) affected
+CALL customer_review_property('Beautiful San Jose Mansion', 'arthurread@gmail.com', 'tswift@gmail.com', 'Nice!', 5, '2021-10-23');
+-- Customer review property (Was Cancelled): Expect 0 row(s) affected
+CALL customer_review_property('Family Beach House', 'ellie2@gmail.com', 'hwmit@gmail.com', 'Nice!', 5, '2021-10-29');
+-- Customer review property (Today is before reservation): Expect 0 row(s) affected
+CALL customer_review_property('Beautiful Beach Property', 'msmith5@gmail.com', 'cbing10@gmail.com', 'Nice!', 5, '2021-10-17');
+-- Customer review property (Today is first day of reservation): Expect review table update
+CALL customer_review_property('Beautiful Beach Property', 'msmith5@gmail.com', 'cbing10@gmail.com', 'Nice!', 5, '2021-10-18');
+SELECT * FROM property AS P NATURAL JOIN reserve AS R LEFT OUTER JOIN review AS Q ON P.Property_Name = Q.Property_Name;
+-- Customer review property (Today is after first day of reservation): Expect review table update
+CALL customer_review_property('Beautiful Beach Property', 'msmith5@gmail.com', 'cbing10@gmail.com', 'Nice!', 5, '2021-10-20');
+SELECT * FROM property AS P NATURAL JOIN reserve AS R LEFT OUTER JOIN review AS Q ON P.Property_Name = Q.Property_Name;
