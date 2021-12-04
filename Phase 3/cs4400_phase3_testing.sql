@@ -302,7 +302,6 @@ call customer_rates_owner('cbing10@gmail.com', 'msmith5@gmail.com', 3, '2021-10-
 call customer_rates_owner('cbing10@gmail.com', 'msmith5@gmail.com', 4, '2021-10-18');
 -- Customer rates owner (Already a rating) : Expect 0 row(s) affected
 call customer_rates_owner('cbing10@gmail.com', 'msmith5@gmail.com', 5, '2021-10-18');
-
 SELECT * FROM customers_rate_owners;
 
 -- --------------------------------------------------------------------------
@@ -318,16 +317,16 @@ CALL owner_rates_customer('fuiya@gmail.com', 'tswift@gmail.com', 4, '2021-10-18'
 CALL owner_rates_customer('msmith5@gmail.com', 'cbing10@gmail.com', 4, '2021-10-18');
 -- Owner Rates Customer (Tries to rate the same customer twice): Expect 0 row(s) affected
 CALL owner_rates_customer('msmith5@gmail.com', 'cbing10@gmail.com', 4, '2021-10-18');
+SELECT * FROM owners_rate_customers;
 
 -- --------------------------------------------------------------------------
 -- [9a] Test Procedure: process_date
 -- --------------------------------------------------------------------------
-
-CALL process_date('2021-10-19');
 -- Process Date (All Valid): Expect 4 row(s) affected
-CALL process_date('2021-10-18');
+CALL process_date('2021-10-19');
 -- Process Date (All Valid): Expect 3 row(s) affected
-CALL process_date('2021-10-20');
+CALL process_date('2021-10-18');
 -- Process Date (No Bookings): Expect 0 row(s) affected
-CALL process_date('2021-10-10');
+CALL process_date('2021-10-20');
 -- Process Date (No Flights): Expect 0 row(s) affected
+CALL process_date('2021-10-10');
