@@ -330,3 +330,4 @@ CALL process_date('2021-10-18');
 CALL process_date('2021-10-20');
 -- Process Date (No Flights): Expect 0 row(s) affected
 CALL process_date('2021-10-10');
+SELECT * FROM customer;
