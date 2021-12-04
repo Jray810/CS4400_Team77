@@ -709,6 +709,10 @@ create procedure customer_review_property (
 )
 sp_main: begin
 -- TODO: Implement your solution here
+	-- Check to make sure score is valid
+    IF NOT (1 <= i_score AND i_score <= 5)
+		THEN LEAVE sp_main;
+	END IF;
 	-- Check if a review exists
     IF EXISTS(SELECT * FROM review WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email)
 		THEN LEAVE sp_main;
@@ -774,9 +778,15 @@ create procedure customer_rates_owner (
 )
 sp_main: begin
 -- TODO: Implement your solution here
+	-- Check to make sure score is valid
+    IF NOT (1 <= i_score AND i_score <= 5)
+		THEN LEAVE sp_main;
+	END IF;
+	-- Check for existing rating
 	IF EXISTS(SELECT * FROM customers_rate_owners WHERE Customer = i_customer_email AND Owner_Email = i_owner_email)
 		THEN LEAVE sp_main;
 	END IF;
+    -- Check a reservation occurred
     IF EXISTS(SELECT * FROM reserve WHERE Owner_Email = i_owner_email AND Customer = i_customer_email AND Was_Cancelled = 0 AND i_current_date >= Start_Date)
 		THEN INSERT INTO customers_rate_owners (Customer, Owner_Email, Score) VALUES (i_customer_email, i_owner_email, i_score);
 	END IF;
@@ -796,9 +806,15 @@ create procedure owner_rates_customer (
 )
 sp_main: begin
 -- TODO: Implement your solution here
+	-- Check to make sure score is valid
+    IF NOT (1 <= i_score AND i_score <= 5)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check for existing rating
 	IF EXISTS(SELECT * FROM owners_rate_customers WHERE Owner_Email = i_owner_email AND Customer = i_customer_email)
 		THEN LEAVE sp_main;
 	END IF;
+    -- Check a reservation occurred
     IF EXISTS(SELECT * FROM reserve WHERE Owner_Email = i_owner_email AND Customer = i_customer_email AND Was_Cancelled = 0 AND i_current_date >= Start_Date)
 		THEN INSERT INTO owners_rate_customers (Owner_Email, Customer, Score) VALUES (i_owner_email, i_customer_email, i_score);
 	END IF;
