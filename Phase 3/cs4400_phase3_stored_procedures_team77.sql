@@ -625,7 +625,7 @@ create procedure remove_property (
 sp_main: begin
 -- TODO: Implement your solution here
     -- Check if a reservation currently exists
-    IF EXISTS(SELECT * FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND i_current_date BETWEEN Start_Date AND END_DATE)
+    IF EXISTS(SELECT * FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND (i_current_date BETWEEN Start_Date AND END_DATE) AND Was_Cancelled = 0)
 		THEN LEAVE sp_main;
 	END IF;
     -- Perform deletion
@@ -709,9 +709,11 @@ create procedure customer_review_property (
 )
 sp_main: begin
 -- TODO: Implement your solution here
+	-- Check if a review exists
     IF EXISTS(SELECT * FROM review WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email)
 		THEN LEAVE sp_main;
 	END IF;
+    -- Check if a reservation exists that was not cancelled and start date is >= today
     IF EXISTS(SELECT * FROM reserve WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email AND Customer = i_customer_email AND Was_Cancelled = 0 AND i_current_date >= Start_Date)
 		THEN INSERT INTO review (Property_Name, Owner_Email, Customer, Content, Score) VALUES (i_property_name, i_owner_email, i_customer_email, i_content, i_score);
 	END IF;
