@@ -229,3 +229,20 @@ CALL reserve_property('Beautiful San Jose Mansion', 'arthurread@gmail.com', 'mge
 -- Reserve property (All valid): Reserve table updated
 CALL reserve_property('Beautiful San Jose Mansion', 'arthurread@gmail.com', 'mgeller5@gmail.com', '2021-10-21', '2021-10-22', 2, '2021-10-20');
 SELECT * FROM property AS P NATURAL JOIN reserve AS R WHERE Property_Name = 'Beautiful San Jose Mansion';
+
+-- --------------------------------------------------------------------------
+-- [5b] Test Procedure: cancel_property_reservation
+-- --------------------------------------------------------------------------
+-- Cancel property reservation (Reservation does not exist): Expect 0 row(s) affected
+CALL cancel_property_reservation('Beautiful San Jose Mansion', 'arthurread@gmail.com', 'mgeller5@gmail.com', '2021-12-03');
+-- Cancel property reservation (Already Cancelled): Expect 0 row(s) affected
+CALL cancel_property_reservation('Family Beach House', 'ellie2@gmail.com', 'hwmit@gmail.com', '2021-10-17');
+-- Cancel property reservation (Reservation ends today): Expect 0 row(s) affected
+CALL cancel_property_reservation('Beautiful San Jose Mansion', 'arthurread@gmail.com', 'tswift@gmail.com', '2021-10-22');
+-- Cancel property reservation (Reservation begins today): Expect 0 row(s) affected
+CALL cancel_property_reservation('Beautiful San Jose Mansion', 'arthurread@gmail.com', 'tswift@gmail.com', '2021-10-19');
+-- Cancel property reservation (Reservation already ended): Expect 0 row(s) affected
+CALL cancel_property_reservation('Beautiful San Jose Mansion', 'arthurread@gmail.com', 'tswift@gmail.com', '2021-10-23');
+-- Cancel property reservation (All valid): Expect reserve table updated
+CALL cancel_property_reservation('Beautiful San Jose Mansion', 'arthurread@gmail.com', 'tswift@gmail.com', '2021-10-18');
+SELECT * FROM property AS P NATURAL JOIN reserve AS R WHERE Property_Name = 'Beautiful San Jose Mansion';
