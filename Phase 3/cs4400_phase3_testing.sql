@@ -127,7 +127,7 @@ CALL remove_flight(1, 'Delta Airlines', '2021-10-17');
 SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Airline_Name = F.Airline_Name AND B.Flight_Num = F.Flight_Num;
 
 -- --------------------------------------------------------------------------
--- [2c] Test Procedure: book_flight
+-- [3a] Test Procedure: book_flight
 -- --------------------------------------------------------------------------
 -- Book flight (Date is today): Expect 0 row(s) affected
 CALL book_flight('hwmit@gmail.com', 4, 'United Airlines', 97, '2021-10-18');
@@ -148,4 +148,19 @@ SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Airline_Name = F.Airlin
 -- Book flight (Booking exists): Expect book table existing booking to update
 SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Airline_Name = F.Airline_Name AND B.Flight_Num = F.Flight_Num;
 CALL book_flight('hwmit@gmail.com', 7, 'WestJet', 1, '2021-10-17');
+SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Airline_Name = F.Airline_Name AND B.Flight_Num = F.Flight_Num;
+
+-- --------------------------------------------------------------------------
+-- [3b] Test Procedure: cancel_flight_booking
+-- --------------------------------------------------------------------------
+-- Cancel flight booking (Booking does not exist): Expect 0 row(s) affected
+CALL cancel_flight_booking('aray@tiktok.com', 4, 'United Airlines', '2021-10-17');
+-- Cancel flight booking (Booking exists, flight is today): Expect 0 row(s) affected
+CALL cancel_flight_booking('aray@tiktok.com', 1, 'Delta Airlines', '2021-10-18');
+-- Cancel flight booking (Booking exists, flight is yesterday): Expect 0 row(s) affected
+CALL cancel_flight_booking('aray@tiktok.com', 1, 'Delta Airlines', '2021-10-19');
+-- Cancel flight booking (Booking exists, flight is future, was previously cancelled): Expect 0 row(s) affected
+CALL cancel_flight_booking('hwmit@gmail.com', 2, 'Southwest Airlines', '2021-10-17');
+-- Cancel flight booking (Booking exists, flight is future, was previously cancelled): Expect book table updated
+CALL cancel_flight_booking('aray@tiktok.com', 1, 'Delta Airlines', '2021-10-17');
 SELECT * FROM book AS B LEFT OUTER JOIN flight AS F ON B.Airline_Name = F.Airline_Name AND B.Flight_Num = F.Flight_Num;
