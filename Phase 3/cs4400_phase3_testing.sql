@@ -262,3 +262,19 @@ SELECT * FROM property AS P NATURAL JOIN reserve AS R LEFT OUTER JOIN review AS 
 -- Customer review property (Today is after first day of reservation): Expect review table update
 CALL customer_review_property('Beautiful Beach Property', 'msmith5@gmail.com', 'cbing10@gmail.com', 'Nice!', 5, '2021-10-20');
 SELECT * FROM property AS P NATURAL JOIN reserve AS R LEFT OUTER JOIN review AS Q ON P.Property_Name = Q.Property_Name;
+
+-- --------------------------------------------------------------------------
+-- [6b] Test Procedure: owner_rates_customer
+-- --------------------------------------------------------------------------
+
+CALL owner_rates_customer('msmith5@gmail.com', 'cbing10@gmail.com', 4, '2021-10-18');
+-- Owner Rates Customer (All Valid): Expect add to owners_rate_customers table
+CALL owner_rates_customer('msmith5@gmail.com', 'tswift@gmail.com', 4, '2021-10-18'); 
+-- Owner Rates Customer (Customer hasn't stayed at owner's property): Expect 0 row(s) affected
+CALL owner_rates_customer('msmith5@gmail.com', 'fuiya@gmail.com', 4, '2021-10-18'); 
+-- Owner Rates Customer (Customer doesn't exist): Expect 0 row(s) affected
+CALL owner_rates_customer('fuiya@gmail.com', 'tswift@gmail.com', 4, '2021-10-18'); 
+-- Owner Rates Customer (Owner doesn't exist): Expect 0 row(s) affected
+CALL owner_rates_customer('msmith5@gmail.com', 'cbing10@gmail.com', 4, '2021-10-18');
+CALL owner_rates_customer('msmith5@gmail.com', 'cbing10@gmail.com', 4, '2021-10-18');
+-- Owner Rates Customer (Tries to rate the same customer twice): Expect 1 row(s) affected
