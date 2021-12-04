@@ -175,12 +175,31 @@ CALL add_property('Atlanta Great Property', 'scooper3@gmail.com', 'hello', 1, 10
 CALL add_property('Georgia Tech', 'gburdell3@gmail.com', 'hello', 1, 100.00, 'North Ave', 'ATL', 'GA', '30008', 'ATL', 10);
 -- Add property (Nearest Airport Id invalid): Expect property table updated
 CALL add_property('Georgia Tech', 'gburdell3@gmail.com', 'hello', 1, 100.00, '350 Ferst Dr', 'ATL', 'GA', '30332', 'BER', 10);
+SELECT * FROM property AS P LEFT OUTER JOIN is_close_to AS I ON P.Property_Name = I.Property_Name AND P.Owner_Email = I.Owner_Email;
 -- Add property (Nearest Airport Id not given): Expect property table updated
 CALL add_property('Georgia Tech', 'gburdell3@gmail.com', 'hello', 1, 100.00, '350 Ferst Dr', 'ATL', 'GA', '30332', NULL, 10);
+SELECT * FROM property AS P LEFT OUTER JOIN is_close_to AS I ON P.Property_Name = I.Property_Name AND P.Owner_Email = I.Owner_Email;
 -- Add property (Distance invalid): Expect property table updated
 CALL add_property('Georgia Tech', 'gburdell3@gmail.com', 'hello', 1, 100.00, '350 Ferst Dr', 'ATL', 'GA', '30332', 'ATL', -1);
+SELECT * FROM property AS P LEFT OUTER JOIN is_close_to AS I ON P.Property_Name = I.Property_Name AND P.Owner_Email = I.Owner_Email;
 -- Add property (Distance not given): Expect property table updated
 CALL add_property('Georgia Tech', 'gburdell3@gmail.com', 'hello', 1, 100.00, '350 Ferst Dr', 'ATL', 'GA', '30332', 'ATL', NULL);
+SELECT * FROM property AS P LEFT OUTER JOIN is_close_to AS I ON P.Property_Name = I.Property_Name AND P.Owner_Email = I.Owner_Email;
 -- Add property (All valid): Expect property and is_close_to table updated
 CALL add_property('Georgia Tech', 'gburdell3@gmail.com', 'hello', 1, 100.00, '350 Ferst Dr', 'ATL', 'GA', '30332', 'ATL', 10);
 SELECT * FROM property AS P LEFT OUTER JOIN is_close_to AS I ON P.Property_Name = I.Property_Name AND P.Owner_Email = I.Owner_Email;
+
+-- --------------------------------------------------------------------------
+-- [4b] Test Procedure: remove_property
+-- --------------------------------------------------------------------------
+SELECT * FROM property AS P LEFT OUTER JOIN reserve AS R ON P.Property_Name = R.Property_Name AND P.Owner_Email = R.Owner_Email WHERE P.Property_Name = 'New York City Property';
+-- Remove property (Today is beginning of reservation): Expect 0 row(s) affected
+CALL remove_property('New York City Property', 'cbing10@gmail.com', '2021-10-18');
+-- Remove property (Today is middle of reservation): Expect 0 row(s) affected
+CALL remove_property('New York City Property', 'cbing10@gmail.com', '2021-10-20');
+-- Remove property (Today is end of reservation): Expect 0 row(s) affected
+CALL remove_property('New York City Property', 'cbing10@gmail.com', '2021-10-23');
+-- Remove property (All valid): Expect property, reservations, reviews, amenity, and is_close_to to be updated
+CALL remove_property('New York City Property', 'cbing10@gmail.com', '2021-10-31');
+-- Remove property (Today is middle of cancelled reservation): Expect property, reservations, reviews, amenity, and is_close_to to be updated
+CALL remove_property('New York City Property', 'cbing10@gmail.com', '2021-11-04');
