@@ -591,18 +591,24 @@ create procedure add_property (
 ) 
 sp_main: begin
 -- TODO: Implement your solution here
+    -- Check if property name and owner name unique
+    IF EXISTS(SELECT * FROM property WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email)
+		THEN LEAVE sp_main;
+	END IF;
 	-- Check if address is unique
     IF EXISTS(SELECT * FROM property WHERE Street = i_street AND City = i_city AND State = i_state AND Zip = i_zip)
 		THEN LEAVE sp_main;
 	END IF;
-    -- Check if peroperty name and owner name unique
-    IF NOT EXISTS(SELECT * FROM property WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email)
-		THEN INSERT INTO property (Property_Name, Owner_Email, Descr, Capacity, Cost, Street, City, State, Zip)
-			VALUES (i_property_name, i_owner_email, i_description, i_capacity, i_cost, i_street, i_city, i_state, i_zip);
-		IF EXISTS(SELECT * FROM airport WHERE Airport_Id = i_nearest_airport_id)
-			THEN INSERT INTO is_close_to (Property_Name, Owner_Email, Airport, Distance) VALUES (i_property_name, i_owner_email, i_nearest_airport_id, i_dist_to_airport);
-		END IF;
-	END IF;            
+    -- Add the property
+    INSERT INTO property (Property_Name, Owner_Email, Descr, Capacity, Cost, Street, City, State, Zip) VALUES (i_property_name, i_owner_email, i_description, i_capacity, i_cost, i_street, i_city, i_state, i_zip);
+    -- Check if nearest_airport_id is valid
+    IF NOT EXISTS(SELECT * FROM airport WHERE Airport_Id = i_nearest_airport_id)
+		THEN LEAVE sp_main;
+	END IF;
+    -- Check if distance is valid
+    IF i_dist_to_airport >= 0
+		THEN INSERT INTO is_close_to (Property_Name, Owner_Email, Airport, Distance) VALUES (i_property_name, i_owner_email, i_nearest_airport_id, i_dist_to_airport);
+	END IF;          
 end //
 delimiter ;
 
