@@ -1,6 +1,6 @@
 body {
     background: #464866;
-    color: #333333;
+    color: #fafafa;
     margin-top: 5rem;
   }
   
@@ -10,6 +10,20 @@ body {
 
   h3 {
       color: #25274d;
+  }
+
+  .body-secondary {
+    background: #fafafa;
+    color: #25274d;
+    margin-top: 5rem;
+  }
+
+  .no-padding {
+    padding: 0px;
+  }
+
+  .container-fluid {
+    overflow: hidden;
   }
   
   .bg-steel {
@@ -34,6 +48,10 @@ body {
 
   .bg-secondary-color-gray {
       background-color: #29648a;
+  }
+
+  .text-muted {
+    color: #5f788a;
   }
 
   .text-main {

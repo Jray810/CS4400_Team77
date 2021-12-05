@@ -835,6 +835,15 @@ create or replace view view_airports (
 -- TODO: replace this select query with your solution
 SELECT Airport_Id, Airport_Name, Time_Zone, arrival_count(Airport_Id), departure_count(Airport_Id), avg_departure_cost(Airport_Id) FROM airport;
 
+create or replace view view_airports_condensed (
+    airport_id, 
+    airport_name, 
+    time_zone, 
+    address
+) as
+SELECT Airport_Id, Airport_Name, Time_Zone, CONCAT(Street, ', ', City, ', ', State, ', ', Zip) FROM airport;
+
+
 -- ID: 7b
 -- Name: view_airlines
 create or replace view view_airlines (
