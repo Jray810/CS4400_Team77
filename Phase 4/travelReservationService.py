@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 import pymysql
 
-conn = "mysql+pymysql://root:YOURPASSWORDHERE@localhost:YOURPORTNUMBERHERE/travel_reservation_service"
+conn = "mysql+pymysql://root:@localhost/travel_reservation_service"
 engine = create_engine(conn, echo=True)
 connection = engine.connect()
 
@@ -32,6 +32,25 @@ class airport(db.Model):
     State = db.Column(db.String(2))
     Zip = db.Column(db.String(5))
 
+class admins(db.Model):
+    #Model for admin
+    __tablename__ = 'admins'
+    Email = db.Column(db.String, primary_key=True)
+
+class customers(db.Model):
+    #Model for a customer
+    __tablename__ = 'customer'
+    Email = db.Column(db.String, primary_key=True)
+    CcNumber = db.Column(db.String)
+    Cvv = db.Column(db.String)
+    Exp_Date = db.Column(db.String)
+    Location = db.Column(db.String)
+
+class owners(db.Model):
+    # Model for an owner
+    __tablename__ = 'owners'
+    Email = db.Column(db.String, primary_key=True)
+
 @app.route("/")
 @app.route("/home")
 def home():
@@ -53,9 +72,22 @@ def register():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        if form.email.data == 'admin@blog.com' and form.password.data == 'password':
-            flash('You have been logged in!', 'success')
-            return redirect(url_for('home'))
+        if accounts.query.filter_by(Email = form.email.data, \
+            Pass = form.password.data).first():
+            isAdmin = admins.query.filter_by(Email = form.email.data).first()
+            isOwner = owners.query.filter_by(Email = form.email.data).first()
+            isCustomer = customers.query.filter_by(Email = form.email.data).first()
+            if isAdmin:
+                return redirect(url_for('admin'))
+            elif isOwner and isCustomer:
+                return redirect(url_for('customerAndOwner'))
+            elif isOwner:
+                return redirect(url_for('owner'))
+            elif isCustomer:
+                return redirect(url_for('customer'))
+        # if form.email.data == 'admin@blog.com' and form.password.data == 'password':
+        #     flash('You have been logged in!', 'success')
+        #     return redirect(url_for('home'))
         else:
             flash('Login Unsuccessful. Please check username and password', 'danger')
     return render_template("login.html", form=form)
@@ -63,6 +95,14 @@ def login():
 @app.route("/customer")
 def customer():
     return render_template("customer.html")
+
+@app.route("/owner")
+def owner():
+    return render_template("owner.html")
+
+@app.route("/customerAndOwner")
+def customerAndOwner():
+    return render_template("customerAndOwner.html")
 
 @app.route("/admin")
 def admin():
