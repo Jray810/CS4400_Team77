@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <title>Admin</title>
+    <link rel="icon" type="image/x-icon" href="static/images/logo.png" />
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="static/main.css">
@@ -15,6 +16,7 @@
 <body>
     <!-- Header -->
     <nav class="navbar navbar-expand-md navbar-dark bg-primary-color fixed-top">
+        <img src="static/images/logo.png" style = "width:2%">
         <a href="/admin" class="navbar-brand font-weight-bold">Travel Reservation Service</a>
         
         <div class="collapse navbar-collapse"></div>
@@ -104,9 +106,17 @@
                             {% for row in table_data %}
                             <tr>
                                 <td> {{ row.customer_name }} </td>
-                                <td> {{ row.avg_rating }} </td>
+                                <td> {% if row.avg_rating %}
+                                    {{ row.avg_rating }}
+                                    {% endif %}
+                                </td>
                                 <td> {{ row.location }} </td>
-                                <td> {{ row.is_owner }} </td>
+                                <td> {% if row.is_owner == 1 %}
+                                    <b>Yes</b>
+                                    {% else %}
+                                    <b>No</b>
+                                    {% endif %}
+                                </td>
                                 <td> {{ row.total_seats_purchased }} </td>
                             </tr>
                             {% endfor %}

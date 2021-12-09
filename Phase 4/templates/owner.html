@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <title>Travel Reservation Service</title>
+    <link rel="icon" type="image/x-icon" href="static/images/logo.png" />
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="static/main.css">
@@ -16,6 +17,7 @@
     <!-- Header -->
     <header id="header" class="site-header">
         <nav class="navbar navbar-expand-md navbar-dark bg-primary-color fixed-top">
+            <img src="static/images/logo.png" style = "width:2%">
             <a href="/owner" class="navbar-brand font-weight-bold">Travel Reservation Service</a>
         
             <div class="collapse navbar-collapse"></div>
@@ -33,15 +35,6 @@
     <main role="main" class="container">
         <div class="row">
             <div class="col-md-8">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
-                    {{ message }}
-                    </div>
-                {% endfor %}
-                {% endif %}
-            {% endwith %}
             <h1>Welcome Back!</h1>
             </div>
 
