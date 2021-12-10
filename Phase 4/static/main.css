@@ -66,6 +66,10 @@ body {
     color: #2e9cca;
   }
   
+  .text-selected-2 {
+    color: #2e9cca;
+  }
+
   .site-header .navbar-nav .nav-link {
     color: #cbd5db;
   }
@@ -135,4 +139,8 @@ body {
 
   .btn.btn-signup {
       background-color: #2e9cca;
+  }
+
+  a:hover {
+    color: #2e9cca;
   }
