@@ -20,6 +20,8 @@ pip install -r requirements.txt
 
 # Running instructions
 
+Open up your MySQL Workbench and start a SQL server.
+
 If you have everything installed properly, you should be able to run it just by doing:
 ```python3 travelReservationService.py```
 
