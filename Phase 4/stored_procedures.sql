@@ -11,7 +11,7 @@ CREATE FUNCTION seats_booked (
 	i_flight_num CHAR(5)
 )
 RETURNS INT
-DETERMINISTIC
+ DETERMINISTIC 
 sp_main: BEGIN
 	DECLARE o_num_seats INT;
 	SELECT SUM(Num_Seats) FROM book WHERE Flight_Num = i_flight_num AND Airline_Name = i_airline_name AND Was_Cancelled = 0 INTO o_num_seats;
