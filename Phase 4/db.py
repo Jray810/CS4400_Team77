@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, MetaData, text
 from sqlalchemy_views import CreateView
 from sqlalchemy_utils import database_exists, create_database
 
-conn = "mysql+pymysql://root:Daimler8Benz@localhost:3306/travel_reservation_service"
+conn = "mysql+pymysql://root:@localhost:/travel_reservation_service"
 engine = create_engine(conn, echo=True)
 
 metadata_obj = MetaData()
