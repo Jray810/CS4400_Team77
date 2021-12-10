@@ -127,6 +127,7 @@ def sql_script_reader(path, conn, delim):
                     print('Invalid Command')
                 finally:
                     q = ''
+    return
 
 # Check if database already exists
 dbExists = database_exists(engine.url)
@@ -145,10 +146,22 @@ if not dbExists and modelIncomplete:
     sql_script_reader('schema.sql', connection, ';')
 
 # Create the stored procedures, views, and functions if database didn't already exist
+# Also populate the database with appropriate data
 if not dbExists:
     sql_script_reader('stored_procedures.sql', connection, '$')
-
-# Populate the database with data if we want to
-dbPopulate = True
-if dbPopulate:
     sql_script_reader('populate_data.sql', connection, ';')
+
+if not Accounts.query.filter_by(Email = 'webadmin@gmail.com').first():
+    # Add a web administrator to the database
+    q = text('INSERT INTO Accounts (Email, First_Name, Last_Name, Pass) VALUES (\'webadmin@gmail.com\', \'Web\', \'Admin\', \'ContinueCounterReset\')')
+    connection.execute(q)
+    connection.execute("commit")
+    q = text('INSERT INTO Admins (Email) VALUES (\'webadmin@gmail.com\')')
+    connection.execute(q)
+    connection.execute("commit")
+    q = text('CALL register_customer(\'webadmin@gmail.com\', \'Web\', \'Admin\', \'ContinueCounterReset\', \'999-999-9999\', \'9999 9999 9999 9999\', \'999\', \'2040-01-01\', \'USA\')')
+    connection.execute(q)
+    connection.execute("commit")
+    q = text('CALL register_owner(\'webadmin@gmail.com\', \'Web\', \'Admin\', \'ContinueCounterReset\', \'999-999-9999\')')
+    connection.execute(q)
+    connection.execute("commit")
