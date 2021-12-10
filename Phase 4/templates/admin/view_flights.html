@@ -2,6 +2,33 @@
 {% extends "layout.html" %}
 {% block content %}
     <h1 class="h2">Flights</h1>
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th>Airline</th>
+                    <th>Flight Number</th>
+                    <th>Flight Date</th>
+                    <th>Departure Airport</th>
+                    <th>Destination Airport</th>
+                    <th>Seats Available</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for row in table_data %}
+                <tr>
+                    <td> {{ row.airline }} </td>
+                    <td> {{ row.Flight_Num }} </td>
+                    <td> {{ row.Flight_Date }} </td>
+                    <td> {{ row.From_Airport }} </td>
+                    <td> {{ row.To_Airport }} </td>
+                    <td> {{ row.num_empty_seats }} </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock content %}
 {% else %}
 <!DOCTYPE html>
