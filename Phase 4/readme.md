@@ -20,7 +20,16 @@ pip install -r requirements.txt
 
 # Running instructions
 
+Open up your MySQL Workbench and start a SQL server.
+
 If you have everything installed properly, you should be able to run it just by doing:
 ```python3 travelReservationService.py```
 
 And then go to a browser and type in http://localhost:5000/ and it should take you to the website
+
+
+# Logging In as Web Administrator
+
+Username: webadmin@gmail.com
+
+Password: ContinueCounterReset
