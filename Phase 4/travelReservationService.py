@@ -3,10 +3,10 @@ from db import *
 from flask import render_template, url_for, flash, redirect
 from forms import RegistrationForm, LoginForm
 
-username = '1'
-adminAccess = True
-customerAccess = True
-ownerAccess = True
+username = ''
+adminAccess = False
+customerAccess = False
+ownerAccess = False
 
 #######################################################
 # Main Pages
@@ -56,27 +56,28 @@ def register():
 #######################################################
 @app.route("/my_bookings")
 def my_bookings():
-    q = text("SELECT * FROM view_airports_condensed")
-    airport_view = connection.execute(q)
-    return render_template("customer/my_bookings.html", table_data=airport_view, homebar=3, username=username, pageSelect='my_bookings', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+    global username
+    q = 'SELECT * FROM book NATURAL JOIN flight WHERE Customer=\'{0}\''.format(username)
+    book_view = connection.execute(text(q))
+    return render_template("customer/my_bookings.html", table_data=book_view, homebar=3, username=username, pageSelect='my_bookings', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/my_reservations")
 def my_reservations():
-    q = text("SELECT * FROM view_airports_condensed")
-    airport_view = connection.execute(q)
-    return render_template("customer/my_reservations.html", table_data=airport_view, homebar=3, username=username, pageSelect='my_reservations', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+    q = text("SELECT * FROM reserve NATURAL JOIN property WHERE Customer=\'{0}\'".format(username))
+    reserve_view = connection.execute(q)
+    return render_template("customer/my_reservations.html", table_data=reserve_view, homebar=3, username=username, pageSelect='my_reservations', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/book")
 def book():
-    q = text("SELECT * FROM view_airports_condensed")
-    airport_view = connection.execute(q)
-    return render_template("customer/book.html", table_data=airport_view, homebar=3, username=username, pageSelect='book', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+    q = text("SELECT * FROM view_flight JOIN flight ON airline=Airline_Name AND flight_id=Flight_Num")
+    flight_view = connection.execute(q)
+    return render_template("customer/book.html", table_data=flight_view, homebar=3, username=username, pageSelect='book', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/reserve")
 def reserve():
-    q = text("SELECT * FROM view_airports_condensed")
-    airport_view = connection.execute(q)
-    return render_template("customer/reserve.html", table_data=airport_view, homebar=3, username=username, pageSelect='reserve', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+    q = text("SELECT * FROM view_properties")
+    property_view = connection.execute(q)
+    return render_template("customer/reserve.html", table_data=property_view, homebar=3, username=username, pageSelect='reserve', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 #######################################################
 # Owner Access
@@ -104,7 +105,7 @@ def view_airlines():
 
 @app.route("/view_flights")
 def view_flights():
-    q = text("SELECT * FROM view_flight NATURAL JOIN flight")
+    q = text("SELECT * FROM flight JOIN view_flight ON Flight_Num=flight_id AND Airline_Name=airline")
     flight_view = connection.execute(q)
     return render_template("admin/view_flights.html", table_data=flight_view, homebar=3, username=username, pageSelect='view_flights', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
@@ -122,7 +123,7 @@ def view_owners():
 
 @app.route("/view_properties")
 def view_properties():
-    q = text("SELECT * FROM view_properties")
+    q = text("SELECT * FROM view_properties NATURAL JOIN property")
     property_view = connection.execute(q)
     return render_template("admin/view_properties.html", table_data=property_view, homebar=3, username=username, pageSelect='view_properties', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
