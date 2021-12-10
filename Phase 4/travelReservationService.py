@@ -1,55 +1,7 @@
-from flask import Flask, render_template, url_for, flash, redirect
-from flask_sqlalchemy import SQLAlchemy
+from application import app
+from db import *
+from flask import render_template, url_for, flash, redirect
 from forms import RegistrationForm, LoginForm
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
-import pymysql
-
-conn = "mysql+pymysql://root:@localhost/travel_reservation_service"
-engine = create_engine(conn, echo=True)
-connection = engine.connect()
-
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'ContinueCounterReset'
-app.config['SQLALCHEMY_DATABASE_URI'] = conn
-db = SQLAlchemy(app)
-
-class accounts(db.Model):
-    Email = db.Column(db.String(50), primary_key=True)
-    First_Name = db.Column(db.String(50))
-    Last_Name = db.Column(db.String(50))
-    Pass = db.Column(db.String(50))
-
-    def __repr__(self):
-        return "id: {0} | first name: {1} | last name: {2} | pass: {3}".format(self.Email, self.First_Name, self.Last_Name, self.Pass)
-
-class airport(db.Model):
-    Airport_Id = db.Column(db.String(3), primary_key=True)
-    Airport_Name = db.Column(db.String(50))
-    Time_Zone = db.Column(db.String(3))
-    Street = db.Column(db.String(50))
-    City = db.Column(db.String(50))
-    State = db.Column(db.String(2))
-    Zip = db.Column(db.String(5))
-
-class admins(db.Model):
-    #Model for admin
-    __tablename__ = 'admins'
-    Email = db.Column(db.String, primary_key=True)
-
-class customers(db.Model):
-    #Model for a customer
-    __tablename__ = 'customer'
-    Email = db.Column(db.String, primary_key=True)
-    CcNumber = db.Column(db.String)
-    Cvv = db.Column(db.String)
-    Exp_Date = db.Column(db.String)
-    Location = db.Column(db.String)
-
-class owners(db.Model):
-    # Model for an owner
-    __tablename__ = 'owners'
-    Email = db.Column(db.String, primary_key=True)
 
 @app.route("/")
 @app.route("/home")
@@ -108,6 +60,14 @@ def customerAndOwner():
 def admin():
     return render_template("admin.html")
 
+@app.route("/process_date")
+def process_date():
+    q = text("CALL process_date('2021-10-19')")
+    connection.execute(q)
+    q = text("SELECT * FROM view_customers")
+    customer_view = connection.execute(q)
+    return render_template("admin/process_date.html", table_data=customer_view)
+
 @app.route("/view_airlines")
 def view_airlines():
     q = text("SELECT * FROM view_airlines")
@@ -134,7 +94,7 @@ def view_owners():
 
 @app.route("/testing")
 def testing():
-    all_accounts = accounts.query.all()
+    all_accounts = Accounts.query.all()
     return render_template('testing.html', table_data=all_accounts)
 
 if __name__ == '__main__':
