@@ -2,7 +2,6 @@ from sqlalchemy.sql.schema import UniqueConstraint
 from application import app
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, MetaData, text
-from sqlalchemy_views import CreateView
 from sqlalchemy_utils import database_exists, create_database
 
 conn = "mysql+pymysql://root:@localhost:/travel_reservation_service"
