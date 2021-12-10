@@ -3,14 +3,45 @@ from db import *
 from flask import render_template, url_for, flash, redirect
 from forms import RegistrationForm, LoginForm
 
+username = '1'
+adminAccess = True
+customerAccess = True
+ownerAccess = True
+
+#######################################################
+# Main Pages
+#######################################################
 @app.route("/")
 @app.route("/home")
 def home():
-    return render_template("home.html")
+    return render_template("home.html", homebar=0, username=username)
 
 @app.route("/about")
 def about():
-    return render_template("about.html")
+    return render_template("about.html", homebar=1, username=username)
+
+@app.route("/account")
+def account():
+    return render_template("account.html", homebar=2, username=username, adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+
+@app.route("/login", methods=['GET', 'POST'])
+def login():
+    global username
+    global adminAccess
+    global ownerAccess
+    global customerAccess
+    form = LoginForm()
+    if form.validate_on_submit():
+        if Accounts.query.filter_by(Email = form.email.data, \
+            Pass = form.password.data).first():
+            adminAccess = Admins.query.filter_by(Email = form.email.data).first()
+            ownerAccess = Owners.query.filter_by(Email = form.email.data).first()
+            customerAccess = Customers.query.filter_by(Email = form.email.data).first()
+            username = form.email.data
+            return redirect(url_for('account'))
+        else:
+            flash('Login Unsuccessful. Please check username and password', 'danger')
+    return render_template("login.html", form=form)
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
@@ -20,82 +51,107 @@ def register():
         return redirect(url_for('home'))
     return render_template("register.html", form=form)
 
-@app.route("/login", methods=['GET', 'POST'])
-def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        if accounts.query.filter_by(Email = form.email.data, \
-            Pass = form.password.data).first():
-            isAdmin = admins.query.filter_by(Email = form.email.data).first()
-            isOwner = owners.query.filter_by(Email = form.email.data).first()
-            isCustomer = customers.query.filter_by(Email = form.email.data).first()
-            if isAdmin:
-                return redirect(url_for('admin'))
-            elif isOwner and isCustomer:
-                return redirect(url_for('customerAndOwner'))
-            elif isOwner:
-                return redirect(url_for('owner'))
-            elif isCustomer:
-                return redirect(url_for('customer'))
-        # if form.email.data == 'admin@blog.com' and form.password.data == 'password':
-        #     flash('You have been logged in!', 'success')
-        #     return redirect(url_for('home'))
-        else:
-            flash('Login Unsuccessful. Please check username and password', 'danger')
-    return render_template("login.html", form=form)
+#######################################################
+# Customer Access
+#######################################################
+@app.route("/my_bookings")
+def my_bookings():
+    q = text("SELECT * FROM view_airports_condensed")
+    airport_view = connection.execute(q)
+    return render_template("customer/my_bookings.html", table_data=airport_view, homebar=3, username=username, pageSelect='my_bookings', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
-@app.route("/customer")
-def customer():
-    return render_template("customer.html")
+@app.route("/my_reservations")
+def my_reservations():
+    q = text("SELECT * FROM view_airports_condensed")
+    airport_view = connection.execute(q)
+    return render_template("customer/my_reservations.html", table_data=airport_view, homebar=3, username=username, pageSelect='my_reservations', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
-@app.route("/owner")
-def owner():
-    return render_template("owner.html")
+@app.route("/book")
+def book():
+    q = text("SELECT * FROM view_airports_condensed")
+    airport_view = connection.execute(q)
+    return render_template("customer/book.html", table_data=airport_view, homebar=3, username=username, pageSelect='book', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
-@app.route("/customerAndOwner")
-def customerAndOwner():
-    return render_template("customerAndOwner.html")
+@app.route("/reserve")
+def reserve():
+    q = text("SELECT * FROM view_airports_condensed")
+    airport_view = connection.execute(q)
+    return render_template("customer/reserve.html", table_data=airport_view, homebar=3, username=username, pageSelect='reserve', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
-@app.route("/admin")
-def admin():
-    return render_template("admin.html")
+#######################################################
+# Owner Access
+#######################################################
+@app.route("/my_properties")
+def my_properties():
+    q = text("SELECT * FROM view_airports_condensed")
+    airport_view = connection.execute(q)
+    return render_template("owner/my_properties.html", table_data=airport_view, homebar=3, username=username, pageSelect='my_properties', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
-@app.route("/process_date")
-def process_date():
-    q = text("CALL process_date('2021-10-19')")
-    connection.execute(q)
-    q = text("SELECT * FROM view_customers")
-    customer_view = connection.execute(q)
-    return render_template("admin/process_date.html", table_data=customer_view)
+#######################################################
+# Administrative Access
+#######################################################
+@app.route("/view_airports")
+def view_airports():
+    q = text("SELECT * FROM view_airports_condensed")
+    airport_view = connection.execute(q)
+    return render_template("admin/view_airports.html", table_data=airport_view, homebar=3, username=username, pageSelect='view_airports', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/view_airlines")
 def view_airlines():
     q = text("SELECT * FROM view_airlines")
     airline_view = connection.execute(q)
-    return render_template("admin/view_airlines.html", table_data=airline_view)
+    return render_template("admin/view_airlines.html", table_data=airline_view, homebar=3, username=username, pageSelect='view_airlines', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
-@app.route("/view_airports")
-def view_airports():
-    q = text("SELECT * FROM view_airports_condensed")
-    airport_view = connection.execute(q)
-    return render_template("admin/view_airports.html", table_data=airport_view)
+@app.route("/view_flights")
+def view_flights():
+    q = text("SELECT * FROM view_flight NATURAL JOIN flight")
+    flight_view = connection.execute(q)
+    return render_template("admin/view_flights.html", table_data=flight_view, homebar=3, username=username, pageSelect='view_flights', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/view_customers")
 def view_customers():
     q = text("SELECT * FROM view_customers")
     customer_view = connection.execute(q)
-    return render_template("admin/view_customers.html", table_data=customer_view)
+    return render_template("admin/view_customers.html", table_data=customer_view, homebar=3, username=username, pageSelect='view_customers', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
     
 @app.route("/view_owners")
 def view_owners():
     q = text("SELECT * FROM view_owners")
     owner_view = connection.execute(q)
-    return render_template("admin/view_owners.html", table_data=owner_view)
+    return render_template("admin/view_owners.html", table_data=owner_view, homebar=3, username=username, pageSelect='view_owners', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
+@app.route("/view_properties")
+def view_properties():
+    q = text("SELECT * FROM view_properties")
+    property_view = connection.execute(q)
+    return render_template("admin/view_properties.html", table_data=property_view, homebar=3, username=username, pageSelect='view_properties', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+
+#######################################################
+# Testing
+#######################################################
 @app.route("/testing")
 def testing():
     all_accounts = Accounts.query.all()
     return render_template('testing.html', table_data=all_accounts)
 
+#######################################################
+# Function Calls
+#######################################################
+@app.route("/logout")
+def logout():
+    global username
+    global adminAccess
+    global ownerAccess
+    global customerAccess
+    username = ''
+    adminAccess = False
+    ownerAccess = False
+    customerAccess = False
+    return home()
+
+
+#######################################################
+# Run App
+#######################################################
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,28 @@
+{% if username != '' %}
+{% extends "layout.html" %}
+{% block content %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+            {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+        <h1>Hello there, this is your Account Page!</h1>
+        <h1>We'll figure out what we want to put here soon!</h1>
+{% endblock content %}
+{% else %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Redirection</title>
+        <meta http-equiv = "refresh" content = "2; url = /home" />
+    </head>
+    <body>
+        <h1>Access Denied</h1>
+        <p>This page will redirect in 5 seconds.</p>
+    </body>
+</html>
+{% endif %}
