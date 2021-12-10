@@ -31,17 +31,18 @@ class Admins(db.Model):
     Email = db.Column(db.String(50), db.ForeignKey('accounts.Email'), primary_key=True, nullable=False)
 
 # Model for clients
+class Clients(db.Model):
     __tablename__ = 'clients'
     Email = db.Column(db.String(50), db.ForeignKey('accounts.Email'), primary_key=True, nullable=False)
     Phone_Number = db.Column(db.CHAR(12), unique=True, nullable=False)
 
 # Model for an owners
-class owners(db.Model):
+class Owners(db.Model):
     __tablename__ = 'owners'
     Email = db.Column(db.String(50), db.ForeignKey('clients.Email'), primary_key=True, nullable=False)
 
 # Model for a customer
-class customers(db.Model):
+class Customers(db.Model):
     __tablename__ = 'customer'
     Email = db.Column(db.String(50), db.ForeignKey('clients.Email'), primary_key=True, nullable=False)
     CcNumber = db.Column(db.String(19), unique=True, nullable=False)
@@ -53,7 +54,7 @@ class customers(db.Model):
 # COMPLETE ME
 
 # Model for airport
-class airport(db.Model):
+class Airport(db.Model):
     __tablename__ = 'airport'
     Airport_Id = db.Column(db.CHAR(3), primary_key=True, nullable=False)
     Airport_Name = db.Column(db.String(50), unique=True, nullable=False)
