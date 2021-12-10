@@ -1,6 +1,7 @@
 from application import app
 from db import *
 from flask import render_template, url_for, flash, redirect
+from flask_modals import render_template_modal
 from forms import RegistrationForm, LoginForm
 
 username = ''
@@ -130,10 +131,10 @@ def view_properties():
 #######################################################
 # Testing
 #######################################################
-@app.route("/testing")
+@app.route("/testing", methods=['GET', 'POST'])
 def testing():
-    all_accounts = Accounts.query.all()
-    return render_template('testing.html', table_data=all_accounts)
+    return render_template('testing.html', homebar=2, username='test', adminAccess=True, customerAccess=True, ownerAccess=True)
+
 
 #######################################################
 # Function Calls
@@ -148,8 +149,7 @@ def logout():
     adminAccess = False
     ownerAccess = False
     customerAccess = False
-    return home()
-
+    return render_template("logout.html")
 
 #######################################################
 # Run App
