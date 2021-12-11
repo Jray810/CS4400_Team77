@@ -77,12 +77,10 @@
             var airline_name = $(this).parents("div").find("#airline_name").text();
             var flight_num = $(this).parents("div").find("#flight_num").text();
             flight_num = flight_num.substring(15)
-            var today = new Date();
-            var current_date = today.getFullYear() + '-' + String(today.getDate()).padStart(2, '0') + '-' + String(today.getMonth() + 1).padStart(2, '0');
             $.ajax({
                 url: "/remove_flight",
                 type: 'POST',
-                data: {airline_name: airline_name, flight_num: flight_num, current_date: current_date},
+                data: {airline_name: airline_name, flight_num: flight_num},
                 success: function() {
                     window.location.reload();
                 }
