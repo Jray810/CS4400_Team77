@@ -133,7 +133,9 @@ def view_properties():
 #######################################################
 @app.route("/testing", methods=['GET', 'POST'])
 def testing():
-    return render_template('testing.html', homebar=2, username='test', adminAccess=True, customerAccess=True, ownerAccess=True)
+    q = text("SELECT * FROM flight JOIN view_flight ON Flight_Num=flight_id AND Airline_Name=airline")
+    flight_view = connection.execute(q)
+    return render_template('testing.html', table_data=flight_view, homebar=2, username='test', adminAccess=True, customerAccess=True, ownerAccess=True)
 
 
 #######################################################
@@ -149,7 +151,7 @@ def logout():
     adminAccess = False
     ownerAccess = False
     customerAccess = False
-    return render_template("logout.html")
+    return redirect(url_for('home'))
 
 #######################################################
 # Run App
