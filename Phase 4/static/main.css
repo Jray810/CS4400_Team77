@@ -175,3 +175,8 @@ body {
   .sidebar {
     padding: 15px;
   }
+
+  .modal-sp {
+    max-width: none;
+    width: 75%;
+  }
