@@ -42,7 +42,7 @@ def login():
             return redirect(url_for('account'))
         else:
             flash('Login Unsuccessful. Please check username and password', 'danger')
-    return render_template("login.html", form=form)
+    return render_template("login.html", homebar=-1, username=username, form=form)
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
@@ -50,7 +50,7 @@ def register():
     if form.validate_on_submit():
         flash(f'Account created for {form.username.data}!', 'success')
         return redirect(url_for('home'))
-    return render_template("register.html", form=form)
+    return render_template("register.html", homebar=-1, username=username, form=form)
 
 #######################################################
 # Customer Access
