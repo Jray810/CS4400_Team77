@@ -2,6 +2,9 @@ from application import app
 from db import *
 from flask import render_template, url_for, flash, redirect, request, jsonify
 from forms import RegistrationForm, LoginForm
+from datetime import date
+
+current_date = '1999-01-01'
 
 username = ''
 adminAccess = False
@@ -144,6 +147,12 @@ def flight_details():
 #######################################################
 # Function Calls
 #######################################################
+def setCurrentDate():
+    global current_date
+    current_date = date.today()
+    print(current_date)
+    return
+
 @app.route("/logout")
 def logout():
     global username
@@ -184,5 +193,7 @@ def testing():
 #######################################################
 # Run App
 #######################################################
+setCurrentDate()
+
 if __name__ == '__main__':
     app.run(debug=True)
