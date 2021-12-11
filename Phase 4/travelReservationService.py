@@ -95,9 +95,9 @@ def reserve():
 #######################################################
 @app.route("/my_properties")
 def my_properties():
-    q = text("SELECT * FROM view_airports_condensed")
-    airport_view = connection.execute(q)
-    return render_template("owner/my_properties.html", table_data=airport_view, homebar=3, username=username, pageSelect='my_properties', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+    q = text("SELECT * FROM view_properties NATURAL JOIN property WHERE Owner_Email=\'{0}\'".format(username))
+    properties_view = connection.execute(q)
+    return render_template("owner/my_properties.html", table_data=properties_view, homebar=3, username=username, pageSelect='my_properties', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 #######################################################
 # Administrative Access
