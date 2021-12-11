@@ -21,12 +21,13 @@
             <tbody>
                 {% for row in past_reservations %}
                 <tr>
-                    <td> {{ row.Property_Name }} </td>
-                    <td> {{ row.Owner_Email }} </td>
-                    <td> {{ row.Start_Date }} </td>
-                    <td> {{ row.End_Date }} </td>
-                    <td> {{ row.Num_Guests }} </td>
-                    <td> {{ row.Street }}, {{ row.City }}, {{ row.State }}, {{ row.Zip }} </td>
+                    <td id="customer" hidden>{{ row.Customer }}</td>
+                    <td id="property">{{ row.Property_Name }}</td>
+                    <td id="owner">{{ row.Owner_Email }}</td>
+                    <td>{{ row.Start_Date }}</td>
+                    <td>{{ row.End_Date }}</td>
+                    <td>{{ row.Num_Guests }}</td>
+                    <td>{{ row.Street }}, {{ row.City }}, {{ row.State }}, {{ row.Zip }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -52,12 +53,13 @@
             <tbody>
                 {% for row in current_reservation %}
                 <tr>
-                    <td> {{ row.Property_Name }} </td>
-                    <td> {{ row.Owner_Email }} </td>
-                    <td> {{ row.Start_Date }} </td>
-                    <td> {{ row.End_Date }} </td>
-                    <td> {{ row.Num_Guests }} </td>
-                    <td> {{ row.Street }}, {{ row.City }}, {{ row.State }}, {{ row.Zip }} </td>
+                    <td id="customer" hidden>{{ row.Customer }}</td>
+                    <td id="property">{{ row.Property_Name }}</td>
+                    <td id="owner">{{ row.Owner_Email }}</td>
+                    <td>{{ row.Start_Date }}</td>
+                    <td>{{ row.End_Date }}</td>
+                    <td>{{ row.Num_Guests }}</td>
+                    <td>{{ row.Street }}, {{ row.City }}, {{ row.State }}, {{ row.Zip }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -77,18 +79,27 @@
                     <th>End Date</th>
                     <th>Number of Guests</th>
                     <th>Address</th>
+                    <th></th>
                 </tr>
             </thead>
 
             <tbody>
                 {% for row in future_reservations %}
                 <tr>
-                    <td> {{ row.Property_Name }} </td>
-                    <td> {{ row.Owner_Email }} </td>
-                    <td> {{ row.Start_Date }} </td>
-                    <td> {{ row.End_Date }} </td>
-                    <td> {{ row.Num_Guests }} </td>
-                    <td> {{ row.Street }}, {{ row.City }}, {{ row.State }}, {{ row.Zip }} </td>
+                    <td id="customer" hidden>{{ row.Customer }}</td>
+                    <td id="property">{{ row.Property_Name }}</td>
+                    <td id="owner">{{ row.Owner_Email }}</td>
+                    <td>{{ row.Start_Date }}</td>
+                    <td>{{ row.End_Date }}</td>
+                    <td>{{ row.Num_Guests }}</td>
+                    <td>{{ row.Street }}, {{ row.City }}, {{ row.State }}, {{ row.Zip }}</td>
+                    <td> 
+                        {% if row.Was_Cancelled == 0 %}
+                        <button type="button" class="cancel btn btn-danger me-2" data-toggle="modal" data-target="#modal-cancel">Cancel</button>
+                        {% else %}
+                        Cancelled
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -103,7 +114,64 @@
     <a class="nav-item" href="/reserve">
         <button type="button" class="btn btn-signup">Reserve Now!</button>
     </a>
+    <div class="modal fade" id="modal-cancel" tabindex="-1" aria-labelledby="cancelLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sp">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-negative" id="cancelLabel">Reservation Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {{ modal_messages() }}
+                    <h1 id="info"></h1>
+                    <a class="nav-item" href="/my_reservations">
+                        <button type="button" class="removal btn btn-danger me-2" data-dismiss="modal" aria-label="Close">Cancel Reservation</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock content %}
+{% block scripts %}
+<script type='text/javascript'>
+    $(function () {
+        $(".cancel").click(function () {
+            var customer_id = $(this).parents("tr").find("#customer").text();
+            var property_name = $(this).parents("tr").find("#property").text();
+            var owner_id = $(this).parents("tr").find("#owner").text();
+            $.ajax({
+                url: "/reservation_details",
+                type: 'POST',
+                data: {customer_id: customer_id, property_name: property_name, owner_id: owner_id},
+                success: function(data) {
+                    $("#info").html(data);
+                    $("#info").append(data.htmlresponse);
+                }
+            });
+        });
+    });
+</script>
+<script type='text/javascript'>
+    $(function () {
+        $(".removal").click(function () {
+            var customer_id = $(this).parents("div").find("#customer_id").text();
+            var property_name = $(this).parents("div").find("#property_name").text();
+            var owner_id = $(this).parents("div").find("#owner_id").text();
+            owner_id = owner_id.substring(20)
+            $.ajax({
+                url: "/cancel_reservation",
+                type: 'POST',
+                data: {customer_id: customer_id, property_name: property_name, owner_id: owner_id},
+                success: function() {
+                    window.location.reload();
+                }
+            });
+        });
+    });
+</script>
+{% endblock scripts %}
 {% else %}
 <!DOCTYPE html>
 <html>

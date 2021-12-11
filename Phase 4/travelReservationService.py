@@ -5,7 +5,7 @@ from flask import render_template, url_for, flash, redirect, request, jsonify
 from forms import RegistrationForm, LoginForm
 from datetime import date
 
-current_date = '2021-10-19'
+current_date = '2021-10-10'
 
 username = ''
 adminAccess = False
@@ -164,6 +164,18 @@ def booking_details():
         return redirect(url_for('my_bookings'))
     return jsonify({'htmlresponse': render_template('popups/flight_details.html', table_data=bookingDetails, tableType=1)})
 
+@app.route("/reservation_details", methods=['GET', 'POST'])
+def reservation_details():
+    if request.method == 'POST':
+        customer_id = request.form['customer_id']
+        property_name = request.form['property_name']
+        owner_id = request.form['owner_id']
+        q = text("SELECT * FROM reserve NATURAL JOIN property WHERE Customer=\'{0}\' AND Property_Name=\'{1}\' AND Owner_Email=\'{2}\'".format(customer_id, property_name, owner_id))
+        reservationDetails = connection.execute(q)
+    else:
+        return redirect(url_for('my_reservations'))
+    return jsonify({'htmlresponse': render_template('popups/reservation_details.html', table_data=reservationDetails, tableType=1)})
+
 #######################################################
 # Function Calls
 #######################################################
@@ -203,6 +215,17 @@ def cancel_booking():
         q = text("CALL cancel_flight_booking(\'{0}\', {1}, \'{2}\', \'{3}\')".format(customer_id, flight_num, airline_name, current_date))
         connection.execute(q)
     return redirect(url_for('my_bookings'))
+
+@app.route("/cancel_reservation", methods=['GET', 'POST'])
+def cancel_reservation():
+    if request.method == 'POST':
+        property_name = request.form['property_name']
+        owner_id = request.form['owner_id']
+        customer_id = request.form['customer_id']
+        q = text("CALL cancel_property_reservation(\'{0}\', \'{1}\', \'{2}\', \'{3}\')".format(property_name, owner_id, customer_id, current_date))
+        connection.execute(q)
+    return redirect(url_for('my_reservations'))
+
 #######################################################
 # Testing
 #######################################################
