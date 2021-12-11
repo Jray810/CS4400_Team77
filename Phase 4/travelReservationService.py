@@ -5,7 +5,7 @@ from flask import render_template, url_for, flash, redirect, request, jsonify
 from forms import RegistrationForm, LoginForm
 from datetime import date
 
-current_date = '2021-10-18'
+current_date = '2021-10-19'
 
 username = ''
 adminAccess = False
@@ -60,21 +60,23 @@ def register():
 #######################################################
 @app.route("/my_bookings")
 def my_bookings():
-    global username
-    global current_date
-    q = 'SELECT * FROM book NATURAL JOIN flight WHERE Customer=\'{0}\' AND ((Flight_Date < \'{1}\') OR (Flight_Date = \'{1}\' AND Was_Cancelled = 1))'.format(username, current_date)
-    past_book_view = connection.execute(text(q))
-    q = 'SELECT * FROM book NATURAL JOIN flight WHERE Customer=\'{0}\' AND Flight_Date = \'{1}\' AND Was_Cancelled = 0'.format(username, current_date)
-    today_book_view = connection.execute(text(q))
-    q = 'SELECT * FROM book NATURAL JOIN flight WHERE Customer=\'{0}\' AND Flight_Date > \'{1}\''.format(username, current_date)
-    future_book_view = connection.execute(text(q))
-    return render_template("customer/my_bookings.html", past_bookings=past_book_view, today_bookings=today_book_view, future_bookings=future_book_view, homebar=3, username=username, pageSelect='my_bookings', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+    q = text('SELECT * FROM book NATURAL JOIN flight WHERE Customer=\'{0}\' AND ((Flight_Date < \'{1}\') OR (Flight_Date = \'{1}\' AND Was_Cancelled = 1))'.format(username, current_date))
+    past_bookings = connection.execute(q)
+    q = text('SELECT * FROM book NATURAL JOIN flight WHERE Customer=\'{0}\' AND Flight_Date = \'{1}\' AND Was_Cancelled = 0'.format(username, current_date))
+    today_bookings = connection.execute(q)
+    q = text('SELECT * FROM book NATURAL JOIN flight WHERE Customer=\'{0}\' AND Flight_Date > \'{1}\''.format(username, current_date))
+    future_bookings = connection.execute(q)
+    return render_template("customer/my_bookings.html", past_bookings=past_bookings, today_bookings=today_bookings, future_bookings=future_bookings, homebar=3, username=username, pageSelect='my_bookings', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/my_reservations")
 def my_reservations():
-    q = text("SELECT * FROM reserve NATURAL JOIN property WHERE Customer=\'{0}\'".format(username))
-    reserve_view = connection.execute(q)
-    return render_template("customer/my_reservations.html", table_data=reserve_view, homebar=3, username=username, pageSelect='my_reservations', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+    q = text("SELECT * FROM reserve NATURAL JOIN property WHERE Customer=\'{0}\' AND ((End_Date < \'{1}\') OR (\'{1}\' BETWEEN Start_Date AND End_Date AND Was_Cancelled = 1))".format(username, current_date))
+    past_reservations = connection.execute(q)
+    q = text("SELECT * FROM reserve NATURAL JOIN property WHERE Customer=\'{0}\' AND \'{1}\' BETWEEN Start_Date AND End_Date AND Was_Cancelled = 0".format(username, current_date))
+    current_reservation = connection.execute(q)
+    q = text("SELECT * FROM reserve NATURAL JOIN property WHERE Customer=\'{0}\' AND Start_Date > \'{1}\'".format(username, current_date))
+    future_reservations = connection.execute(q)
+    return render_template("customer/my_reservations.html", past_reservations=past_reservations, current_reservation=current_reservation, future_reservations=future_reservations, homebar=3, username=username, pageSelect='my_reservations', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/book")
 def book():

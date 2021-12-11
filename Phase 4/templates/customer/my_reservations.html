@@ -1,7 +1,10 @@
 {% if customerAccess %}
 {% extends "layout.html" %}
 {% block content %}
-    <h1 class="h2">My Reservations</h1>
+    <h1>My Reservations</h1>
+    {% if past_reservations.rowcount != 0 %}
+    <hr/>
+    <h3>Past Reservations</h3>
     <div class="table-responsive">
         <table class="table table-striped table-sm">
             <thead>
@@ -16,7 +19,7 @@
             </thead>
 
             <tbody>
-                {% for row in table_data %}
+                {% for row in past_reservations %}
                 <tr>
                     <td> {{ row.Property_Name }} </td>
                     <td> {{ row.Owner_Email }} </td>
@@ -29,6 +32,77 @@
             </tbody>
         </table>
     </div>
+    {% endif %}
+    {% if current_reservation.rowcount != 0 %}
+    <hr/>
+    <h3>Current Reservation</h3>
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th>Property Name</th>
+                    <th>Owner Email</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Number of Guests</th>
+                    <th>Address</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for row in current_reservation %}
+                <tr>
+                    <td> {{ row.Property_Name }} </td>
+                    <td> {{ row.Owner_Email }} </td>
+                    <td> {{ row.Start_Date }} </td>
+                    <td> {{ row.End_Date }} </td>
+                    <td> {{ row.Num_Guests }} </td>
+                    <td> {{ row.Street }}, {{ row.City }}, {{ row.State }}, {{ row.Zip }} </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% if future_reservations.rowcount != 0 %}
+    <hr/>
+    <h3>Future Reservations</h3>
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th>Property Name</th>
+                    <th>Owner Email</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Number of Guests</th>
+                    <th>Address</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for row in future_reservations %}
+                <tr>
+                    <td> {{ row.Property_Name }} </td>
+                    <td> {{ row.Owner_Email }} </td>
+                    <td> {{ row.Start_Date }} </td>
+                    <td> {{ row.End_Date }} </td>
+                    <td> {{ row.Num_Guests }} </td>
+                    <td> {{ row.Street }}, {{ row.City }}, {{ row.State }}, {{ row.Zip }} </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% if past_reservations.rowcount == 0 and current_reservation.rowcount == 0 and future_reservations.rowcount == 0 %}
+    <hr/>
+    <h3>No Reservations Found</h3>
+    {% endif %}
+    <br>
+    <a class="nav-item" href="/reserve">
+        <button type="button" class="btn btn-signup">Reserve Now!</button>
+    </a>
 {% endblock content %}
 {% else %}
 <!DOCTYPE html>
