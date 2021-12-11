@@ -1,7 +1,6 @@
 from application import app
 from db import *
-from flask import render_template, url_for, flash, redirect
-from flask_modals import render_template_modal
+from flask import render_template, url_for, flash, redirect, request, jsonify
 from forms import RegistrationForm, LoginForm
 
 username = ''
@@ -129,14 +128,18 @@ def view_properties():
     return render_template("admin/view_properties.html", table_data=property_view, homebar=3, username=username, pageSelect='view_properties', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 #######################################################
-# Testing
+# Popup Boxes
 #######################################################
-@app.route("/testing", methods=['GET', 'POST'])
-def testing():
-    q = text("SELECT * FROM flight JOIN view_flight ON Flight_Num=flight_id AND Airline_Name=airline")
-    flight_view = connection.execute(q)
-    return render_template('testing.html', table_data=flight_view, homebar=2, username='test', adminAccess=True, customerAccess=True, ownerAccess=True)
-
+@app.route("/flight_details", methods=['GET', 'POST'])
+def flight_details():
+    if request.method == 'POST':
+        airline_name = request.form['airline_name']
+        flight_num = request.form['flight_num']
+        q = text("SELECT * FROM flight JOIN view_flight ON Flight_Num=flight_id AND Airline_Name=airline WHERE Airline_Name = \'{0}\' AND Flight_Num = {1}".format(airline_name, flight_num))
+        flightDetails = connection.execute(q)
+    else:
+        return redirect(url_for('view_flights'))
+    return jsonify({'htmlresponse': render_template('popups/flight_details.html',table_data=flightDetails)})
 
 #######################################################
 # Function Calls
@@ -152,6 +155,31 @@ def logout():
     ownerAccess = False
     customerAccess = False
     return redirect(url_for('home'))
+
+@app.route("/remove_flight", methods=['GET', 'POST'])
+def remove_flight():
+    if request.method == 'POST':
+        airline_name = request.form['airline_name']
+        flight_num = request.form['flight_num']
+        current_date = request.form['current_date']
+        q = text("CALL remove_flight({0}, \'{1}\', \'{2}\')".format(flight_num, airline_name, current_date))
+        connection.execute(q)
+    return redirect(url_for('view_flights'))
+
+#######################################################
+# Testing
+#######################################################
+@app.route("/testing", methods=['GET', 'POST'])
+def testing():
+    global username
+    global adminAccess
+    global ownerAccess
+    global customerAccess
+    username = 'webadmin@gmail.com'
+    adminAccess = True
+    ownerAccess = True
+    customerAccess = True
+    return render_template('testing.html', homebar=3, username=username, adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 #######################################################
 # Run App

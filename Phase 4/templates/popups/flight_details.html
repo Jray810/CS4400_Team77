@@ -1,0 +1,35 @@
+{% for row in table_data %}
+<div class="container">
+    <div class="row">
+        <div class="col-sm text-center">
+            <h1 id="airline_name">{{ row.Airline_Name }}</h1>
+            <h6 id="flight_num">Flight Number: {{ row.Flight_Num }}</h6>
+            <h6>Flight Date: {{ row.Flight_Date }}</h6>
+        </div>
+    </div>
+    <br>
+    <div class="row justify-content-md-center">
+        <div class="col-sm text-right">
+            <h2>{{ row.From_Airport }}</h2>
+            <h6>Departing at {{ row.Departure_Time }}</h6>
+        </div>
+        <div class="col-md-auto" style="text-align:center;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+          </svg>
+        </div>
+        <div class="col-sm">
+            <h2>{{ row.To_Airport }}</h2>
+            <h6>Arriving at {{ row.Arrival_Time }}</h6>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-sm text-center">
+            <h6>Seats Remaining: {{ row.num_empty_seats }}/{{ row.Capacity }}</h6>
+            <h6>Ticket Cost: ${{ row.Cost }}</h6>
+            <h6>Estimated Earnings: {{ row.total_spent }}</h6>
+        </div>
+    </div>
+</div>
+{% endfor %}

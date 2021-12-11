@@ -12,24 +12,85 @@
                     <th>Departure Airport</th>
                     <th>Destination Airport</th>
                     <th>Seats Available</th>
+                    <th></th>
                 </tr>
             </thead>
 
             <tbody>
                 {% for row in table_data %}
                 <tr>
-                    <td> {{ row.airline }} </td>
-                    <td> {{ row.Flight_Num }} </td>
-                    <td> {{ row.Flight_Date }} </td>
-                    <td> {{ row.From_Airport }} </td>
-                    <td> {{ row.To_Airport }} </td>
-                    <td> {{ row.num_empty_seats }} </td>
+                    <td id="airline">{{ row.airline }}</td>
+                    <td id="flightid">{{ row.Flight_Num }}</td>
+                    <td>{{ row.Flight_Date }}</td>
+                    <td>{{ row.From_Airport }}</td>
+                    <td>{{ row.To_Airport }}</td>
+                    <td>{{ row.num_empty_seats }}</td>
+                    <td> 
+                        <button type="button" class="btn btn-warning me-2" data-toggle="modal" data-target="#modal-details">Details</button>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+    <div class="modal fade" id="modal-details" tabindex="-1" aria-labelledby="detailsLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-negative" id="detailsLabel">Flight Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {{ modal_messages() }}
+                    <h1 id="info"></h1>
+                    <a class="nav-item" href="/view_flights">
+                        <button type="button" class="removal btn btn-danger me-2" data-dismiss="modal" aria-label="Close">Remove Flight</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock content %}
+{% block scripts %}
+<script type='text/javascript'>
+    $(function () {
+        $(".btn-warning").click(function () {
+            var airline_name = $(this).parents("tr").find("#airline").text();
+            var flight_num = $(this).parents("tr").find("#flightid").text();
+            $.ajax({
+                url: "/flight_details",
+                type: 'POST',
+                data: {airline_name: airline_name, flight_num: flight_num},
+                success: function(data) {
+                    $("#info").html(data);
+                    $("#info").append(data.htmlresponse);
+                }
+            });
+        });
+    });
+</script>
+<script type='text/javascript'>
+    $(function () {
+        $(".removal").click(function () {
+            var airline_name = $(this).parents("div").find("#airline_name").text();
+            var flight_num = $(this).parents("div").find("#flight_num").text();
+            flight_num = flight_num.substring(15)
+            var today = new Date();
+            var current_date = today.getFullYear() + '-' + String(today.getDate()).padStart(2, '0') + '-' + String(today.getMonth() + 1).padStart(2, '0');
+            $.ajax({
+                url: "/remove_flight",
+                type: 'POST',
+                data: {airline_name: airline_name, flight_num: flight_num, current_date: current_date},
+                success: function() {
+                    window.location.reload();
+                }
+            });
+        });
+    });
+</script>
+{% endblock scripts %}
 {% else %}
 <!DOCTYPE html>
 <html>
