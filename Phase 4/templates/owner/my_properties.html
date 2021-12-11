@@ -12,17 +12,22 @@
                     <th>Capacity</th>
                     <th>Cost per Night</th>
                     <th>Address</th>
+                    <th></th>
                 </tr>
             </thead>
 
             <tbody>
                 {% for row in table_data %}
                 <tr>
-                    <td> {{ row.property_name }} </td>
-                    <td> {{ row.description }} </td>
-                    <td> {{ row.capacity }} </td>
-                    <td> {{ row.cost_per_night }} </td>
-                    <td> {{ row.address }} </td>
+                    <td id="owner" hidden>{{ row.Owner_Email }}</td>
+                    <td id="property">{{ row.property_name }}</td>
+                    <td>{{ row.description }}</td>
+                    <td>{{ row.capacity }}</td>
+                    <td>{{ row.cost_per_night }}</td>
+                    <td>{{ row.address }}</td>
+                    <td> 
+                        <button type="button" class="btn btn-warning me-2" data-toggle="modal" data-target="#modal-details">Details</button>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -32,7 +37,45 @@
     <hr/>
     <h3>No Properties Found</h3>
     {% endif %}
+    <div class="modal fade" id="modal-details" tabindex="-1" aria-labelledby="detailsLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sp">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-negative" id="detailsLabel">Property Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {{ modal_messages() }}
+                    <h1 id="info"></h1>
+                    <a class="nav-item" href="/my_properties">
+                        <button type="button" class="removal btn btn-danger me-2" data-dismiss="modal" aria-label="Close">Remove Property</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock content %}
+{% block scripts %}
+<script type='text/javascript'>
+    $(function () {
+        $(".btn-warning").click(function () {
+            var owner_id = $(this).parents("tr").find("#owner").text();
+            var property_name = $(this).parents("tr").find("#property").text();
+            $.ajax({
+                url: "/property_details",
+                type: 'POST',
+                data: {owner_id: owner_id, property_name: property_name},
+                success: function(data) {
+                    $("#info").html(data);
+                    $("#info").append(data.htmlresponse);
+                }
+            });
+        });
+    });
+</script>
+{% endblock scripts %}
 {% else %}
 <!DOCTYPE html>
 <html>

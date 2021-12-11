@@ -1,0 +1,129 @@
+{% for row in table_data %}
+<div class="container">
+    <h1 id="property_name">{{ row.Property_Name }}</h1>
+    <h1 id="customer_id" hidden>{{ row.Customer }}</h1>
+    <div class="row">
+        <div class="col-sm text-left">
+            <h6>Address: {{ row.Street }}, {{ row.City }}, {{ row.State }}, {{ row.Zip }}</h6>
+            <h6 id="owner_id">Owner Contact Info: {{ row.Owner_Email }}</h6>
+            {% if tableType == 0 %}
+            <h6>Capacity: {{ row.Capacity }}</h6>
+            <h6>Cost per Night: {{ row.Cost }}</h6>
+            {% endif %}
+            <br>
+            <h6 class="font-weight-bold">Description:</h6>
+            <h6>{{ row.Descr }}</h6>
+        </div>
+        {% if tableType == 1 %}
+        <div class="col-sm text-left">
+            <h6 class="font-weight-bold">Reservation Details</h6>
+            <h6>Dates: {{ row.Start_Date }} to {{ row.End_Date }}</h6>
+            <h6>Number of Guests: {{ row.Num_Guests }}</h6>
+            <br>
+            <h6>Estimated Refund: ${{ '%0.2f'|format(((row.End_Date - row.Start_Date).days|float)*(row.Cost|float)*0.8) }}</h6>
+        </div>
+        {% endif %}
+    </div>
+    {% if tableType == 0 %}
+    <div class="row">
+        <div class="col-sm h6">
+            {% if table_data_past.rowcount != 0 %}
+            <hr/>
+            <h3>Past Reservations</h3>
+            <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                    <thead>
+                        <tr>
+                            <th>Customer Email</th>
+                            <th>Customer Phone #</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Number of Guests</th>
+                            <th>Rating</th>
+                            <th>Review</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for row in table_data_past %}
+                        <tr>
+                            <td>{{ row.customer_email }}</td>
+                            <td>{{ row.customer_phone_num }}</td>
+                            <td>{{ row.start_date }}</td>
+                            <td>{{ row.end_date }}</td>
+                            <td>{{ row.Num_Guests }}</td>
+                            <td>{{ row.rating_score }}</td>
+                            <td width="14%">{{ row.review }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+            {% if table_data_current.rowcount != 0 %}
+            <hr/>
+            <h3>Current Reservation</h3>
+            <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                    <thead>
+                        <tr>
+                            <th>Customer Email</th>
+                            <th>Customer Phone #</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Number of Guests</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for row in table_data_current %}
+                        <tr>
+                            <td>{{ row.customer_email }}</td>
+                            <td>{{ row.customer_phone_num }}</td>
+                            <td>{{ row.start_date }}</td>
+                            <td>{{ row.end_date }}</td>
+                            <td>{{ row.Num_Guests }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+            {% if table_data_future.rowcount != 0 %}
+            <hr/>
+            <h3>Future Reservations</h3>
+            <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                    <thead>
+                        <tr>
+                            <th>Customer Email</th>
+                            <th>Customer Phone #</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Number of Guests</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for row in table_data_future %}
+                        <tr>
+                            <td>{{ row.customer_email }}</td>
+                            <td>{{ row.customer_phone_num }}</td>
+                            <td>{{ row.start_date }}</td>
+                            <td>{{ row.end_date }}</td>
+                            <td>{{ row.Num_Guests }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+            {% if table_data_past.rowcount == 0 and table_data_current.rowcount == 0 and table_data_future.rowcount == 0 %}
+            <hr/>
+            <h3>No Reservation History</h3>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
