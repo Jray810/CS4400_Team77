@@ -1,10 +1,11 @@
+from typing import Iterable
 from application import app
 from db import *
 from flask import render_template, url_for, flash, redirect, request, jsonify
 from forms import RegistrationForm, LoginForm
 from datetime import date
 
-current_date = '1999-01-01'
+current_date = '2021-10-18'
 
 username = ''
 adminAccess = False
@@ -60,9 +61,14 @@ def register():
 @app.route("/my_bookings")
 def my_bookings():
     global username
-    q = 'SELECT * FROM book NATURAL JOIN flight WHERE Customer=\'{0}\''.format(username)
-    book_view = connection.execute(text(q))
-    return render_template("customer/my_bookings.html", table_data=book_view, homebar=3, username=username, pageSelect='my_bookings', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+    global current_date
+    q = 'SELECT * FROM book NATURAL JOIN flight WHERE Customer=\'{0}\' AND ((Flight_Date < \'{1}\') OR (Flight_Date = \'{1}\' AND Was_Cancelled = 1))'.format(username, current_date)
+    past_book_view = connection.execute(text(q))
+    q = 'SELECT * FROM book NATURAL JOIN flight WHERE Customer=\'{0}\' AND Flight_Date = \'{1}\' AND Was_Cancelled = 0'.format(username, current_date)
+    today_book_view = connection.execute(text(q))
+    q = 'SELECT * FROM book NATURAL JOIN flight WHERE Customer=\'{0}\' AND Flight_Date > \'{1}\''.format(username, current_date)
+    future_book_view = connection.execute(text(q))
+    return render_template("customer/my_bookings.html", past_bookings=past_book_view, today_bookings=today_book_view, future_bookings=future_book_view, homebar=3, username=username, pageSelect='my_bookings', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/my_reservations")
 def my_reservations():
@@ -142,16 +148,28 @@ def flight_details():
         flightDetails = connection.execute(q)
     else:
         return redirect(url_for('view_flights'))
-    return jsonify({'htmlresponse': render_template('popups/flight_details.html',table_data=flightDetails)})
+    return jsonify({'htmlresponse': render_template('popups/flight_details.html',table_data=flightDetails, tableType=0)})
+
+@app.route("/booking_details", methods=['GET', 'POST'])
+def booking_details():
+    if request.method == 'POST':
+        customer_id = request.form['customer_id']
+        airline_name = request.form['airline_name']
+        flight_num = request.form['flight_num']
+        q = text("SELECT * FROM book NATURAL JOIN flight WHERE Customer=\'{0}\' AND Airline_Name=\'{1}\' AND Flight_Num=\'{2}\'".format(customer_id, airline_name, flight_num))
+        bookingDetails = connection.execute(q)
+    else:
+        return redirect(url_for('my_bookings'))
+    return jsonify({'htmlresponse': render_template('popups/flight_details.html', table_data=bookingDetails, tableType=1)})
 
 #######################################################
 # Function Calls
 #######################################################
-def setCurrentDate():
+def getCurrentDate():
     global current_date
     current_date = date.today()
     print(current_date)
-    return
+    return current_date
 
 @app.route("/logout")
 def logout():
@@ -170,11 +188,19 @@ def remove_flight():
     if request.method == 'POST':
         airline_name = request.form['airline_name']
         flight_num = request.form['flight_num']
-        current_date = request.form['current_date']
         q = text("CALL remove_flight({0}, \'{1}\', \'{2}\')".format(flight_num, airline_name, current_date))
         connection.execute(q)
     return redirect(url_for('view_flights'))
 
+@app.route("/cancel_booking", methods=['GET', 'POST'])
+def cancel_booking():
+    if request.method == 'POST':
+        customer_id = request.form['customer_id']
+        airline_name = request.form['airline_name']
+        flight_num = request.form['flight_num']
+        q = text("CALL cancel_flight_booking(\'{0}\', {1}, \'{2}\', \'{3}\')".format(customer_id, flight_num, airline_name, current_date))
+        connection.execute(q)
+    return redirect(url_for('my_bookings'))
 #######################################################
 # Testing
 #######################################################
@@ -193,7 +219,7 @@ def testing():
 #######################################################
 # Run App
 #######################################################
-setCurrentDate()
+# getCurrentDate()
 
 if __name__ == '__main__':
     app.run(debug=True)
