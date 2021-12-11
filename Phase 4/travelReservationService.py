@@ -185,7 +185,7 @@ def property_details():
         connection.execute(q)
         q = text("SELECT * FROM property NATURAL JOIN view_properties WHERE Property_Name=\'{0}\' AND Owner_Email=\'{1}\'".format(property_name, owner_id))
         propertyDetails = connection.execute(q)
-        q = text("SELECT * FROM view_individual_property_reservations NATURAL JOIN reserve WHERE Was_Cancelled = 0 AND End_Date < \'{0}\'".format(current_date))
+        q = text("SELECT * FROM view_individual_property_reservations NATURAL JOIN reserve LEFT OUTER JOIN owners_rate_customers AS R ON customer_email = R.Customer WHERE Was_Cancelled = 0 AND End_Date < \'{0}\'".format(current_date))
         table_data_past = connection.execute(q)
         q = text("SELECT * FROM view_individual_property_reservations NATURAL JOIN reserve WHERE Was_Cancelled = 0 AND \'{0}\' BETWEEN Start_Date AND End_Date".format(current_date))
         table_data_current = connection.execute(q)
@@ -261,6 +261,16 @@ def remove_property():
         property_name = request.form['property_name']
         owner_id = request.form['owner_id']
         q = text("CALL remove_property(\'{0}\', \'{1}\', \'{2}\')".format(property_name, owner_id, current_date))
+        connection.execute(q)
+    return redirect(url_for('my_properties'))
+
+@app.route("/owner_rates_customer", methods=['GET', 'POST'])
+def owner_rates_customer():
+    if request.method == 'POST':
+        owner_id = request.form['owner_id']
+        customer_id = request.form['customer_id']
+        rating = request.form['rating']
+        q = text("CALL owner_rates_customer(\'{0}\', \'{1}\', {2}, \'{3}\')".format(owner_id, customer_id, rating, current_date))
         connection.execute(q)
     return redirect(url_for('my_properties'))
 

@@ -47,7 +47,18 @@
                     <tbody>
                         {% for row in table_data_past %}
                         <tr>
-                            <td>{{ row.customer_email }}</td>
+                            <td><p id="rate_customer_id">{{ row.customer_email }}</p>
+                                {% if not row.Score %}
+                                <button type="button" class="rate btn btn-warning me-2" data-toggle="modal" data-target="#modal-rate">Rate</button>
+                                {% else %}
+                                    {% if row.Score == 0 %}<span style="font-size:150%;">&star;</span>{% endif %}
+                                    {% if row.Score >= 1 %}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+                                    {% if row.Score >= 2 %}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+                                    {% if row.Score >= 3 %}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+                                    {% if row.Score >= 4 %}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+                                    {% if row.Score >= 5%}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+                                {% endif %}
+                            </td>
                             <td>{{ row.customer_phone_num }}</td>
                             <td>{{ row.start_date }}</td>
                             <td>{{ row.end_date }}</td>
@@ -127,3 +138,12 @@
     {% endif %}
 </div>
 {% endfor %}
+<script>
+    $(function () {
+        $(".rate").click(function () {
+            var customer_id = $(this).parents("tr").find("#rate_customer_id").text();
+            var s = "Rate " + customer_id;
+            $("#rating-info").html(s);
+        });
+    });
+</script>
