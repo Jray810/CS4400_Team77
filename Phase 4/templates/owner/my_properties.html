@@ -75,6 +75,23 @@
         });
     });
 </script>
+<script>
+    $(function () {
+        $(".removal").click(function () {
+            var property_name = $(this).parents("div").find("#property_name").text();
+            var owner_id = $(this).parents("div").find("#owner_id").text();
+            owner_id = owner_id.substring(20)
+            $.ajax({
+                url: "/remove_property",
+                type: 'POST',
+                data: {property_name: property_name, owner_id: owner_id},
+                success: function() {
+                    window.location.reload();
+                }
+            });
+        });
+    });
+</script>
 {% endblock scripts %}
 {% else %}
 <!DOCTYPE html>

@@ -10,9 +10,50 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
-        <h1>Hello there, this is your Account Page!</h1>
-        <h1>We'll figure out what we want to put here soon!</h1>
+    <h1>Hello there, this is your Account Page!</h1>
+    <h1>We'll figure out what we want to put here soon!</h1>
+    <br>
+    <h3>Today's Date: {{ current_date }}</h3>
+    {% if adminAccess %}
+    <button type="button" class="btn btn-warning me-2" data-toggle="modal" data-target="#modal-system-date">Set System Date</button>
+    {% endif %}
+    <div class="modal fade" id="modal-system-date" tabindex="-1" aria-labelledby="detailsLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-negative" id="detailsLabel">Set System Date</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {{ modal_messages() }}
+                    <p>Date:  <input type="date" id="set-date" name="set-date"></p>
+                    <a class="nav-item" href="/account">
+                        <button type="button" class="set-date btn btn-danger me-2" data-dismiss="modal" aria-label="Close">Set Date</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock content %}
+{% block scripts %}
+<script>
+    $(function () {
+        $(".set-date").click(function () {
+            var set_date = $(this).parents("div").find("#set-date").val();
+            $.ajax({
+                url: "/set_system_date",
+                type: 'POST',
+                data: {set_date: set_date},
+                success: function() {
+                    window.location.reload();
+                }
+            });
+        });
+    });
+</script>
+{% endblock scripts %}
 {% else %}
 <!DOCTYPE html>
 <html>

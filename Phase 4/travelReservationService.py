@@ -5,7 +5,7 @@ from flask import render_template, url_for, flash, redirect, request, jsonify
 from forms import RegistrationForm, LoginForm
 from datetime import date
 
-current_date = '2021-10-24'
+current_date = '1999-01-01'
 
 username = ''
 adminAccess = False
@@ -26,7 +26,7 @@ def about():
 
 @app.route("/account")
 def account():
-    return render_template("account.html", homebar=2, username=username, adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+    return render_template("account.html", current_date=current_date, homebar=2, username=username, adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
@@ -216,6 +216,16 @@ def logout():
     customerAccess = False
     return redirect(url_for('home'))
 
+@app.route("/set_system_date", methods=['GET','POST'])
+def set_system_date():
+    global current_date
+    if request.method == 'POST':
+        desired_date = request.form['set_date']
+        q = text("CALL process_date(\'{0}\')".format(desired_date))
+        connection.execute(q)
+        current_date = desired_date
+    return redirect(url_for('account'))
+
 @app.route("/remove_flight", methods=['GET', 'POST'])
 def remove_flight():
     if request.method == 'POST':
@@ -245,6 +255,15 @@ def cancel_reservation():
         connection.execute(q)
     return redirect(url_for('my_reservations'))
 
+@app.route("/remove_property", methods=['GET', 'POST'])
+def remove_property():
+    if request.method == 'POST':
+        property_name = request.form['property_name']
+        owner_id = request.form['owner_id']
+        q = text("CALL remove_property(\'{0}\', \'{1}\', \'{2}\')".format(property_name, owner_id, current_date))
+        connection.execute(q)
+    return redirect(url_for('my_properties'))
+
 #######################################################
 # Testing
 #######################################################
@@ -263,7 +282,7 @@ def testing():
 #######################################################
 # Run App
 #######################################################
-# getCurrentDate()
+getCurrentDate()
 
 if __name__ == '__main__':
     app.run(debug=True)
