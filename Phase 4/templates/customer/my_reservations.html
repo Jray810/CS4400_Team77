@@ -6,7 +6,7 @@
     <hr/>
     <h3>Past Reservations</h3>
     <div class="table-responsive">
-        <table class="table table-striped table-sm">
+        <table class="table table-striped table-sm" id="myPastTable">
             <thead>
                 <tr>
                     <th>Property Name</th>
@@ -21,8 +21,8 @@
 
             <tbody>
                 {% for row in past_reservations %}
+                <h1 id="customer-rate" hidden>{{ row.Customer }}</h1>
                 <tr>
-                    <td id="customer-rate" hidden>{{ row.Customer }}</td>
                     <td id="property-rate">{{ row.Property_Name }}</td>
                     <td><u id="owner-rate">{{ row.Owner_Email }}</u><br>
                         {% if not row.Score %}
@@ -52,7 +52,7 @@
     <hr/>
     <h3>Current Reservation</h3>
     <div class="table-responsive">
-        <table class="table table-striped table-sm">
+        <table class="table table-striped table-sm" id="myCurrentTable">
             <thead>
                 <tr>
                     <th>Property Name</th>
@@ -66,8 +66,8 @@
 
             <tbody>
                 {% for row in current_reservation %}
+                <h1 id="customer" hidden>{{ row.Customer }}</h1>
                 <tr>
-                    <td id="customer" hidden>{{ row.Customer }}</td>
                     <td id="property">{{ row.Property_Name }}</td>
                     <td id="owner"><u>{{ row.Owner_Email }}</u></td>
                     <td>{{ row.Start_Date }}</td>
@@ -84,7 +84,7 @@
     <hr/>
     <h3>Future Reservations</h3>
     <div class="table-responsive">
-        <table class="table table-striped table-sm">
+        <table class="table table-striped table-sm" id="myFutureTable">
             <thead>
                 <tr>
                     <th>Property Name</th>
@@ -99,8 +99,8 @@
 
             <tbody>
                 {% for row in future_reservations %}
+                <h1 id="customer" hidden>{{ row.Customer }}</h1>
                 <tr>
-                    <td id="customer" hidden>{{ row.Customer }}</td>
                     <td id="property">{{ row.Property_Name }}</td>
                     <td id="owner"><u>{{ row.Owner_Email }}</u></td>
                     <td>{{ row.Start_Date }}</td>
@@ -207,10 +207,25 @@
     </div>
 {% endblock content %}
 {% block scripts %}
+<script>
+    $(document).ready( function () {
+    $('#myPastTable').DataTable({"pageLength": 25});
+} );
+</script>
+<script>
+    $(document).ready( function () {
+    $('#myCurrentTable').DataTable({"pageLength": 25});
+} );
+</script>
+<script>
+    $(document).ready( function () {
+    $('#myFutureTable').DataTable({"pageLength": 25});
+} );
+</script>
 <script type='text/javascript'>
     $(function () {
         $(".details").click(function () {
-            var customer_id = $(this).parents("tr").find("#customer-rate").text();
+            var customer_id = $(this).parents("div").find("#customer-rate").text();
             var property_name = $(this).parents("tr").find("#property-rate").text();
             var owner_id = $(this).parents("tr").find("#owner-rate").text();
             var viewType = 1;
@@ -229,7 +244,7 @@
 <script type='text/javascript'>
     $(function () {
         $(".cancel").click(function () {
-            var customer_id = $(this).parents("tr").find("#customer").text();
+            var customer_id = $(this).parents("div").find("#customer").text();
             var property_name = $(this).parents("tr").find("#property").text();
             var owner_id = $(this).parents("tr").find("#owner").text();
             var viewType = 2;

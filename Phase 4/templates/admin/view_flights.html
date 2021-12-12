@@ -3,7 +3,7 @@
 {% block content %}
     <h1 class="h2">Flights</h1>
     <div class="table-responsive">
-        <table class="table table-striped table-sm">
+        <table class="table table-striped table-sm" id="myTable">
             <thead>
                 <tr>
                     <th>Airline</th>
@@ -54,6 +54,11 @@
     </div>
 {% endblock content %}
 {% block scripts %}
+<script>
+    $(document).ready( function () {
+    $('#myTable').DataTable({"pageLength": 25});
+} );
+</script>
 <script type='text/javascript'>
     $(function () {
         $(".btn-warning").click(function () {
