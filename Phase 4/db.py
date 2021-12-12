@@ -51,7 +51,10 @@ class Customers(db.Model):
     Location = db.Column(db.String(50), nullable=False)
 
 # Model for airline
-# COMPLETE ME
+# class airline(db.Model):
+    __tablename__ = 'airline'
+    Airline_Name = db.Column(db.String(50), primary_key=True, nullable=False)
+    Rating = db.Column(db.Numeric(2,1), nullable=False)
 
 # Model for airport
 class Airport(db.Model):
@@ -65,48 +68,106 @@ class Airport(db.Model):
     Zip = db.Column(db.CHAR(5), nullable=False)
     __table_args__ = (UniqueConstraint('Street', 'City', 'State', 'Zip'),)
 
-
 #######################################################
 # Table Weak Entities
 #######################################################
 # Model for flight
-# COMPLETE ME
+class Flight(db.Model):
+    __tablename__ = 'flight'
+    Flight_Num = db.Column(db.CHAR(5), nullable=False, primary_key=True)
+    Airline_Name = db.Column(db.String(50), db.ForeignKey('airline.Airline_name'), nullable=False, primary_key=True)
+    From_Airport = db.Column(db.CHAR(3), db.ForeignKey('airport.Airport_id'), nullable=False)
+    To_Airport = db.Column(db.CHAR(3), db.ForeignKey('airport.Airport_id'), nullable=False)
+    Departure_Time = db.Column(db.Time, nullable=False)
+    Arrival_Time = db.Column(db.Time, nullable=False)
+    Flight_Date = db.Column(db.Date, nullable=False)
+    Cost = db.Column(db.Numeric(6, 2), nullable=False)
+    Capacity = db.Column(db.Integer, nullable = False)
 
 # Model for property
-# COMPLETE ME
-
+class Property(db.Model):
+    __tablename__ = 'property'
+    Property_Name = db.Column(db.String(50), nullable=False, primary_key=True)
+    Owner_Email = db.Column(db.String(50), db.ForeignKey('owners.Email'), nullable=False, primary_key=True)
+    Descr = db.Column(db.String(500), nullable=False)
+    Capacity = db.Column(db.Integer, nullable=False)
+    Cost = db.Column(db.Numeric(6, 2), nullable=False)
+    Street = db.Column(db.String(50), nullable=False)
+    City = db.Column(db.String(50), nullable=False)
+    State = db.Column(db.CHAR(2), nullable=False)
+    Zip = db.Column(db.CHAR(5), nullable=False)
+    __table_args__ = (UniqueConstraint('Street', 'City', 'State', 'Zip'),)
 
 #######################################################
 # Table Multivalued Attributes
 #######################################################
 # Model for amenity
-# COMPLETE ME
+class Amenity(db.Model):
+    __tablename__ = 'amenity'
+    Property_Name = db.Column(db.String(50), db.ForeignKey('property.Property_Name'), nullable=False, primary_key=True)
+    Property_Owner = db.Column(db.String(50), db.ForeignKey('property.Owner_Email'), nullable=False, primary_key=True)
+    Amenity_Name = db.Column(db.String(50), nullable=False, primary_key=True)
 
 # Model for attraction
-# COMPLETE ME
-
+class Attraction(db.Model):
+    __tablename__ = 'attraction'
+    Airport = db.Column(db.CHAR(3), db.ForeignKey('airport.Airport_Id'), nullable=False, primary_key=True)
+    Attraction_Name = db.Column(db.String(50), nullable=False, primary_key=True)
 
 #######################################################
 # Table M-N Relationships
 #######################################################
 # Model for review
-# COMPLETE ME
+class Review(db.Model):
+    __tablename__ = 'review'
+    Property_Name = db.Column(db.String(50), db.ForeignKey('property.Property_Name'), nullable=False, primary_key=True)
+    Owner_Email = db.Column(db.String(50), db.ForeignKey('property.Owner_Email'), nullable=False, primary_key=True)
+    Customer = db.Column(db.String(50), db.ForeignKey('customer.Email'), nullable=False, primary_key=True)
+    Content = db.Column(db.String(500))
+    Score = db.Column(db.Integer, nullable=False)
 
 # Model for reserve
-# COMPLETE ME
+class Reserve(db.Model):
+    __tablename__ = 'reserve'
+    Property_Name = db.Column(db.String(50), db.ForeignKey('property.Property_Name'), nullable=False, primary_key=True)
+    Owner_Email = db.Column(db.String(50), db.ForeignKey('property.Owner_Email'), nullable=False, primary_key=True)
+    Customer = db.Column(db.String(50), db.ForeignKey('customer.Email'), nullable=False, primary_key=True)
+    Start_Date = db.Column(db.Date, nullable=False)
+    End_Date = db.Column(db.Date, nullable=False)
+    Num_Guests = db.Column(db.Integer, nullable=False)
+    Was_Cancelled = db.Column(db.Boolean, nullable=False)
 
 # Model for is_close_to
-# COMPLETE ME
+class Is_Close_To(db.Model):
+    __tablename__ = 'is_close_to'
+    Property_Name = db.Column(db.String(50), db.ForeignKey('property.Property_Name'), nullable=False, primary_key=True)
+    Owner_Email = db.Column(db.String(50), db.ForeignKey('property.Owner_Email'), nullable=False, primary_key=True)
+    Airport = db.Column(db.CHAR(3), db.ForeignKey('airport.Airport_Id'), nullable=False, primary_key=True)
+    Distance = db.Column(db.Integer, nullable=False)
+
 
 # Model for book
-# COMPLETE ME
+class Book(db.Model):
+    __tablename__ = 'book'
+    Customer = db.Column(db.String(50), db.ForeignKey('customer.Email'), nullable=False, primary_key=True)
+    Flight_Num = db.Column(db.CHAR(5), db.ForeignKey('flight.Flight_Num'), nullable=False, primary_key=True)
+    Airline_Name = db.Column(db.String(50), db.ForeignKey('flight.Airline_Name'), nullable=False, primary_key=True)
+    Num_Seats = db.Column(db.Integer, nullable=False)
+    Was_Cancelled = db.Column(db.Boolean, nullable=False)
 
 # Model for owners_rate_customers
-# COMPLETE ME
+class Owners_Rate_Customers(db.Model):
+    __tablename__ = 'owners_rate_customers'
+    Owner_Email = db.Column(db.String(50), db.ForeignKey('owners.Email'), nullable=False, primary_key=True)
+    Customer = db.Column(db.String(50), db.ForeignKey('customer.Email'), nullable=False, primary_key=True)
+    Score = db.Column(db.Integer, nullable=False)
 
 # Model for customers_rate_owners
-# COMPLETE ME
-
+class Customers_Rate_Owners(db.Model):
+    __tablename__ = 'customers_rate_owners'
+    Customer = db.Column(db.String(50), db.ForeignKey('customer.Email'), nullable=False, primary_key=True)
+    Owner_Email = db.Column(db.String(50), db.ForeignKey('owners.Email'), nullable=False, primary_key=True)
+    Score = db.Column(db.Integer, nullable=False)
 
 #######################################################
 # Database Setup
