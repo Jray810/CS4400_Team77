@@ -21,9 +21,20 @@
             <tbody>
                 {% for row in past_reservations %}
                 <tr>
-                    <td id="customer" hidden>{{ row.Customer }}</td>
-                    <td id="property">{{ row.Property_Name }}</td>
-                    <td id="owner">{{ row.Owner_Email }}</td>
+                    <td id="customer-rate" hidden>{{ row.Customer }}</td>
+                    <td id="property-rate">{{ row.Property_Name }}</td>
+                    <td><u id="owner-rate">{{ row.Owner_Email }}</u><br>
+                        {% if not row.Score %}
+                        <button type="button" class="rate btn btn-warning me-2" data-toggle="modal" data-target="#modal-rate">Rate</button>
+                        {% else %}
+                            {% if row.Score == 0 %}<span style="font-size:150%;">&star;</span>{% endif %}
+                            {% if row.Score >= 1 %}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+                            {% if row.Score >= 2 %}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+                            {% if row.Score >= 3 %}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+                            {% if row.Score >= 4 %}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+                            {% if row.Score >= 5%}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+                        {% endif %}
+                    </td>
                     <td>{{ row.Start_Date }}</td>
                     <td>{{ row.End_Date }}</td>
                     <td>{{ row.Num_Guests }}</td>
@@ -55,7 +66,7 @@
                 <tr>
                     <td id="customer" hidden>{{ row.Customer }}</td>
                     <td id="property">{{ row.Property_Name }}</td>
-                    <td id="owner">{{ row.Owner_Email }}</td>
+                    <td id="owner"><u>{{ row.Owner_Email }}</u></td>
                     <td>{{ row.Start_Date }}</td>
                     <td>{{ row.End_Date }}</td>
                     <td>{{ row.Num_Guests }}</td>
@@ -88,7 +99,7 @@
                 <tr>
                     <td id="customer" hidden>{{ row.Customer }}</td>
                     <td id="property">{{ row.Property_Name }}</td>
-                    <td id="owner">{{ row.Owner_Email }}</td>
+                    <td id="owner"><u>{{ row.Owner_Email }}</u></td>
                     <td>{{ row.Start_Date }}</td>
                     <td>{{ row.End_Date }}</td>
                     <td>{{ row.Num_Guests }}</td>
@@ -133,6 +144,25 @@
             </div>
         </div>
     </div>
+    <div class="modal fade modal-center" id="modal-rate" tabindex="-1" aria-labelledby="rating-info" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-primary-color">
+                <div class="modal-header">
+                    <h5 class="modal-title text-main" id="rating-info"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {{ modal_messages() }}
+                    <p class="text-main">Rating:  <input type="number" id="set-rating" name="set-rating" min="1" max="5" value="5"></p>
+                    <a class="nav-item" href="/my_properties">
+                        <button type="button" class="give-rating btn btn-warning me-2" data-dismiss="modal" aria-label="Close">Give Rating</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock content %}
 {% block scripts %}
 <script type='text/javascript'>
@@ -168,6 +198,34 @@
                     window.location.reload();
                 }
             });
+        });
+    });
+</script>
+<script>
+    $(function () {
+        $(".rate").click(function () {
+            var owner_id = $(this).parents("div").find("#owner-rate").text();
+            var s = "Rate " + owner_id;
+            $("#rating-info").html(s);
+        });
+    });
+</script>
+<script>
+    $(function () {
+        $(".give-rating").click(function () {
+            var customer_id = $(this).parents("div").find("#customer-rate").text();
+            var owner_id = $(this).parents("div").find("#owner-rate").text();
+            var rating = $(this).parents("div").find("#set-rating").val();
+            if (rating != '') {
+                $.ajax({
+                    url: "/customer_rates_owner",
+                    type: 'POST',
+                    data: {customer_id: customer_id, owner_id: owner_id, rating: rating},
+                    success: function() {
+                        window.location.reload();
+                    }
+                });
+            }
         });
     });
 </script>

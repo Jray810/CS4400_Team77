@@ -70,7 +70,7 @@ def my_bookings():
 
 @app.route("/my_reservations")
 def my_reservations():
-    q = text("SELECT * FROM reserve NATURAL JOIN property WHERE Customer=\'{0}\' AND ((End_Date < \'{1}\') OR (\'{1}\' BETWEEN Start_Date AND End_Date AND Was_Cancelled = 1))".format(username, current_date))
+    q = text("SELECT * FROM customers_rate_owners AS O RIGHT OUTER JOIN reserve AS R ON R.Owner_Email = O.Owner_Email AND R.Customer = O.Customer LEFT OUTER JOIN property AS P ON R.Owner_Email = P.Owner_Email AND R.Property_Name = P.Property_Name WHERE R.Customer=\'{0}\' AND ((End_Date < \'{1}\') OR (\'{1}\' BETWEEN Start_Date AND End_Date AND Was_Cancelled = 1))".format(username, current_date))
     past_reservations = connection.execute(q)
     q = text("SELECT * FROM reserve NATURAL JOIN property WHERE Customer=\'{0}\' AND \'{1}\' BETWEEN Start_Date AND End_Date AND Was_Cancelled = 0".format(username, current_date))
     current_reservation = connection.execute(q)
@@ -273,6 +273,16 @@ def owner_rates_customer():
         q = text("CALL owner_rates_customer(\'{0}\', \'{1}\', {2}, \'{3}\')".format(owner_id, customer_id, rating, current_date))
         connection.execute(q)
     return redirect(url_for('my_properties'))
+
+@app.route("/customer_rates_owner", methods=['GET', 'POST'])
+def customer_rates_owner():
+    if request.method == 'POST':
+        customer_id = request.form['customer_id']
+        owner_id = request.form['owner_id']
+        rating = request.form['rating']
+        q = text("CALL customer_rates_owner(\'{0}\', \'{1}\', {2}, \'{3}\')".format(customer_id, owner_id, rating, current_date))
+        connection.execute(q)
+    return redirect(url_for('my_reservations'))
 
 #######################################################
 # Testing
