@@ -18,8 +18,8 @@
 
             <tbody>
                 {% for row in table_data %}
+                <h1 id="owner" hidden>{{ row.Owner_Email }}</h1>
                 <tr>
-                    <td id="owner" hidden>{{ row.Owner_Email }}</td>
                     <td id="property">{{ row.property_name }}</td>
                     <td>{{ row.description }}</td>
                     <td>{{ row.capacity }}</td>
@@ -85,7 +85,7 @@
 <script>
     $(function () {
         $(".details").click(function () {
-            var owner_id = $(this).parents("tr").find("#owner").text();
+            var owner_id = $(this).parents("div").find("#owner").text();
             var property_name = $(this).parents("tr").find("#property").text();
             $.ajax({
                 url: "/property_details",
