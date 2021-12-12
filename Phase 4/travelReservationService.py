@@ -170,11 +170,12 @@ def reservation_details():
         customer_id = request.form['customer_id']
         property_name = request.form['property_name']
         owner_id = request.form['owner_id']
-        q = text("SELECT * FROM reserve NATURAL JOIN property WHERE Customer=\'{0}\' AND Property_Name=\'{1}\' AND Owner_Email=\'{2}\'".format(customer_id, property_name, owner_id))
+        tableType = 1 if request.form['viewType'] == '1' else 2
+        q = text("SELECT * FROM review AS O RIGHT OUTER JOIN reserve AS R ON R.Customer = O.Customer AND R.Owner_Email = O.Owner_Email AND R.Property_Name = O.Property_Name JOIN property AS P ON R.Property_Name = P.Property_Name AND R.Owner_Email = P.Owner_Email WHERE R.Customer=\'{0}\' AND R.Property_Name=\'{1}\' AND R.Owner_Email=\'{2}\'".format(customer_id, property_name, owner_id))
         reservationDetails = connection.execute(q)
     else:
         return redirect(url_for('my_reservations'))
-    return jsonify({'htmlresponse': render_template('popups/property_details.html', table_data=reservationDetails, tableType=1)})
+    return jsonify({'htmlresponse': render_template('popups/property_details.html', table_data=reservationDetails, tableType=tableType)})
 
 @app.route("/property_details", methods=['GET', 'POST'])
 def property_details():
@@ -281,6 +282,18 @@ def customer_rates_owner():
         owner_id = request.form['owner_id']
         rating = request.form['rating']
         q = text("CALL customer_rates_owner(\'{0}\', \'{1}\', {2}, \'{3}\')".format(customer_id, owner_id, rating, current_date))
+        connection.execute(q)
+    return redirect(url_for('my_reservations'))
+
+@app.route("/customer_review_property", methods=['GET', 'POST'])
+def customer_review_property():
+    if request.method == 'POST':
+        property_name = request.form['property_name']
+        owner_id = request.form['owner_id']
+        customer_id = request.form['customer_id']
+        content = request.form['content']
+        rating = request.form['rating']
+        q = text("CALL customer_review_property(\'{0}\', \'{1}\', \'{2}\', \'{3}\', {4}, \'{5}\')".format(property_name, owner_id, customer_id, content, rating, current_date))
         connection.execute(q)
     return redirect(url_for('my_reservations'))
 
