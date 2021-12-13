@@ -1,0 +1,69 @@
+{% if adminAccess %}
+{% extends "layout.html" %}
+{% block content %}
+    <h1 class="h2">Schedule Flight</h1>
+
+    <form method = 'post' action="">
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4 text-main">Schedule Flight</legend>
+            <div class="form-group">
+           {{ form.hidden_tag() }}
+              <br>
+              {{ form.flight_num.label }}
+              {{ form.flight_num }}
+              <br>
+              {{ form.airline_name.label }}
+              {{ form.airline_name }}
+              <br>
+              {{ form.from_airport.label }}
+              {{ form.from_airport }}
+              <br>
+              {{ form.to_airport.label }}
+              {{ form.to_airport }}
+              <br>
+              {{ form.departure_time.label }}
+              {{ form.departure_time}}
+              <br>
+              {{ form.arrival_time.label }}
+              {{ form.arrival_time }}
+              <br>
+              {{ form.flight_date.label }}
+              {{ form.flight_date }}
+              <br>
+              {{ form.cost.label }}
+              {{ form.cost }}
+              <br>
+              {{ form.capacity.label }}
+              {{ form.capacity }}
+              <br>
+              {{ form.current_date.label }}
+              {{ form.current_date }}
+              <br><br>
+              {{ form.submit }}
+            
+            </div>
+            
+        </fieldset>
+    </form>
+            
+{% endblock content %}
+{% block scripts %}
+<script>
+    $(document).ready( function () {
+    $('#myTable').DataTable({"pageLength": 25});
+} );
+</script>
+{% endblock scripts %}
+{% else %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Redirection</title>
+        <meta http-equiv = "refresh" content = "2; url = /home" />
+    </head>
+    <body>
+        <h1>Access Denied</h1>
+        <p>This page will redirect in 5 seconds.</p>
+    </body>
+</html>
+{% endif %}
