@@ -51,7 +51,7 @@ class Customers(db.Model):
     Location = db.Column(db.String(50), nullable=False)
 
 # Model for airline
-# class airline(db.Model):
+class Airline(db.Model):
     __tablename__ = 'airline'
     Airline_Name = db.Column(db.String(50), primary_key=True, nullable=False)
     Rating = db.Column(db.Numeric(2,1), nullable=False)
