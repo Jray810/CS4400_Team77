@@ -167,6 +167,30 @@ def view_properties():
     property_view = connection.execute(q)
     return render_template("admin/view_properties.html", table_data=property_view, homebar=3, username=username, pageSelect='view_properties', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
+@app.route('/schedule_flight', methods = ['GET', 'POST'])
+def schedule_flight():
+    print(current_date)
+    q = text("SELECT airline_name FROM view_airlines")
+    airline_view = connection.execute(q)
+    form = ScheduleFlightForm()
+    form.airline_name.choices = [airline[0] for airline in airline_view]
+    form.current_date.default = current_date
+    form.process()
+    if request.method == 'POST': 
+        flight_num = request.form['flight_num']
+        airline_name = request.form['airline_name']
+        from_airport = request.form['from_airport']
+        to_airport = request.form['to_airport']
+        departure_time = request.form['departure_time']
+        arrival_time = request.form['arrival_time']
+        flight_date = request.form['flight_date']
+        cost = request.form['cost']
+        capacity = request.form['capacity']
+        q = text("call schedule_flight(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\',\'{5}\',\'{6}\',\'{7}\',\'{8}\',\'{9}\')".format(flight_num, airline_name, from_airport, to_airport, departure_time, arrival_time, flight_date, cost, capacity, current_date))
+        connection.execute(q)
+        flash("Flight Scheduled Successfully")
+    return render_template("admin/schedule_flight.html", form=form, homebar=3, username=username, pageSelect='view_properties', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+
 #######################################################
 # Popup Boxes
 #######################################################
