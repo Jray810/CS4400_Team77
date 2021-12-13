@@ -47,12 +47,41 @@ def login():
             flash('Login Unsuccessful. Please check username and password', 'danger')
     return render_template("login.html", homebar=-1, username=username, form=form)
 
+# @app.route("/register", methods=['GET', 'POST'])
+# def register():
+#     form = RegistrationForm()
+#     if form.validate_on_submit():
+#         flash(f'Account created for {form.username.data}!', 'success')
+#         return redirect(url_for('home'))
+#     return render_template("register.html", homebar=-1, username=username, form=form)
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
-    if form.validate_on_submit():
-        flash(f'Account created for {form.username.data}!', 'success')
-        return redirect(url_for('home'))
+    if request.method == 'POST': 
+        if form.validate_on_submit():
+            email = request.form['email']
+            first_name = request.form['first_name']
+            last_name = request.form['last_name']
+            password = request.form['password']
+            phone_number = request.form['phone_number']
+            card = request.form['card']
+            cvv = request.form['cvv']
+            exp = request.form['exp']
+            location = request.form['location']
+            if card and cvv and exp and location:
+                type = 'Customer'
+                q = text("call register_customer(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\', \'{5}\',\'{6}\',\'{7}\',\'{8}\')".format(email, first_name, last_name, password, phone_number, card, cvv, exp, location))
+            else:
+                type = 'Owner'
+                q = text("call register_owner(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\')".format(email, first_name, last_name, password, phone_number))
+            try:
+                connection.execute(q)
+                flash(f'{type} account created for {form.email.data}!', 'success')
+                return redirect(url_for('home'))
+            except Exception as e:
+                flash(e)
+        else:
+            flash('All fields are required.')            
     return render_template("register.html", homebar=-1, username=username, form=form)
 
 #######################################################
