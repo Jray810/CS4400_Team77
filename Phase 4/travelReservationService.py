@@ -189,7 +189,7 @@ def schedule_flight():
         q = text("call schedule_flight(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\',\'{5}\',\'{6}\',\'{7}\',\'{8}\',\'{9}\')".format(flight_num, airline_name, from_airport, to_airport, departure_time, arrival_time, flight_date, cost, capacity, current_date))
         connection.execute(q)
         flash("Flight Scheduled Successfully")
-    return render_template("admin/schedule_flight.html", form=form, homebar=3, username=username, pageSelect='view_properties', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+    return render_template("admin/schedule_flight.html", form=form, homebar=3, username=username, pageSelect='schedule_flight', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 #######################################################
 # Popup Boxes
