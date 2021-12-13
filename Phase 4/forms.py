@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, DateField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, DateField, DecimalField, IntegerField, SelectField
+from wtforms.fields.datetime import TimeField
 from wtforms.validators import DataRequired, Length, Email, EqualTo
 from datetime import datetime
 
@@ -23,3 +24,17 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     remember = BooleanField('Remember Me')
     submit = SubmitField('Login')
+
+
+class ScheduleFlightForm(FlaskForm):
+    flight_num = StringField('Flight Number', validators=[DataRequired(), Length(max=5)])
+    airline_name = SelectField('Airline Name', validators=[DataRequired(), Length(max=50)])
+    from_airport = StringField('From Airport', validators=[DataRequired(), Length(max=3)])
+    to_airport = StringField('To Airport', validators=[DataRequired(), Length(max=3)])
+    departure_time = TimeField('Departure Time', format='%H%M%S')
+    arrival_time = TimeField('Arrival Time', format='%H%M%S')
+    flight_date = DateField('Flight Date', format='%Y-%m-%d')
+    cost = DecimalField('Cost Per Person', places=2, validators=[DataRequired(), Length(6)])
+    capacity = IntegerField('Capacity', validators=[DataRequired()])
+    current_date = StringField('Current Date', render_kw = {'disabled': 'disabled'})
+    submit = SubmitField('Schedule')
