@@ -2,7 +2,7 @@ from typing import Iterable
 from application import app
 from db import *
 from flask import render_template, url_for, flash, redirect, request, jsonify
-from forms import RegistrationForm, LoginForm
+from forms import RegistrationForm, LoginForm, ScheduleFlightForm
 from datetime import date
 
 current_date = '1999-01-01'
