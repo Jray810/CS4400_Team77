@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, DateField, DecimalField, IntegerField, SelectField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, DateField, DecimalField, IntegerField, SelectField, TextAreaField
 from wtforms.fields.datetime import TimeField
 from wtforms.validators import DataRequired, Length, Email, EqualTo
 from datetime import datetime
@@ -38,3 +38,17 @@ class ScheduleFlightForm(FlaskForm):
     capacity = IntegerField('Capacity', validators=[DataRequired()])
     current_date = StringField('Current Date', render_kw = {'disabled': 'disabled'})
     submit = SubmitField('Schedule')
+
+
+class AddPropertyForm(FlaskForm):
+    property_name = StringField('Property Name', validators=[DataRequired(), Length(max=50)])
+    description = TextAreaField('Description', validators=[DataRequired(), Length(max=500)])
+    capacity = IntegerField('Capacity', validators=[DataRequired()])
+    cost = DecimalField('Cost', places=2, validators=[DataRequired(), Length(6)])
+    street = StringField('Street', validators=[DataRequired(), Length(max=50)])
+    city = StringField('City', validators=[DataRequired(), Length(max=50)])
+    state = SelectField('State', validators=[DataRequired(), Length(max=2)])
+    zipcode = StringField('Zip', validators=[DataRequired(), Length(max=5)])
+    nearest_airport_id = StringField('Nearest Airport', validators=[Length(max=3)], default=' ')
+    dist_to_airport = IntegerField('Distance to Airport', default = 0)
+    submit = SubmitField('Add')
