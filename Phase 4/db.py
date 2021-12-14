@@ -200,6 +200,7 @@ if not dbExists:
 
 # Connect to the database
 connection = engine.connect()
+conn = engine.raw_connection() #delete if don't use cursor
 
 # While the above model is incomplete, we can just read the schema from a script file
 modelIncomplete = True
