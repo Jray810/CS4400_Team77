@@ -170,11 +170,35 @@ def view_airlines():
     airline_view = connection.execute(q)
     return render_template("admin/view_airlines.html", table_data=airline_view, homebar=3, username=username, pageSelect='view_airlines', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
-@app.route("/view_flights")
+@app.route("/view_flights", methods=['GET', 'POST'])
 def view_flights():
+    q = text("SELECT airline_name FROM view_airlines")
+    airline_view = connection.execute(q)
+    form = ScheduleFlightForm()
+    form.airline_name.choices = [airline[0] for airline in airline_view]
+    form.current_date.data = current_date
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            flight_num = request.form['flight_num']
+            airline_name = request.form['airline_name']
+            from_airport = request.form['from_airport']
+            to_airport = request.form['to_airport']
+            departure_time = request.form['departure_time']
+            arrival_time = request.form['arrival_time']
+            flight_date = request.form['flight_date']
+            cost = request.form['cost']
+            capacity = request.form['capacity']
+            q = text("CALL schedule_flight(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}:00\', \'{5}:00\', \'{6}\', {7}, {8}, \'{9}\')".format(flight_num, airline_name, from_airport, to_airport, departure_time, arrival_time, flight_date, cost, capacity, current_date))
+            try:
+                connection.execute(q)
+                connection.execute("commit")
+                return redirect(url_for('view_flights'))
+            except Exception as e:
+                flash(e)
+        print(form.errors)
     q = text("SELECT * FROM flight JOIN view_flight ON Flight_Num=flight_id AND Airline_Name=airline")
     flight_view = connection.execute(q)
-    return render_template("admin/view_flights.html", table_data=flight_view, homebar=3, username=username, pageSelect='view_flights', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+    return render_template("admin/view_flights.html", form=form, table_data=flight_view, homebar=3, username=username, pageSelect='view_flights', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/view_customers")
 def view_customers():
@@ -193,35 +217,6 @@ def view_properties():
     q = text("SELECT * FROM view_properties NATURAL JOIN property")
     property_view = connection.execute(q)
     return render_template("admin/view_properties.html", table_data=property_view, homebar=3, username=username, pageSelect='view_properties', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
-
-@app.route('/schedule_flight', methods = ['GET', 'POST'])
-def schedule_flight():
-    print(current_date)
-    q = text("SELECT airline_name FROM view_airlines")
-    airline_view = connection.execute(q)
-    form = ScheduleFlightForm()
-    form.airline_name.choices = [airline[0] for airline in airline_view]
-    form.current_date.default = current_date
-    form.process()
-    if request.method == 'POST': 
-        flight_num = request.form['flight_num']
-        airline_name = request.form['airline_name']
-        from_airport = request.form['from_airport']
-        to_airport = request.form['to_airport']
-        departure_time = request.form['departure_time']
-        arrival_time = request.form['arrival_time']
-        flight_date = request.form['flight_date']
-        cost = request.form['cost']
-        capacity = request.form['capacity']
-        q = text("call schedule_flight(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\',\'{5}\',\'{6}\',\'{7}\',\'{8}\',\'{9}\')".format(flight_num, airline_name, from_airport, to_airport, departure_time, arrival_time, flight_date, cost, capacity, current_date))
-        try:
-            connection.execute(q)
-            connection.execute("commit")
-            flash(f'Flight Scheduled Successfully!')
-        except Exception as e:
-            flash(e)
-    return render_template("admin/schedule_flight.html", form=form, homebar=3, username=username, pageSelect='schedule_flight', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
-         
 
 #######################################################
 # Popup Boxes
