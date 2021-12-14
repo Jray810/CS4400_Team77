@@ -110,7 +110,7 @@ def my_reservations():
 
 @app.route("/book")
 def book():
-    q = text("SELECT * FROM view_flight JOIN flight ON airline=Airline_Name AND flight_id=Flight_Num")
+    q = text("SELECT * FROM view_flight AS V JOIN flight AS F ON airline=Airline_Name AND flight_id=Flight_Num WHERE F.Flight_Date > \'{0}\'".format(current_date))
     flight_view = connection.execute(q)
     return render_template("customer/book.html", table_data=flight_view, homebar=3, username=username, pageSelect='book', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
