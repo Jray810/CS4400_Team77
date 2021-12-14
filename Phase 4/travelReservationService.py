@@ -123,37 +123,33 @@ def reserve():
 #######################################################
 # Owner Access
 #######################################################
-@app.route("/my_properties")
+@app.route("/my_properties", methods=['GET', 'POST'])
 def my_properties():
-    q = text("SELECT * FROM view_properties NATURAL JOIN property WHERE Owner_Email=\'{0}\'".format(username))
-    properties_view = connection.execute(q)
-    return render_template("owner/my_properties.html", table_data=properties_view, homebar=3, username=username, pageSelect='my_properties', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
-
-@app.route("/add_property", methods=['GET', 'POST'])
-def add_property():
     form = AddPropertyForm()
-    # state_names = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"]
     state_names = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC', 'AS', 'GU', 'MP', 'PR', 'UM', 'VI']
     form.state.choices = [states for states in state_names]
-    if request.method == 'POST': 
-        property_name = request.form['property_name']
-        description = request.form['description']
-        capacity = request.form['capacity']
-        cost = request.form['cost']
-        street = request.form['street']
-        city = request.form['city']
-        state = request.form['state']
-        zipcode = request.form['zipcode']
-        nearest_airport_id = request.form['nearest_airport_id']
-        dist_to_airport = request.form['dist_to_airport']
-        q = text("call add_property(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\',\'{5}\',\'{6}\',\'{7}\',\'{8}\',\'{9}\', \'{10}\')".format(property_name, username, description, capacity, cost, street, city, state, zipcode, nearest_airport_id, dist_to_airport))
-        try:
-            connection.execute(q)
-            connection.execute("commit")
-        except Exception as e:
-            flash(e)
-    return render_template("owner/add_property.html", form=form, homebar=3, username=username, pageSelect='add_property', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
-
+    if request.method == 'POST':
+        if form.validate_on_submit(): 
+            property_name = request.form['property_name']
+            description = request.form['description']
+            capacity = request.form['capacity']
+            cost = request.form['cost']
+            street = request.form['street']
+            city = request.form['city']
+            state = request.form['state']
+            zipcode = request.form['zipcode']
+            nearest_airport_id = request.form['nearest_airport_id']
+            dist_to_airport = request.form['dist_to_airport']
+            q = text("CALL add_property(\'{0}\', \'{1}\', \'{2}\', {3}, {4}, \'{5}\', \'{6}\', \'{7}\', \'{8}\', \'{9}\', {10})".format(property_name, username, description, capacity, cost, street, city, state, zipcode, nearest_airport_id, dist_to_airport))
+            try:
+                connection.execute(q)
+                connection.execute("commit")
+                return redirect(url_for('my_properties'))
+            except Exception as e:
+                flash(e)
+    q = text("SELECT * FROM view_properties NATURAL JOIN property WHERE Owner_Email=\'{0}\'".format(username))
+    properties_view = connection.execute(q)
+    return render_template("owner/my_properties.html", form=form, table_data=properties_view, homebar=3, username=username, pageSelect='my_properties', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/remove_owner", methods=['GET', 'POST'])
 def remove_owner():
