@@ -27,7 +27,11 @@ def about():
 
 @app.route("/account")
 def account():
-    return render_template("account.html", current_date=current_date, homebar=2, username=username, adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+    if username == '':
+        return redirect(url_for('home'))
+    q = text("SELECT * FROM accounts WHERE Email=\'{0}\'".format(username))
+    userdata = connection.execute(q)
+    return render_template("account.html", userdata=userdata, current_date=current_date, homebar=2, username=username, adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
@@ -150,22 +154,6 @@ def my_properties():
     q = text("SELECT * FROM view_properties NATURAL JOIN property WHERE Owner_Email=\'{0}\'".format(username))
     properties_view = connection.execute(q)
     return render_template("owner/my_properties.html", form=form, table_data=properties_view, homebar=3, username=username, pageSelect='my_properties', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
-
-@app.route("/remove_owner", methods=['GET', 'POST'])
-def remove_owner():
-    global username
-    global ownerAccess
-    global customerAccess
-    if request.method == 'POST':
-        q = text("CALL remove_owner(\'{0}\')".format(username))
-        connection.execute(q)
-        connection.execute('commit')
-        ownerAccess = False
-        if customerAccess == True:
-            return redirect(url_for('account'))
-        username = ''
-        return redirect(url_for('home'))
-    return render_template("owner/remove_owner.html", homebar=3, username=username, pageSelect='remove_owner', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 #######################################################
 # Administrative Access
@@ -393,6 +381,35 @@ def customer_review_property():
         q = text("CALL customer_review_property(\'{0}\', \'{1}\', \'{2}\', \'{3}\', {4}, \'{5}\')".format(property_name, owner_id, customer_id, content, rating, current_date))
         connection.execute(q)
     return redirect(url_for('my_reservations'))
+
+@app.route("/remove_owner", methods=['GET', 'POST'])
+def remove_owner():
+    global username
+    global adminAccess
+    global ownerAccess
+    global customerAccess
+    q = text("CALL remove_owner(\'{0}\')".format(username))
+    connection.execute(q)
+    connection.execute('commit')
+    q = text("SELECT * FROM accounts WHERE Email=\'{0}\'".format(username))
+    result = connection.execute(q)
+    if result.rowcount != 0:
+        q = text("SELECT * FROM admins WHERE Email=\'{0}\'".format(username))
+        result = connection.execute(q)
+        adminAccess = True if result.rowcount != 0 else False
+        q = text("SELECT * FROM owners WHERE Email=\'{0}\'".format(username))
+        result = connection.execute(q)
+        ownerAccess = True if result.rowcount != 0 else False
+        q = text("SELECT * FROM customer WHERE Email=\'{0}\'".format(username))
+        result = connection.execute(q)
+        customerAccess = True if result.rowcount != 0 else False
+        return redirect(url_for('account'))
+    else:
+        username = ''
+        adminAccess = False
+        ownerAccess = False
+        customerAccess = False
+    return redirect(url_for('home'))
 
 #######################################################
 # Testing
