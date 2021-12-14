@@ -4,7 +4,6 @@ from db import *
 from flask import render_template, url_for, flash, redirect, request, jsonify
 from forms import RegistrationForm, LoginForm, ScheduleFlightForm, AddPropertyForm
 from datetime import date
-from datetime import datetime
 
 current_date = '1999-01-01'
 
@@ -38,12 +37,21 @@ def login():
     global customerAccess
     form = LoginForm()
     if form.validate_on_submit():
-        if Accounts.query.filter_by(Email = form.email.data, \
-            Pass = form.password.data).first():
-            adminAccess = Admins.query.filter_by(Email = form.email.data).first()
-            ownerAccess = Owners.query.filter_by(Email = form.email.data).first()
-            customerAccess = Customers.query.filter_by(Email = form.email.data).first()
-            username = form.email.data
+        email = form.email.data
+        password = form.password.data
+        q = text("SELECT * FROM accounts WHERE Email=\'{0}\' AND Pass=\'{1}\'".format(email, password))
+        result = connection.execute(q)
+        if result.rowcount != 0:
+            q = text("SELECT * FROM admins WHERE Email=\'{0}\'".format(email))
+            result = connection.execute(q)
+            adminAccess = True if result.rowcount != 0 else False
+            q = text("SELECT * FROM owners WHERE Email=\'{0}\'".format(email))
+            result = connection.execute(q)
+            ownerAccess = True if result.rowcount != 0 else False
+            q = text("SELECT * FROM customer WHERE Email=\'{0}\'".format(email))
+            result = connection.execute(q)
+            customerAccess = True if result.rowcount != 0 else False
+            username = email
             return redirect(url_for('account'))
         else:
             flash('Login Unsuccessful. Please check username and password', 'danger')
@@ -52,40 +60,29 @@ def login():
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
-    if request.method == 'POST': 
-        if form.validate_on_submit():
-            email = request.form['email']
-            first_name = request.form['first_name']
-            last_name = request.form['last_name']
-            password = request.form['password']
-            phone_number = request.form['phone_number']
-            card = request.form['card']
-            cvv = request.form['cvv']
-            exp = request.form['exp']
-            location = request.form['location']
-            if card and cvv and exp and location:
-                type = 'Customer'
-                q = text("call register_customer(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\', \'{5}\',\'{6}\',\'{7}\',\'{8}\')".format(email, first_name, last_name, password, phone_number, card, cvv, exp, location))
-            else:
-                type = 'Owner'
-                q = text("call register_owner(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\')".format(email, first_name, last_name, password, phone_number))
-            try:
-                cursor = conn.cursor()
-                cursor.execute(str(q))
-                results = cursor.fetchall()
-                cursor.close()
-                conn.commit()
-                if results:
-                    flash(str(results[0][0]))
-                # connection.execute(q)
-                # connection.execute("commit")
-                else:
-                    flash(f'{type} account created for {form.email.data}!', 'success')
-                    return redirect(url_for('home'))
-            except Exception as e:
-                flash(e)
+    if form.validate_on_submit():
+        email = request.form['email']
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
+        password = request.form['password']
+        phone_number = request.form['phone_number']
+        card = request.form['card']
+        cvv = request.form['cvv']
+        exp = request.form['exp']
+        location = request.form['location']
+        if card and cvv and exp and location:
+            type = 'Customer'
+            q = text("call register_customer(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\', \'{5}\',\'{6}\',\'{7}\',\'{8}\')".format(email, first_name, last_name, password, phone_number, card, cvv, exp, location))
         else:
-            flash('All fields are required.')            
+            type = 'Owner'
+            q = text("call register_owner(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\')".format(email, first_name, last_name, password, phone_number))
+        try:
+            connection.execute(q)
+            connection.execute("commit")
+            flash(f'{type} account created for {form.email.data}!', 'success')
+            return redirect(url_for('home'))
+        except Exception as e:
+            flash(e)
     return render_template("register.html", homebar=-1, username=username, form=form)
 
 #######################################################
@@ -151,17 +148,8 @@ def add_property():
         dist_to_airport = request.form['dist_to_airport']
         q = text("call add_property(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\',\'{5}\',\'{6}\',\'{7}\',\'{8}\',\'{9}\', \'{10}\')".format(property_name, username, description, capacity, cost, street, city, state, zipcode, nearest_airport_id, dist_to_airport))
         try:
-            cursor = conn.cursor()
-            cursor.execute(str(q))
-            results = cursor.fetchall()
-            cursor.close()
-            conn.commit()
-            if results:
-                flash(str(results[0][0]))
-            # connection.execute(q)
-            # connection.execute("commit")
-            else:
-                flash(f'Property Added Successfully!')
+            connection.execute(q)
+            connection.execute("commit")
         except Exception as e:
             flash(e)
     return render_template("owner/add_property.html", form=form, homebar=3, username=username, pageSelect='add_property', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
@@ -243,17 +231,9 @@ def schedule_flight():
         capacity = request.form['capacity']
         q = text("call schedule_flight(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\',\'{5}\',\'{6}\',\'{7}\',\'{8}\',\'{9}\')".format(flight_num, airline_name, from_airport, to_airport, departure_time, arrival_time, flight_date, cost, capacity, current_date))
         try:
-            cursor = conn.cursor()
-            cursor.execute(str(q))
-            results = cursor.fetchall()
-            cursor.close()
-            conn.commit()
-            if results:
-                flash(str(results[0][0]))
-            # connection.execute(q)
-            # connection.execute("commit")
-            else:
-                flash(f'Flight Scheduled Successfully!')
+            connection.execute(q)
+            connection.execute("commit")
+            flash(f'Flight Scheduled Successfully!')
         except Exception as e:
             flash(e)
     return render_template("admin/schedule_flight.html", form=form, homebar=3, username=username, pageSelect='schedule_flight', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
