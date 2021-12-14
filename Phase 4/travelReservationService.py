@@ -76,6 +76,7 @@ def register():
                 q = text("call register_owner(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\')".format(email, first_name, last_name, password, phone_number))
             try:
                 connection.execute(q)
+                connection.execute("commit")
                 flash(f'{type} account created for {form.email.data}!', 'success')
                 return redirect(url_for('home'))
             except Exception as e:
