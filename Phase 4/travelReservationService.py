@@ -120,7 +120,6 @@ def book():
 
 @app.route("/reserve")
 def reserve():
-    # Select between date range
     start = ""
     end = ""
     guests = ""
@@ -173,9 +172,17 @@ def my_properties():
 #######################################################
 @app.route("/view_airports")
 def view_airports():
-    q = text("SELECT * FROM view_airports_condensed")
+    timezone = "none"
+    try:
+        timezone = request.args["time-zone"]
+        if (timezone != "none"):
+            q = text("SELECT * FROM view_airports_condensed WHERE time_zone = \'{0}\'".format(timezone))
+        else:
+            raise KeyError()
+    except KeyError:
+        q = text("SELECT * FROM view_airports_condensed")
     airport_view = connection.execute(q)
-    return render_template("admin/view_airports.html", table_data=airport_view, homebar=3, username=username, pageSelect='view_airports', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+    return render_template("admin/view_airports.html", timezone=timezone, table_data=airport_view, homebar=3, username=username, pageSelect='view_airports', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/view_airlines")
 def view_airlines():
