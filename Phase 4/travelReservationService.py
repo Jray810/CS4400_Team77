@@ -300,7 +300,11 @@ def reserve_property():
         form.current_date.data = current_date
         form.customer_email.data = username
 
-        cost = Property.query.filter_by(Property_Name = name, Owner_Email = request.args['owner_id']).first().Cost
+        q = text("SELECT cost FROM property WHERE Property_Name = \'{}\' AND Owner_Email = \'{}\'".format(
+            request.args['property_name'], request.args['owner_id']
+        ))
+        cost = [row[0] for row in connection.execute(q)][0]
+
         return jsonify({'htmlresponse': render_template('popups/reserve_form.html', form=form, cost=cost)})
     elif request.method == 'POST':
         property_name = request.form['property_name']
