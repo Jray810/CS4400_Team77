@@ -158,7 +158,16 @@
                         {% endif %}
                         {% endwith %}
                     </div>
-                    <form method = 'post' action="">
+                    <style>
+                        form#add-flight-form label {
+                            width: 150px;
+                            text-align: right;
+                            display: inline-block;
+                            padding-right: 5px;
+                            font-weight: bold;
+                        }
+                    </style>
+                    <form method = 'post' action="" id='add-flight-form'>
                         <fieldset class="form-group">
                             <div class="form-group">
                             {{ form.hidden_tag() }}
