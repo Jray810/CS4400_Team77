@@ -94,6 +94,8 @@ def register():
 #######################################################
 @app.route("/my_bookings")
 def my_bookings():
+    if not customerAccess:
+        return redirect(url_for('account'))
     q = text('SELECT * FROM book NATURAL JOIN flight WHERE Customer=\'{0}\' AND ((Flight_Date < \'{1}\') OR (Flight_Date = \'{1}\' AND Was_Cancelled = 1))'.format(username, current_date))
     past_bookings = connection.execute(q)
     q = text('SELECT * FROM book NATURAL JOIN flight WHERE Customer=\'{0}\' AND Flight_Date = \'{1}\' AND Was_Cancelled = 0'.format(username, current_date))
@@ -104,6 +106,8 @@ def my_bookings():
 
 @app.route("/my_reservations")
 def my_reservations():
+    if not customerAccess:
+        return redirect(url_for('account'))
     q = text("SELECT * FROM customers_rate_owners AS O RIGHT OUTER JOIN reserve AS R ON R.Owner_Email = O.Owner_Email AND R.Customer = O.Customer LEFT OUTER JOIN property AS P ON R.Owner_Email = P.Owner_Email AND R.Property_Name = P.Property_Name WHERE R.Customer=\'{0}\' AND ((End_Date < \'{1}\') OR (\'{1}\' BETWEEN Start_Date AND End_Date AND Was_Cancelled = 1))".format(username, current_date))
     past_reservations = connection.execute(q)
     q = text("SELECT * FROM reserve NATURAL JOIN property WHERE Customer=\'{0}\' AND \'{1}\' BETWEEN Start_Date AND End_Date AND Was_Cancelled = 0".format(username, current_date))
@@ -114,12 +118,16 @@ def my_reservations():
 
 @app.route("/book")
 def book():
+    if not customerAccess:
+        return redirect(url_for('account'))
     q = text("SELECT * FROM view_flight AS V JOIN flight AS F ON airline=Airline_Name AND flight_id=Flight_Num WHERE F.Flight_Date > \'{0}\'".format(current_date))
     flight_view = connection.execute(q)
     return render_template("customer/book.html", table_data=flight_view, homebar=3, username=username, pageSelect='book', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/reserve")
 def reserve():
+    if not customerAccess:
+        return redirect(url_for('account'))
     start = ""
     end = ""
     guests = ""
@@ -141,6 +149,8 @@ def reserve():
 #######################################################
 @app.route("/my_properties", methods=['GET', 'POST'])
 def my_properties():
+    if not ownerAccess:
+        return redirect(url_for('account'))
     form = AddPropertyForm()
     state_names = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC', 'AS', 'GU', 'MP', 'PR', 'UM', 'VI']
     form.state.choices = [states for states in state_names]
@@ -172,6 +182,8 @@ def my_properties():
 #######################################################
 @app.route("/view_airports")
 def view_airports():
+    if not adminAccess:
+        return redirect(url_for('account'))
     timezone = "none"
     try:
         timezone = request.args["time-zone"]
@@ -186,12 +198,16 @@ def view_airports():
 
 @app.route("/view_airlines")
 def view_airlines():
+    if not adminAccess:
+        return redirect(url_for('account'))
     q = text("SELECT * FROM view_airlines")
     airline_view = connection.execute(q)
     return render_template("admin/view_airlines.html", table_data=airline_view, homebar=3, username=username, pageSelect='view_airlines', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/view_flights", methods=['GET', 'POST'])
 def view_flights():
+    if not adminAccess:
+        return redirect(url_for('account'))
     q = text("SELECT airline_name FROM view_airlines")
     airline_view = connection.execute(q)
     form = ScheduleFlightForm()
@@ -226,18 +242,24 @@ def view_flights():
 
 @app.route("/view_customers")
 def view_customers():
+    if not adminAccess:
+        return redirect(url_for('account'))
     q = text("SELECT * FROM view_customers")
     customer_view = connection.execute(q)
     return render_template("admin/view_customers.html", table_data=customer_view, homebar=3, username=username, pageSelect='view_customers', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
     
 @app.route("/view_owners")
 def view_owners():
+    if not adminAccess:
+        return redirect(url_for('account'))
     q = text("SELECT * FROM view_owners")
     owner_view = connection.execute(q)
     return render_template("admin/view_owners.html", table_data=owner_view, homebar=3, username=username, pageSelect='view_owners', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/view_properties")
 def view_properties():
+    if not adminAccess:
+        return redirect(url_for('account'))
     q = text("SELECT * FROM view_properties NATURAL JOIN property")
     property_view = connection.execute(q)
     return render_template("admin/view_properties.html", table_data=property_view, homebar=3, username=username, pageSelect='view_properties', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
