@@ -12,22 +12,40 @@
                     <th>Departure Airport</th>
                     <th>Destination Airport</th>
                     <th>Seats Available</th>
+                    <th></th>
                 </tr>
             </thead>
 
             <tbody>
                 {% for row in table_data %}
                 <tr>
-                    <td> {{ row.airline }} </td>
-                    <td> {{ row.Flight_Num }} </td>
-                    <td> {{ row.Flight_Date }} </td>
-                    <td> {{ row.From_Airport }} </td>
-                    <td> {{ row.To_Airport }} </td>
-                    <td> {{ row.num_empty_seats }} </td>
+                    <td id="airline_name">{{ row.airline }}</td>
+                    <td id="flight_num">{{ row.Flight_Num }}</td>
+                    <td>{{ row.Flight_Date }}</td>
+                    <td>{{ row.From_Airport }}</td>
+                    <td>{{ row.To_Airport }}</td>
+                    <td>{{ row.num_empty_seats }}</td>
+                    <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-reserve">Book</button></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+    <div class="modal fade" id="modal-reserve" tabindex="-1" aria-labelledby="detailsLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-negative" id="detailsLabel">Book Flight</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {{ modal_messages() }}
+                    <div id="info"></div>
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock content %}
 {% block scripts %}
@@ -35,6 +53,24 @@
     $(document).ready( function () {
     $('#myTable').DataTable({"pageLength": 25});
 } );
+</script>
+
+<script type='text/javascript'>
+    $(function () {
+        $(".btn-primary").click(function () {
+            var airline_name = $(this).parents("tr").find("#airline_name").text();
+            var flight_num = $(this).parents("tr").find("#flight_num").text();
+            $.ajax({
+                url: "/book_form",
+                type: 'GET',
+                data: {airline_name: airline_name, flight_num: flight_num},
+                success: function(data) {
+                    $("#info").html(data);
+                    $("#info").append(data.htmlresponse);
+                }
+            });
+        });
+    });
 </script>
 {% endblock scripts %}
 {% else %}

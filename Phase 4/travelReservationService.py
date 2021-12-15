@@ -2,7 +2,7 @@ from typing import Iterable
 from application import app
 from db import *
 from flask import render_template, url_for, flash, redirect, request, jsonify
-from forms import RegistrationForm, LoginForm, ReservationForm, ScheduleFlightForm, AddPropertyForm
+from forms import BookingForm, RegistrationForm, LoginForm, ReservationForm, ScheduleFlightForm, AddPropertyForm
 from datetime import date
 
 current_date = '1999-01-01'
@@ -294,7 +294,6 @@ def property_details():
 def reserve_property():
     if request.method == 'GET':
         form = ReservationForm()
-        name = request.args['property_name']
         form.owner_email.data = request.args['owner_id']
         form.property_name.data = request.args['property_name']
         form.current_date.data = current_date
@@ -323,7 +322,35 @@ def reserve_property():
     else:
         return redirect(url_for('reserve'))
 
+@app.route("/book_form", methods=['GET', 'POST'])
+def book_flight():
+    if request.method == 'GET':
+        form = BookingForm()
+        form.airline_name.data = request.args['airline_name']
+        form.flight_num.data = request.args['flight_num']
+        form.current_date.data = current_date
+        form.customer_email.data = username
 
+        q = text("SELECT cost FROM flight WHERE Airline_Name = \'{}\' AND Flight_Num = \'{}\'".format(
+            request.args['airline_name'], request.args['flight_num']
+        ))
+        cost = [row[0] for row in connection.execute(q)][0]
+        return jsonify({'htmlresponse': render_template('popups/book_form.html', form=form, cost=cost)})
+
+    elif request.method == 'POST':
+        customer_email = username
+        airline_name = request.form['airline_name']
+        flight_num = request.form['flight_num']
+        num_seats = request.form['num_seats']
+
+        q = text("CALL book_flight(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\')".format(
+            customer_email, flight_num, airline_name, num_seats, current_date
+        ))
+        connection.execute(q)
+        return redirect(url_for('book'))
+    
+    else:
+        return redirect(url_for('book'))
 #######################################################
 # Function Calls
 #######################################################

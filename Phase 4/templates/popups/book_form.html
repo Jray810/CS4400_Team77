@@ -1,0 +1,40 @@
+<!-- Book Form -->
+
+<div class="container">
+    <form method = 'post' action="book_form">
+        <fieldset class="form-group">
+            <div class="form-group">
+              {{ form.airline_name.label }}
+              {{ form.airline_name }}
+              <br>
+              {{ form.flight_num.label }}
+              {{ form.flight_num }}
+              <br>
+              {{ form.num_seats.label }}
+              {{ form.num_seats }}
+              <br>
+              {{ form.current_date.label }}
+              {{ form.current_date}}
+              <br>
+              <h3>Total Cost: $<span id="cost">0</span></h3>
+              <br>
+              {{form.submit}}
+            </div>
+        </fieldset>
+    </form>
+    
+</div>
+<script type='text/javascript'>
+    var cost = {{ cost }};
+    $(function () {
+        var start_date, end_date;
+        $("#num_seats").change(function () {updateCost()});
+    });
+
+    function updateCost() {
+        seats = $("#num_seats").val();
+        if (seats >= 0) {
+            $("#cost").text(cost * seats);
+        }
+    }
+</script>
