@@ -18,33 +18,65 @@
     <button type="button" class="btn btn-warning me-2" data-toggle="modal" data-target="#modal-system-date">Set System Date</button>
     {% endif %}
     <hr/>
-    <div class="row">
-        <div class="col-sm text-left">
-            <h5>Account Permissions:</h5>
-            {% if adminAccess %}
-            <h6>- Admin</h6>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm text-left">
+                <h5>Account Permissions:</h5>
+                {% if adminAccess %}
+                <h6>- Admin</h6>
+                {% endif %}
+                {% if ownerAccess %}
+                <h6>- Owner</h6>
+                {% endif %}
+                {% if customerAccess %}
+                <h6>- Customer</h6>
+                {% endif %}
+            </div>
+            {% if customerAccess or ownerAccess %}
+            <div class="col-sm text-left">
+                <div class="text-main">
+                    <h5>User Info:</h5>
+                    <h6>Email: {{ row.Email }}</h6>
+                    <h6>Phone Number: {{ row.Phone_Number }}</h6>
+                    {% if customerAccess %}
+                    <h6>Location: {{ row.Location }}</h6>
+                    {% endif %}
+                </div>
+            </div>
             {% endif %}
             {% if ownerAccess %}
-            <h6>- Owner</h6>
-            {% endif %}
-            {% if customerAccess %}
-            <h6>- Customer</h6>
+            <div class="col-sm text-left">
+                <div class="text-main" style="padding: 10px; background-color: #25274d;">
+                    <h5 class="text-main">Delete Owner Account</h5>
+                    <button type="button" class="delete-owner btn btn-danger md-2" onclick="return confirm('Are You Sure You Want To Delete Your Account?')">Delete</button>
+                </div>
+            </div>
             {% endif %}
         </div>
-        {% if ownerAccess %}
-        <div class="col-sm text-left">
-            <div class="text-main" style="padding: 10px; background-color: #25274d;">
-                <h5 class="text-main">Delete Owner Account</h5>
-                <button type="button" class="delete-owner btn btn-danger md-2" onclick="return confirm('Are You Sure You Want To Delete Your Account?')">Delete</button>
+        {% if (not ownerAccess) or (not customerAccess) %}
+        <hr/>
+        <div class="row">
+            {% if not customerAccess %}
+            <div class="col-sm text-left">
+                <div class="text-main" style="padding: 10px; background-color: #25274d;">
+                    <h5 class="text-main">Create Customer Account</h5>
+                    <a href="/register"><button type="button" class="add-customer btn btn-outline-light md-2">Create</button></a>
+                </div>
             </div>
-        </div>
-        {% endif %}
-        {% if customerAccess %}
-        <div class="col-sm text-left">
-            <div class="text-main" style="padding: 10px; background-color: #25274d;">
-                <h5 class="text-main">Delete Customer Account</h5>
-                <!-- <button type="button" class="delete-customer btn btn-danger md-2" onclick="return confirm('Are You Sure You Want To Delete Your Account?')">Delete</button> -->
+            {% endif %}
+            {% if not ownerAccess %}
+            <div class="col-sm text-left">
+                <div class="text-main" style="padding: 10px; background-color: #25274d;">
+                    <h5 class="text-main">Create Owner Account</h5>
+                    {% if customerAccess %}
+                    <button type="button" class="add-owner btn btn-outline-light md-2">Create
+                    {% else %}
+                    <a href="/register"><button type="button" class="btn btn-outline-light md-2">Create</button></a>
+                    {% endif %}
+                </div>
             </div>
+            {% endif %}
+            <div class="col-sm text-left"></div>
         </div>
         {% endif %}
     </div>
@@ -102,6 +134,18 @@
         $(".delete-customer").click(function () {
             $.ajax({
                 url: "/remove_customer",
+                success: function() {
+                    window.location.reload();
+                }
+            });
+        });
+    });
+</script>
+<script>
+    $(function () {
+        $(".add-owner").click(function () {
+            $.ajax({
+                url: "/register_owner",
                 success: function() {
                     window.location.reload();
                 }

@@ -270,7 +270,6 @@ CREATE FUNCTION overlap_check (
 RETURNS BOOLEAN
  DETERMINISTIC 
 sp_main: BEGIN
-	-- Make sure all reservation start/end dates are either both before the start date or both after the end date
     IF EXISTS(SELECT * FROM reserve WHERE Customer = i_customer_email AND Was_Cancelled = 0 AND NOT ((Start_Date < i_start_date AND End_Date < i_start_date) OR (Start_Date > i_end_date AND End_Date > i_end_date)))
 		THEN RETURN TRUE;
         LEAVE sp_main;

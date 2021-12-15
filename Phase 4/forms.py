@@ -12,10 +12,10 @@ class RegistrationForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired(), Length(max=50)])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     phone_number = StringField('Phone Number', validators=[DataRequired(), Length(12)])
-    card = StringField('card')#, validators=[Length(19)])
-    cvv = StringField('cvv')#, validators=[Length(3)])
-    exp = DateField('exp', format='%Y-%m-%d', default = datetime.today())
-    location = StringField('location')#, validators=[Length(50)])
+    card = StringField('Credit Card Number')#, validators=[Length(19)])
+    cvv = StringField('CVV')#, validators=[Length(3)])
+    exp = DateField('Expiration Date', format='%Y-%m-%d')
+    location = StringField('Location')#, validators=[Length(50)])
     submit = SubmitField('Register')
 
 
@@ -54,13 +54,13 @@ class AddPropertyForm(FlaskForm):
     submit = SubmitField('Add Property')
 
 class ReservationForm(FlaskForm):
-    property_name = StringField('Property Name', render_kw = {'readonly': True})
-    owner_email = StringField('Owner Email', render_kw = {'readonly': True})
-    customer_email = StringField('Customer Email', render_kw = {'readonly': True}) 
+    property_name = StringField('Property Name', render_kw = {'disabled': 'disabled'})
+    owner_email = StringField('Owner Email', render_kw = {'disabled': 'disabled'})
+    customer_email = StringField('Customer Email', render_kw = {'disabled': 'disabled'}) 
     start_date = DateField('Start Date', format='%Y-%m-%d', default = datetime.today())
     end_date = DateField('End Date', format='%Y-%m-%d', default = datetime.today())
     num_guests = IntegerField('Number of Guests', validators=[DataRequired()])
-    current_date = StringField('Current Date', render_kw = {'readonly': True})
+    current_date = StringField('Current Date', render_kw = {'disabled': 'disabled'})
     submit = SubmitField('Reserve')
 
 class BookingForm(FlaskForm):

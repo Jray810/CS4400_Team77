@@ -29,13 +29,15 @@ def about():
 def account():
     if username == '':
         return redirect(url_for('home'))
-    q = text("SELECT * FROM accounts WHERE Email=\'{0}\'".format(username))
+    q = text("SELECT * FROM accounts AS A LEFT OUTER JOIN clients AS C ON A.Email = C.Email LEFT OUTER JOIN customer AS K ON C.Email = K.Email WHERE A.Email=\'{0}\'".format(username))
     userdata = connection.execute(q)
     return render_template("account.html", userdata=userdata, current_date=current_date, homebar=2, username=username, adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     global username
+    if username != "":
+        return redirect(url_for('account'))
     global adminAccess
     global ownerAccess
     global customerAccess
@@ -94,6 +96,8 @@ def register():
 #######################################################
 @app.route("/my_bookings")
 def my_bookings():
+    if not customerAccess:
+        return redirect(url_for('account'))
     q = text('SELECT * FROM book NATURAL JOIN flight WHERE Customer=\'{0}\' AND ((Flight_Date < \'{1}\') OR (Flight_Date = \'{1}\' AND Was_Cancelled = 1))'.format(username, current_date))
     past_bookings = connection.execute(q)
     q = text('SELECT * FROM book NATURAL JOIN flight WHERE Customer=\'{0}\' AND Flight_Date = \'{1}\' AND Was_Cancelled = 0'.format(username, current_date))
@@ -104,6 +108,8 @@ def my_bookings():
 
 @app.route("/my_reservations")
 def my_reservations():
+    if not customerAccess:
+        return redirect(url_for('account'))
     q = text("SELECT * FROM customers_rate_owners AS O RIGHT OUTER JOIN reserve AS R ON R.Owner_Email = O.Owner_Email AND R.Customer = O.Customer LEFT OUTER JOIN property AS P ON R.Owner_Email = P.Owner_Email AND R.Property_Name = P.Property_Name WHERE R.Customer=\'{0}\' AND ((End_Date < \'{1}\') OR (\'{1}\' BETWEEN Start_Date AND End_Date AND Was_Cancelled = 1))".format(username, current_date))
     past_reservations = connection.execute(q)
     q = text("SELECT * FROM reserve NATURAL JOIN property WHERE Customer=\'{0}\' AND \'{1}\' BETWEEN Start_Date AND End_Date AND Was_Cancelled = 0".format(username, current_date))
@@ -114,31 +120,39 @@ def my_reservations():
 
 @app.route("/book")
 def book():
+    if not customerAccess:
+        return redirect(url_for('account'))
     q = text("SELECT * FROM view_flight AS V JOIN flight AS F ON airline=Airline_Name AND flight_id=Flight_Num WHERE F.Flight_Date > \'{0}\'".format(current_date))
     flight_view = connection.execute(q)
     return render_template("customer/book.html", table_data=flight_view, homebar=3, username=username, pageSelect='book', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/reserve")
 def reserve():
-    # Select between date range
+    if not customerAccess:
+        return redirect(url_for('account'))
+    start = ""
+    end = ""
+    guests = ""
     try:
         start = request.args['start_intr']
         end = request.args['end_intr']
-        if (start != "" and end != ""):
-            q = text("SELECT * FROM view_properties WHERE capacity_check(Property_Name, Owner_Email, \'{0}\', \'{1}\', 1)".format(start, end))
+        guests = request.args['desired_guests']
+        if (start != "" and end != "" and guests != ""):
+            q = text("SELECT * FROM view_properties WHERE capacity_check(Property_Name, Owner_Email, \'{0}\', \'{1}\', {2})".format(start, end, guests))
         else:
             raise KeyError()
     except KeyError:
         q = text("SELECT * FROM view_properties")
-
     property_view = connection.execute(q)
-    return render_template("customer/reserve.html", table_data=property_view, homebar=3, username=username, pageSelect='reserve', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+    return render_template("customer/reserve.html", start=start, end=end, guests=guests, table_data=property_view, homebar=3, username=username, pageSelect='reserve', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 #######################################################
 # Owner Access
 #######################################################
 @app.route("/my_properties", methods=['GET', 'POST'])
 def my_properties():
+    if not ownerAccess:
+        return redirect(url_for('account'))
     form = AddPropertyForm()
     state_names = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC', 'AS', 'GU', 'MP', 'PR', 'UM', 'VI']
     form.state.choices = [states for states in state_names]
@@ -170,18 +184,32 @@ def my_properties():
 #######################################################
 @app.route("/view_airports")
 def view_airports():
-    q = text("SELECT * FROM view_airports_condensed")
+    if not adminAccess:
+        return redirect(url_for('account'))
+    timezone = "none"
+    try:
+        timezone = request.args["time-zone"]
+        if (timezone != "none"):
+            q = text("SELECT * FROM view_airports_condensed WHERE time_zone = \'{0}\'".format(timezone))
+        else:
+            raise KeyError()
+    except KeyError:
+        q = text("SELECT * FROM view_airports_condensed")
     airport_view = connection.execute(q)
-    return render_template("admin/view_airports.html", table_data=airport_view, homebar=3, username=username, pageSelect='view_airports', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+    return render_template("admin/view_airports.html", timezone=timezone, table_data=airport_view, homebar=3, username=username, pageSelect='view_airports', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/view_airlines")
 def view_airlines():
+    if not adminAccess:
+        return redirect(url_for('account'))
     q = text("SELECT * FROM view_airlines")
     airline_view = connection.execute(q)
     return render_template("admin/view_airlines.html", table_data=airline_view, homebar=3, username=username, pageSelect='view_airlines', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/view_flights", methods=['GET', 'POST'])
 def view_flights():
+    if not adminAccess:
+        return redirect(url_for('account'))
     q = text("SELECT airline_name FROM view_airlines")
     airline_view = connection.execute(q)
     form = ScheduleFlightForm()
@@ -216,18 +244,24 @@ def view_flights():
 
 @app.route("/view_customers")
 def view_customers():
+    if not adminAccess:
+        return redirect(url_for('account'))
     q = text("SELECT * FROM view_customers")
     customer_view = connection.execute(q)
     return render_template("admin/view_customers.html", table_data=customer_view, homebar=3, username=username, pageSelect='view_customers', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
     
 @app.route("/view_owners")
 def view_owners():
+    if not adminAccess:
+        return redirect(url_for('account'))
     q = text("SELECT * FROM view_owners")
     owner_view = connection.execute(q)
     return render_template("admin/view_owners.html", table_data=owner_view, homebar=3, username=username, pageSelect='view_owners', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/view_properties")
 def view_properties():
+    if not adminAccess:
+        return redirect(url_for('account'))
     q = text("SELECT * FROM view_properties NATURAL JOIN property")
     property_view = connection.execute(q)
     return render_template("admin/view_properties.html", table_data=property_view, homebar=3, username=username, pageSelect='view_properties', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
@@ -267,9 +301,13 @@ def reservation_details():
         tableType = 1 if request.form['viewType'] == '1' else 2
         q = text("SELECT * FROM review AS O RIGHT OUTER JOIN reserve AS R ON R.Customer = O.Customer AND R.Owner_Email = O.Owner_Email AND R.Property_Name = O.Property_Name JOIN property AS P ON R.Property_Name = P.Property_Name AND R.Owner_Email = P.Owner_Email WHERE R.Customer=\'{0}\' AND R.Property_Name=\'{1}\' AND R.Owner_Email=\'{2}\'".format(customer_id, property_name, owner_id))
         reservationDetails = connection.execute(q)
+        q = text("SELECT * FROM amenity WHERE Property_Name=\'{0}\' AND Property_Owner=\'{1}\'".format(property_name, owner_id))
+        property_amenities = connection.execute(q)
+        q = text("SELECT * FROM is_close_to WHERE Property_Name=\'{0}\' AND Owner_Email=\'{1}\'".format(property_name, owner_id))
+        near_airport = connection.execute(q)
     else:
         return redirect(url_for('my_reservations'))
-    return jsonify({'htmlresponse': render_template('popups/property_details.html', table_data=reservationDetails, tableType=tableType)})
+    return jsonify({'htmlresponse': render_template('popups/property_details.html', property_amenities=property_amenities, near_airport=near_airport, table_data=reservationDetails, tableType=tableType)})
 
 @app.route("/property_details", methods=['GET', 'POST'])
 def property_details():
@@ -286,9 +324,13 @@ def property_details():
         table_data_current = connection.execute(q)
         q = text("SELECT * FROM view_individual_property_reservations NATURAL JOIN reserve WHERE Was_Cancelled = 0 AND Start_Date > \'{0}\'".format(current_date))
         table_data_future = connection.execute(q)
+        q = text("SELECT * FROM amenity WHERE Property_Name=\'{0}\' AND Property_Owner=\'{1}\'".format(property_name, owner_id))
+        property_amenities = connection.execute(q)
+        q = text("SELECT * FROM is_close_to WHERE Property_Name=\'{0}\' AND Owner_Email=\'{1}\'".format(property_name, owner_id))
+        near_airport = connection.execute(q)
     else:
         return redirect(url_for('my_reservations'))
-    return jsonify({'htmlresponse': render_template('popups/property_details.html', table_data=propertyDetails, table_data_past=table_data_past, table_data_current=table_data_current, table_data_future=table_data_future, tableType=0)})
+    return jsonify({'htmlresponse': render_template('popups/property_details.html', property_amenities=property_amenities, near_airport=near_airport, table_data=propertyDetails, table_data_past=table_data_past, table_data_current=table_data_current, table_data_future=table_data_future, tableType=0)})
 
 @app.route("/reserve_form", methods=['GET', 'POST'])
 def reserve_property():
@@ -461,6 +503,40 @@ def remove_owner():
     q = text("CALL remove_owner(\'{0}\')".format(username))
     connection.execute(q)
     connection.execute('commit')
+    q = text("SELECT * FROM accounts WHERE Email=\'{0}\'".format(username))
+    result = connection.execute(q)
+    if result.rowcount != 0:
+        q = text("SELECT * FROM admins WHERE Email=\'{0}\'".format(username))
+        result = connection.execute(q)
+        adminAccess = True if result.rowcount != 0 else False
+        q = text("SELECT * FROM owners WHERE Email=\'{0}\'".format(username))
+        result = connection.execute(q)
+        ownerAccess = True if result.rowcount != 0 else False
+        q = text("SELECT * FROM customer WHERE Email=\'{0}\'".format(username))
+        result = connection.execute(q)
+        customerAccess = True if result.rowcount != 0 else False
+        return redirect(url_for('account'))
+    else:
+        username = ''
+        adminAccess = False
+        ownerAccess = False
+        customerAccess = False
+    return redirect(url_for('home'))
+
+@app.route("/register_owner")
+def register_owner():
+    global username
+    global adminAccess
+    global ownerAccess
+    global customerAccess
+    if not customerAccess:
+        return redirect(url_for('register'))
+    q = text("SELECT * FROM accounts AS A LEFT OUTER JOIN clients AS C ON A.Email=C.Email WHERE A.Email=\'{0}\'".format(username))
+    result = connection.execute(q)
+    for row in result:
+        q = text("CALL register_owner(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\')".format(username, row.First_Name, row.Last_Name, row.Pass, row.Phone_Number))
+        result = connection.execute(q)
+        connection.execute('commit')
     q = text("SELECT * FROM accounts WHERE Email=\'{0}\'".format(username))
     result = connection.execute(q)
     if result.rowcount != 0:
