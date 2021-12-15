@@ -352,20 +352,32 @@ sp_main: begin
 		THEN INSERT INTO accounts (Email, First_Name, Last_Name, Pass) VALUES (i_email, i_first_name, i_last_name, i_password);
 		INSERT INTO clients (Email, Phone_Number) VALUES (i_email, i_phone_number);
 		INSERT INTO customer (Email, CcNumber, Cvv, Exp_Date, Location) VALUES (i_email, i_cc_number, i_cvv, i_exp_date, i_location);
+        select 1;
         LEAVE sp_main;
 	END IF;
     -- Check if user exists as an Account only
     IF (i_email, i_first_name, i_last_name, i_password) IN (SELECT Email, First_Name, Last_Name, Pass FROM accounts) AND i_email NOT IN (SELECT Email FROM clients) AND i_phone_number NOT IN (SELECT Phone_Number FROM clients) AND i_cc_number NOT IN (SELECT CcNumber FROM customer)
 		THEN INSERT INTO clients (Email, Phone_Number) VALUES (i_email, i_phone_number);
 		INSERT INTO customer (Email, CcNumber, Cvv, Exp_Date, Location) VALUES (i_email, i_cc_number, i_cvv, i_exp_date, i_location);
-		LEAVE sp_main;
+		select 1;
+        LEAVE sp_main;
 	END IF;
     -- Check if user exists as an Account and Client only
     IF (i_email, i_first_name, i_last_name, i_password) IN (SELECT Email, First_Name, Last_Name, Pass FROM accounts) AND (i_email, i_phone_number) IN (SELECT Email, Phone_Number FROM clients) AND i_cc_number NOT IN (SELECT CcNumber FROM customer)
 		THEN INSERT INTO customer (Email, CcNumber, Cvv, Exp_Date, Location) VALUES (i_email, i_cc_number, i_cvv, i_exp_date, i_location);
+        select 1;
         LEAVE sp_main;
     END IF;
-    select concat(i_email, ' already have a customer account.');
+    if i_email IN (SELECT Email FROM accounts)
+		then select concat(i_email, ' is already in use. Please use the login or register with another email address.');
+	end if;
+    if i_phone_number IN (SELECT Phone_Number FROM clients)
+		then select concat(i_phone_number, ' is already in use. Please register with another phone number.');
+	end if;
+    if i_cc_number IN (SELECT CcNumber FROM customer)
+		then select concat(i_cc_number, ' is already in use. Please register with another credit card.');
+	end if;
+    select concat('Sorry. We cannot register your customer\'s account.');
 end //
 delimiter ;
 
@@ -388,20 +400,29 @@ sp_main: begin
 		THEN INSERT INTO accounts (Email, First_Name, Last_Name, Pass) VALUES (i_email, i_first_name, i_last_name, i_password);
 		INSERT INTO clients (Email, Phone_Number) VALUES (i_email, i_phone_number);
 		INSERT INTO owners (Email) VALUES (i_email);
+        select 1;
         LEAVE sp_main;
 	END IF;
     -- Check if user exists as an Account only
     IF (i_email, i_first_name, i_last_name, i_password) IN (SELECT Email, First_Name, Last_Name, Pass FROM accounts) AND i_email NOT IN (SELECT Email FROM clients) AND i_phone_number NOT IN (SELECT Phone_Number FROM clients)
 		THEN INSERT INTO clients (Email, Phone_Number) VALUES (i_email, i_phone_number);
 		INSERT INTO owners (Email) VALUES (i_email);
+        select 1;
 		LEAVE sp_main;
 	END IF;
     -- Check if user exists as an Account and Client only
     IF (i_email, i_first_name, i_last_name, i_password) IN (SELECT Email, First_Name, Last_Name, Pass FROM accounts) AND (i_email, i_phone_number) IN (SELECT Email, Phone_Number FROM clients) AND i_email NOT IN (SELECT Email FROM owners)
 		THEN INSERT INTO owners (Email) VALUES (i_email);
+        select 1;
         LEAVE sp_main;
     END IF;
-    select concat(i_email, ' already have an owner account.');
+    if i_email IN (SELECT Email FROM accounts)
+		then select concat(i_email, ' is already in use. Please use the login or register with another email address.');
+	end if;
+    if i_phone_number IN (SELECT Phone_Number FROM clients)
+		then select concat(i_phone_number, ' is already in use. Please register with another phone number.');
+	end if;
+    select concat('Sorry. We cannot register your owner\'s account.');
 end //
 delimiter ;
 
@@ -417,21 +438,23 @@ sp_main: begin
 -- TODO: Implement your solution here
 	-- Check if owner exists
 	IF i_owner_email NOT IN (SELECT Email FROM owners)
-		THEN LEAVE sp_main;
+		THEN select concat(i_owner_email, ' doesn\'t exist. This can\'t be right.'); LEAVE sp_main;
 	END IF;
     -- Check if owner has listed properties
 	IF i_owner_email IN (SELECT Owner_Email FROM property)
-		THEN LEAVE sp_main;
+		THEN select concat('You have properties listed. Please delete properties first before deleting the account.'); LEAVE sp_main;
 	END IF;
     -- Check if owner exists as a customer
     IF i_owner_email IN (SELECT Email FROM customer)
 		THEN DELETE FROM owners WHERE Email = i_owner_email;
+        select 1;
         LEAVE sp_main;
 	END IF;
     -- Owner exists only as an owner
 	DELETE FROM owners WHERE Email = i_owner_email;
 	DELETE FROM clients WHERE Email = i_owner_email;
 	DELETE FROM accounts WHERE Email = i_owner_email;
+    select 1;
 end //
 delimiter ;
 
@@ -456,23 +479,24 @@ sp_main: begin
 -- TODO: Implement your solution here
 	-- Check if to_airport and from_airport are the same
     IF i_from_airport = i_to_airport
-		THEN select concat('Please don\'t enter the same to departure and arrival airport.'); LEAVE sp_main;
+		THEN select concat('The flight cannot have the same to_airport and from_airport '); LEAVE sp_main;
 	END IF;
     -- Check if flight date is in the future
     IF i_flight_date <= i_current_date
-		THEN select concat('The flight date ', i_flight_date, ' has passed.'); leave sp_main;
+		THEN select concat('The flight date must be in the future '); LEAVE sp_main;
 	END IF;
     -- Check if Airline and Flight Number combination already exists
     IF (i_airline_name, i_flight_num) IN (SELECT Airline_Name, Flight_Num FROM flight)
-		THEN select concat(i_airline_name, ' ', i_flight_num, ' has already exists.'); LEAVE sp_main;
+		THEN select concat(i_airline_name, ' ', i_flight_num, ' is alreay exists.'); LEAVE sp_main;
 	END IF;
     -- Check that Airline Name and Airports exist
     IF i_airline_name NOT IN (SELECT Airline_Name FROM airline) OR i_from_airport NOT IN (SELECT Airport_Id FROM airport) OR i_to_airport NOT IN (SELECT Airport_Id FROM airport)
-		THEN select concat(i_from_airport, ' airport doesn\'t exist.'); LEAVE sp_main;
+		THEN select concat(i_from_airport, ' or ', i_to_airport, ' airport doesn\'t exist.'); LEAVE sp_main;
 	END IF;
     -- Add Airline and Flight Number combination
     INSERT INTO flight (Flight_Num, Airline_Name, From_Airport, To_Airport, Departure_Time, Arrival_Time, Flight_Date, Cost, Capacity)
 		VALUES (i_flight_num, i_airline_name, i_from_airport, i_to_airport, i_departure_time, i_arrival_time, i_flight_date, i_cost, i_capacity);
+        select 1;
 end //
 delimiter ;
 
@@ -595,22 +619,26 @@ sp_main: begin
 -- TODO: Implement your solution here
     -- Check if property name and owner name unique
     IF EXISTS(SELECT * FROM property WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email)
-		THEN select concat(i_property_name, ' has been added.'); LEAVE sp_main;
+		THEN select concat(i_property_name, ' ', i_owner_email, ' is alreay exists.'); LEAVE sp_main;
 	END IF;
 	-- Check if address is unique
     IF EXISTS(SELECT * FROM property WHERE Street = i_street AND City = i_city AND State = i_state AND Zip = i_zip)
-		THEN select concat( i_street, ' ,', i_city, ' ,',  i_state, ' ', i_zip, ' has existed. Please add your own property'); LEAVE sp_main;
+		THEN select concat( i_street, ', ', i_city, ', ',  i_state, ' ', i_zip, ' has existed. Please add your own property'); LEAVE sp_main;
 	END IF;
     -- Add the property
     INSERT INTO property (Property_Name, Owner_Email, Descr, Capacity, Cost, Street, City, State, Zip) VALUES (i_property_name, i_owner_email, i_description, i_capacity, i_cost, i_street, i_city, i_state, i_zip);
     -- Check if nearest_airport_id is valid
     IF NOT EXISTS(SELECT * FROM airport WHERE Airport_Id = i_nearest_airport_id)
-		THEN LEAVE sp_main;
+		THEN select concat('Airport doesn\'t exist. Your property has been added without the nearest airport.'); LEAVE sp_main;
 	END IF;
     -- Check if distance is valid
     IF i_dist_to_airport >= 0
 		THEN INSERT INTO is_close_to (Property_Name, Owner_Email, Airport, Distance) VALUES (i_property_name, i_owner_email, i_nearest_airport_id, i_dist_to_airport);
-	END IF;          
+	END IF;   
+    IF i_dist_to_airport < 0
+		then select concat('Distance to airport must be greater than zero.');
+	end if;
+    select 1;
 end //
 delimiter ;
 
@@ -893,6 +921,7 @@ create procedure process_date (
 )
 sp_main: begin
 -- TODO: Implement your solution here
+    SET SQL_SAFE_UPDATES=0;
     SET SQL_SAFE_UPDATES=0;
     UPDATE customer AS C
     SET Location = IFNULL((SELECT A.State FROM book AS B LEFT OUTER JOIN flight AS F ON B.Airline_Name = F.Airline_Name AND B.Flight_Num = F.Flight_Num LEFT OUTER JOIN airport AS A ON F.To_Airport = A.Airport_Id WHERE F.Flight_Date = i_current_date AND B.Customer = C.Email AND B.Was_Cancelled = 0), Location);
