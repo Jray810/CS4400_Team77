@@ -303,12 +303,13 @@ def flight_details():
         airline_name = request.form['airline_name']
         flight_num = request.form['flight_num']
         timekeeper = request.form['timekeeper']
+        tableType = request.form['tableType']
         q = text("SELECT * FROM flight JOIN view_flight ON Flight_Num=flight_id AND Airline_Name=airline WHERE Airline_Name = \'{0}\' AND Flight_Num = {1}".format(airline_name, flight_num))
         flightDetails = connection.execute(q)
         removable = True if "Future" in timekeeper else False
     else:
         return redirect(url_for('view_flights'))
-    return jsonify({'htmlresponse': render_template('popups/flight_details.html', removable=removable, table_data=flightDetails, tableType=0)})
+    return jsonify({'htmlresponse': render_template('popups/flight_details.html', removable=removable, table_data=flightDetails, tableType=tableType)})
 
 @app.route("/booking_details", methods=['GET', 'POST'])
 def booking_details():
@@ -320,7 +321,7 @@ def booking_details():
         bookingDetails = connection.execute(q)
     else:
         return redirect(url_for('my_bookings'))
-    return jsonify({'htmlresponse': render_template('popups/flight_details.html', table_data=bookingDetails, tableType=1)})
+    return jsonify({'htmlresponse': render_template('popups/flight_details.html', table_data=bookingDetails, tableType='1')})
 
 @app.route("/reservation_details", methods=['GET', 'POST'])
 def reservation_details():
@@ -347,6 +348,7 @@ def property_details():
         tableType = 0 if request.form['viewType'] == '0' else 2
         q = text("CALL view_individual_property_reservations(\'{0}\', \'{1}\')".format(property_name, owner_id))
         connection.execute(q)
+        connection.execute('commit')
         q = text("SELECT * FROM property NATURAL JOIN view_properties WHERE Property_Name=\'{0}\' AND Owner_Email=\'{1}\'".format(property_name, owner_id))
         propertyDetails = connection.execute(q)
         q = text("SELECT * FROM view_individual_property_reservations NATURAL JOIN reserve LEFT OUTER JOIN owners_rate_customers AS R ON customer_email = R.Customer WHERE Was_Cancelled = 0 AND End_Date < \'{0}\'".format(current_date))
@@ -390,6 +392,7 @@ def reserve_property():
             property_name, owner_email, customer_email, start_date, end_date, num_guests, current_date
         ))
         connection.execute(q)
+        connection.execute('commit')
         return redirect(url_for('reserve'))
 
     else:
@@ -404,7 +407,7 @@ def book_flight():
         form.current_date.data = current_date
         form.customer_email.data = username
 
-        q = text("SELECT cost FROM flight WHERE Airline_Name = \'{}\' AND Flight_Num = \'{}\'".format(
+        q = text("SELECT cost FROM flight WHERE Airline_Name = \'{0}\' AND Flight_Num = \'{1}\'".format(
             request.args['airline_name'], request.args['flight_num']
         ))
         cost = [row[0] for row in connection.execute(q)][0]
@@ -420,6 +423,7 @@ def book_flight():
             customer_email, flight_num, airline_name, num_seats, current_date
         ))
         connection.execute(q)
+        connection.execute('commit')
         return redirect(url_for('book'))
     
     else:
@@ -452,6 +456,7 @@ def set_system_date():
         desired_date = request.form['set_date']
         q = text("CALL process_date(\'{0}\')".format(desired_date))
         connection.execute(q)
+        connection.execute('commit')
         current_date = desired_date
     return redirect(url_for('account'))
 
@@ -462,16 +467,17 @@ def remove_flight():
         flight_num = request.form['flight_num']
         q = text("CALL remove_flight({0}, \'{1}\', \'{2}\')".format(flight_num, airline_name, current_date))
         connection.execute(q)
+        connection.execute('commit')
     return redirect(url_for('view_flights'))
 
 @app.route("/cancel_booking", methods=['GET', 'POST'])
 def cancel_booking():
     if request.method == 'POST':
-        customer_id = request.form['customer_id']
         airline_name = request.form['airline_name']
         flight_num = request.form['flight_num']
-        q = text("CALL cancel_flight_booking(\'{0}\', {1}, \'{2}\', \'{3}\')".format(customer_id, flight_num, airline_name, current_date))
+        q = text("CALL cancel_flight_booking(\'{0}\', {1}, \'{2}\', \'{3}\')".format(username, flight_num, airline_name, current_date))
         connection.execute(q)
+        connection.execute('commit')
     return redirect(url_for('my_bookings'))
 
 @app.route("/cancel_reservation", methods=['GET', 'POST'])
@@ -482,6 +488,7 @@ def cancel_reservation():
         customer_id = request.form['customer_id']
         q = text("CALL cancel_property_reservation(\'{0}\', \'{1}\', \'{2}\', \'{3}\')".format(property_name, owner_id, customer_id, current_date))
         connection.execute(q)
+        connection.execute('commit')
     return redirect(url_for('my_reservations'))
 
 @app.route("/remove_property", methods=['GET', 'POST'])
@@ -491,6 +498,7 @@ def remove_property():
         owner_id = request.form['owner_id']
         q = text("CALL remove_property(\'{0}\', \'{1}\', \'{2}\')".format(property_name, owner_id, current_date))
         connection.execute(q)
+        connection.execute('commit')
     return redirect(url_for('my_properties'))
 
 @app.route("/owner_rates_customer", methods=['GET', 'POST'])
@@ -501,6 +509,7 @@ def owner_rates_customer():
         rating = request.form['rating']
         q = text("CALL owner_rates_customer(\'{0}\', \'{1}\', {2}, \'{3}\')".format(owner_id, customer_id, rating, current_date))
         connection.execute(q)
+        connection.execute('commit')
     return redirect(url_for('my_properties'))
 
 @app.route("/customer_rates_owner", methods=['GET', 'POST'])
@@ -511,6 +520,7 @@ def customer_rates_owner():
         rating = request.form['rating']
         q = text("CALL customer_rates_owner(\'{0}\', \'{1}\', {2}, \'{3}\')".format(customer_id, owner_id, rating, current_date))
         connection.execute(q)
+        connection.execute('commit')
     return redirect(url_for('my_reservations'))
 
 @app.route("/customer_review_property", methods=['GET', 'POST'])
@@ -523,6 +533,7 @@ def customer_review_property():
         rating = request.form['rating']
         q = text("CALL customer_review_property(\'{0}\', \'{1}\', \'{2}\', \'{3}\', {4}, \'{5}\')".format(property_name, owner_id, customer_id, content, rating, current_date))
         connection.execute(q)
+        connection.execute('commit')
     return redirect(url_for('my_reservations'))
 
 @app.route("/remove_owner", methods=['GET', 'POST'])

@@ -24,24 +24,40 @@
                     <td>{{ row.From_Airport }}</td>
                     <td>{{ row.To_Airport }}</td>
                     <td>{{ row.num_empty_seats }}</td>
-                    <td><button type="button" class="btn btn-warning" data-toggle="modal" data-target="#modal-reserve">Book</button></td>
+                    <td><button type="button" class="details btn btn-warning" data-toggle="modal" data-target="#modal-details">Details</button></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-    <div class="modal fade" id="modal-reserve" tabindex="-1" aria-labelledby="detailsLabel" aria-hidden="true">
-        <div class="modal-dialog">
+    <div class="modal fade" id="modal-details" tabindex="-1" aria-labelledby="detailsLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sp">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-negative" id="detailsLabel">Book Flight</h5>
+                    <h5 class="modal-title text-negative" id="detailsLabel">Flight Details</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
                     {{ modal_messages() }}
-                    <div id="info"></div>
+                    <div id="flight-info"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-book" tabindex="-1" aria-labelledby="bookLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-primary-color">
+                <div class="modal-header">
+                    <h5 class="modal-title text-main" id="bookLabel">Book Flight</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {{ modal_messages() }}
+                    <div id="info" class="text-main"></div>
                 </div>
             </div>
         </div>
@@ -53,19 +69,20 @@
     $('#myTable').DataTable({"pageLength": 25});
 } );
 </script>
-
 <script type='text/javascript'>
     $(function () {
-        $(".btn-warning").click(function () {
+        $(".details").click(function () {
             var airline_name = $(this).parents("tr").find("#airline_name").text();
             var flight_num = $(this).parents("tr").find("#flight_num").text();
+            var timekeeper = "Future"
+            var tableType = 2;
             $.ajax({
-                url: "/book_form",
-                type: 'GET',
-                data: {airline_name: airline_name, flight_num: flight_num},
+                url: "/flight_details",
+                type: 'POST',
+                data: {airline_name: airline_name, flight_num: flight_num, timekeeper: timekeeper, tableType: tableType},
                 success: function(data) {
-                    $("#info").html(data);
-                    $("#info").append(data.htmlresponse);
+                    $("#flight-info").html(data);
+                    $("#flight-info").append(data.htmlresponse);
                 }
             });
         });

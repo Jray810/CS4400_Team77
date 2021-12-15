@@ -14,21 +14,20 @@
         <fieldset class="form-group">
             <div class="form-group">
               {{ form.airline_name.label }}
-              {{ form.airline_name(style="background-color:#F8F8F8;color:#545454;border:0;border:solid 1.3px #D4D4D4;") }}
+              {{ form.airline_name(style="background-color:#545454;color:#FAFAFA;border:0;border:solid 1.3px #D4D4D4;") }}
               <br>
               {{ form.flight_num.label }}
-              {{ form.flight_num(style="background-color:#F8F8F8;color:#545454;border:0;border:solid 1.3px #D4D4D4;") }}
+              {{ form.flight_num(style="background-color:#545454;color:#FAFAFA;border:0;border:solid 1.3px #D4D4D4;") }}
               <br>
               {{ form.num_seats.label }}
               {{ form.num_seats }}
               <br>
               {{ form.current_date.label }}
-              {{ form.current_date(style="background-color:#F8F8F8;color:#545454;border:0;border:solid 1.3px #D4D4D4;") }}
-              <br>
-              <h3>Total Cost: $<span id="cost">0</span></h3>
-              <br>
-              {{ form.submit(class="btn btn-warning md-2") }}
+              {{ form.current_date(style="background-color:#545454;color:#FAFAFA;border:0;border:solid 1.3px #D4D4D4;") }}
+              <hr/>
+              <h4 class="text-main">Total Cost: $<span id="cost">0</span></h4>
             </div>
+            {{ form.submit(class="btn btn-warning md-2") }}
         </fieldset>
     </form>
     

@@ -34,7 +34,6 @@
             <h6 class="font-weight-bold">Reservation Details</h6>
             <h6>Dates: {{ row.Start_Date }} to {{ row.End_Date }}</h6>
             <h6>Number of Guests: {{ row.Num_Guests }}</h6>
-            {% if tableType == 1 %}
             <br>
             <h6>Your Review:</h6>
             {% if not row.Score %}
@@ -51,11 +50,8 @@
                 {{ row.Content }}
                 </h6>
             {% endif %}
-            {% endif %}
-            {% if tableType == 2 %}
             <br>
             <h6>Estimated Refund: ${{ '%0.2f'|format(((row.End_Date - row.Start_Date).days|float)*(row.Cost|float)*0.8) }}</h6>
-            {% endif %}
         </div>
         {% endif %}
     </div>
