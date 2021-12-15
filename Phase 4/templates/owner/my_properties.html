@@ -103,7 +103,16 @@
                         {% endif %}
                         {% endwith %}
                     </div>
-                    <form method = 'post' action="">
+                    <style>
+                    form#add-property-form label {
+                        width: 200px;
+                        text-align: right;
+                        display: inline-block;
+                        padding-right: 5px;
+                        font-weight: bold;
+                    }
+                    </style>
+                    <form method = 'post' action="" id='add-property-form'>
                         <fieldset class="form-group">
                             <div class="form-group">
                             {{ form.hidden_tag() }}
@@ -130,13 +139,15 @@
                                 {{ form.state }}
                                 <br>
                                 {{ form.zipcode.label }}
-                                {{ form.zipcode}}
+                                {{ form.zipcode(placeholder="30308")}}
                                 <br>
                                 {{ form.nearest_airport_id.label }}
                                 {{ form.nearest_airport_id }}
+                                <span class="optional">(optional)</span>
                                 <br>
                                 {{ form.dist_to_airport.label }}
                                 {{ form.dist_to_airport }}
+                                <span class="optional">(optional)</span>
                             </div>
                         </fieldset>
                         <div class="form-group">
