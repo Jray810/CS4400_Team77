@@ -12,10 +12,10 @@ class RegistrationForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired(), Length(max=50)])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     phone_number = StringField('Phone Number', validators=[DataRequired(), Length(12)])
-    card = StringField('card')#, validators=[Length(19)])
-    cvv = StringField('cvv')#, validators=[Length(3)])
-    exp = DateField('exp', format='%Y-%m-%d', default = datetime.today())
-    location = StringField('location')#, validators=[Length(50)])
+    card = StringField('Credit Card Number')#, validators=[Length(19)])
+    cvv = StringField('CVV')#, validators=[Length(3)])
+    exp = DateField('Expiration Date', format='%Y-%m-%d')
+    location = StringField('Location')#, validators=[Length(50)])
     submit = SubmitField('Register')
 
 
