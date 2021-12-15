@@ -302,11 +302,13 @@ def flight_details():
     if request.method == 'POST':
         airline_name = request.form['airline_name']
         flight_num = request.form['flight_num']
+        timekeeper = request.form['timekeeper']
         q = text("SELECT * FROM flight JOIN view_flight ON Flight_Num=flight_id AND Airline_Name=airline WHERE Airline_Name = \'{0}\' AND Flight_Num = {1}".format(airline_name, flight_num))
         flightDetails = connection.execute(q)
+        removable = True if "Future" in timekeeper else False
     else:
         return redirect(url_for('view_flights'))
-    return jsonify({'htmlresponse': render_template('popups/flight_details.html',table_data=flightDetails, tableType=0)})
+    return jsonify({'htmlresponse': render_template('popups/flight_details.html', removable=removable, table_data=flightDetails, tableType=0)})
 
 @app.route("/booking_details", methods=['GET', 'POST'])
 def booking_details():

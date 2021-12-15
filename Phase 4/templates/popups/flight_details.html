@@ -38,5 +38,27 @@
             {% endif %}
         </div>
     </div>
+    {% if removable %}
+        <a class="nav-item" href="/view_flights">
+            <button type="button" class="removal btn btn-danger me-2" data-dismiss="modal" aria-label="Close">Remove Flight</button>
+        </a>
+    {% endif %}
 </div>
 {% endfor %}
+<script type='text/javascript'>
+    $(function () {
+        $(".removal").click(function () {
+            var airline_name = $(this).parents("div").find("#airline_name").text();
+            var flight_num = $(this).parents("div").find("#flight_num").text();
+            flight_num = flight_num.substring(15)
+            $.ajax({
+                url: "/remove_flight",
+                type: 'POST',
+                data: {airline_name: airline_name, flight_num: flight_num},
+                success: function() {
+                    window.location.reload();
+                }
+            });
+        });
+    });
+</script>

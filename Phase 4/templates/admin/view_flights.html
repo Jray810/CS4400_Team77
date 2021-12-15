@@ -1,7 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
     <h1 class="h2">Flights</h1>
-
     <div>
         {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -23,6 +22,7 @@
     <hr/>
     <h3>Past Flights</h3>
     <div class="table-responsive">
+        <h1 id="timekeeper" hidden>Past</h1>
         <table class="table table-striped table-sm" id="myPastTable">
             <thead>
                 <tr>
@@ -58,6 +58,7 @@
     <hr/>
     <h3>Current Flights</h3>
     <div class="table-responsive">
+        <h1 id="timekeeper" hidden>Current</h1>
         <table class="table table-striped table-sm" id="myCurrentTable">
             <thead>
                 <tr>
@@ -93,6 +94,7 @@
     <hr/>
     <h3>Future Flights</h3>
     <div class="table-responsive">
+        <h1 id="timekeeper" hidden>Future</h1>
         <table class="table table-striped table-sm" id="myFutureTable">
             <thead>
                 <tr>
@@ -140,9 +142,6 @@
                 <div class="modal-body">
                     {{ modal_messages() }}
                     <h1 id="info"></h1>
-                    <a class="nav-item" href="/view_flights">
-                        <button type="button" class="removal btn btn-danger me-2" data-dismiss="modal" aria-label="Close">Remove Flight</button>
-                    </a>
                 </div>
             </div>
         </div>
@@ -252,30 +251,14 @@
         $(".btn-warning").click(function () {
             var airline_name = $(this).parents("tr").find("#airline").text();
             var flight_num = $(this).parents("tr").find("#flightid").text();
+            var timekeeper = $(this).parents("div").find("#timekeeper").text();
             $.ajax({
                 url: "/flight_details",
                 type: 'POST',
-                data: {airline_name: airline_name, flight_num: flight_num},
+                data: {airline_name: airline_name, flight_num: flight_num, timekeeper:timekeeper},
                 success: function(data) {
                     $("#info").html(data);
                     $("#info").append(data.htmlresponse);
-                }
-            });
-        });
-    });
-</script>
-<script type='text/javascript'>
-    $(function () {
-        $(".removal").click(function () {
-            var airline_name = $(this).parents("div").find("#airline_name").text();
-            var flight_num = $(this).parents("div").find("#flight_num").text();
-            flight_num = flight_num.substring(15)
-            $.ajax({
-                url: "/remove_flight",
-                type: 'POST',
-                data: {airline_name: airline_name, flight_num: flight_num},
-                success: function() {
-                    window.location.reload();
                 }
             });
         });
