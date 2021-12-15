@@ -299,9 +299,13 @@ def reservation_details():
         tableType = 1 if request.form['viewType'] == '1' else 2
         q = text("SELECT * FROM review AS O RIGHT OUTER JOIN reserve AS R ON R.Customer = O.Customer AND R.Owner_Email = O.Owner_Email AND R.Property_Name = O.Property_Name JOIN property AS P ON R.Property_Name = P.Property_Name AND R.Owner_Email = P.Owner_Email WHERE R.Customer=\'{0}\' AND R.Property_Name=\'{1}\' AND R.Owner_Email=\'{2}\'".format(customer_id, property_name, owner_id))
         reservationDetails = connection.execute(q)
+        q = text("SELECT * FROM amenity WHERE Property_Name=\'{0}\' AND Property_Owner=\'{1}\'".format(property_name, owner_id))
+        property_amenities = connection.execute(q)
+        q = text("SELECT * FROM is_close_to WHERE Property_Name=\'{0}\' AND Owner_Email=\'{1}\'".format(property_name, owner_id))
+        near_airport = connection.execute(q)
     else:
         return redirect(url_for('my_reservations'))
-    return jsonify({'htmlresponse': render_template('popups/property_details.html', table_data=reservationDetails, tableType=tableType)})
+    return jsonify({'htmlresponse': render_template('popups/property_details.html', property_amenities=property_amenities, near_airport=near_airport, table_data=reservationDetails, tableType=tableType)})
 
 @app.route("/property_details", methods=['GET', 'POST'])
 def property_details():
@@ -318,9 +322,13 @@ def property_details():
         table_data_current = connection.execute(q)
         q = text("SELECT * FROM view_individual_property_reservations NATURAL JOIN reserve WHERE Was_Cancelled = 0 AND Start_Date > \'{0}\'".format(current_date))
         table_data_future = connection.execute(q)
+        q = text("SELECT * FROM amenity WHERE Property_Name=\'{0}\' AND Property_Owner=\'{1}\'".format(property_name, owner_id))
+        property_amenities = connection.execute(q)
+        q = text("SELECT * FROM is_close_to WHERE Property_Name=\'{0}\' AND Owner_Email=\'{1}\'".format(property_name, owner_id))
+        near_airport = connection.execute(q)
     else:
         return redirect(url_for('my_reservations'))
-    return jsonify({'htmlresponse': render_template('popups/property_details.html', table_data=propertyDetails, table_data_past=table_data_past, table_data_current=table_data_current, table_data_future=table_data_future, tableType=0)})
+    return jsonify({'htmlresponse': render_template('popups/property_details.html', property_amenities=property_amenities, near_airport=near_airport, table_data=propertyDetails, table_data_past=table_data_past, table_data_current=table_data_current, table_data_future=table_data_future, tableType=0)})
 
 @app.route("/reserve_form", methods=['GET', 'POST'])
 def reserve_property():

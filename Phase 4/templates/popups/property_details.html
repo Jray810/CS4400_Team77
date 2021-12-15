@@ -14,6 +14,21 @@
             <h6 class="font-weight-bold">Description:</h6>
             <h6>{{ row.Descr }}</h6>
         </div>
+        {% if property_amenities.rowcount != 0 or near_airport.rowcount != 0 %}
+        <div class="col-sm text-left">
+            {% if property_amenities.rowcount != 0 %}
+            <h6 class="font-weight-bold">Amenities:</h6>
+            {% for row in property_amenities %}
+            <h6>{{ row.Amenity_Name }}</h6>
+            {% endfor %}
+            {% endif %}
+            {% if near_airport.rowcount != 0 %}
+            <br>
+            <h6 class="font-weight-bold">Nearest Airport:</h6>
+            <h6>{% for row in near_airport %}{{ row.Airport }} is {{ row.Distance }} miles away{% endfor %}</h6>
+            {% endif %}
+        </div>
+        {% endif %}
         {% if tableType >= 1 %}
         <div class="col-sm text-left">
             <h6 class="font-weight-bold">Reservation Details</h6>
