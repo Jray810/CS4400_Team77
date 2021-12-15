@@ -184,10 +184,11 @@
         $(".details").click(function () {
             var owner_id = $(this).parents("div").find("#owner").text();
             var property_name = $(this).parents("tr").find("#property").text();
+            var viewType = 0;
             $.ajax({
                 url: "/property_details",
                 type: 'POST',
-                data: {owner_id: owner_id, property_name: property_name},
+                data: {owner_id: owner_id, property_name: property_name, viewType: viewType},
                 success: function(data) {
                     $("#info").html(data);
                     $("#info").append(data.htmlresponse);
