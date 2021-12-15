@@ -51,8 +51,8 @@ class AddPropertyForm(FlaskForm):
     submit = SubmitField('Add Property')
 
 class ReservationForm(FlaskForm):
-    property_name = StringField('Property Name', render_kw = {'disabled': 'disabled'})
-    owner_email = StringField('Owner Email', render_kw = {'disabled': 'disabled'})
+    property_name = StringField('Property Name', render_kw = {'readonly': "readonly"})
+    owner_email = StringField('Owner Email', render_kw = {'readonly': "readonly"})
     customer_email = StringField('Customer Email', render_kw = {'disabled': 'disabled'}) 
     start_date = DateField('Start Date', format='%Y-%m-%d', default = datetime.today())
     end_date = DateField('End Date', format='%Y-%m-%d', default = datetime.today())
