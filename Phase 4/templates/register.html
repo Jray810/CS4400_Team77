@@ -1,4 +1,3 @@
-{% if username=='' %}
 {% extends "layout.html" %}
 {% block content %}
 
@@ -190,13 +189,3 @@
     });
 </script>
 {% endblock scripts %}
-{% else %}
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv = "refresh" content = "0; url = /account" />
-    </head>
-    <body>
-    </body>
-</html>
-{% endif %}

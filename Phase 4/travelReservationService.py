@@ -29,13 +29,15 @@ def about():
 def account():
     if username == '':
         return redirect(url_for('home'))
-    q = text("SELECT * FROM accounts WHERE Email=\'{0}\'".format(username))
+    q = text("SELECT * FROM accounts AS A LEFT OUTER JOIN clients AS C ON A.Email = C.Email LEFT OUTER JOIN customer AS K ON C.Email = K.Email WHERE A.Email=\'{0}\'".format(username))
     userdata = connection.execute(q)
     return render_template("account.html", userdata=userdata, current_date=current_date, homebar=2, username=username, adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     global username
+    if username != "":
+        return redirect(url_for('account'))
     global adminAccess
     global ownerAccess
     global customerAccess
@@ -474,6 +476,40 @@ def remove_owner():
     q = text("CALL remove_owner(\'{0}\')".format(username))
     connection.execute(q)
     connection.execute('commit')
+    q = text("SELECT * FROM accounts WHERE Email=\'{0}\'".format(username))
+    result = connection.execute(q)
+    if result.rowcount != 0:
+        q = text("SELECT * FROM admins WHERE Email=\'{0}\'".format(username))
+        result = connection.execute(q)
+        adminAccess = True if result.rowcount != 0 else False
+        q = text("SELECT * FROM owners WHERE Email=\'{0}\'".format(username))
+        result = connection.execute(q)
+        ownerAccess = True if result.rowcount != 0 else False
+        q = text("SELECT * FROM customer WHERE Email=\'{0}\'".format(username))
+        result = connection.execute(q)
+        customerAccess = True if result.rowcount != 0 else False
+        return redirect(url_for('account'))
+    else:
+        username = ''
+        adminAccess = False
+        ownerAccess = False
+        customerAccess = False
+    return redirect(url_for('home'))
+
+@app.route("/register_owner")
+def register_owner():
+    global username
+    global adminAccess
+    global ownerAccess
+    global customerAccess
+    if not customerAccess:
+        return redirect(url_for('register'))
+    q = text("SELECT * FROM accounts AS A LEFT OUTER JOIN clients AS C ON A.Email=C.Email WHERE A.Email=\'{0}\'".format(username))
+    result = connection.execute(q)
+    for row in result:
+        q = text("CALL register_owner(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\')".format(username, row.First_Name, row.Last_Name, row.Pass, row.Phone_Number))
+        result = connection.execute(q)
+        connection.execute('commit')
     q = text("SELECT * FROM accounts WHERE Email=\'{0}\'".format(username))
     result = connection.execute(q)
     if result.rowcount != 0:
