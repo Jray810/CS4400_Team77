@@ -1,6 +1,5 @@
 {% extends "layout.html" %}
 {% block content %}
-
     <div>
         {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -9,13 +8,11 @@
             <button type="button" class="close" data-dismiss="alert" aria-label="close">         
                 <span aria-hidden="true">x</span>        
             </button>        
-        {{message}}               
-    </div>
+        {{message}}      
         {% endfor %}    
         {% endif %}
-        {% endwith %}
-
-
+        {% endwith %}         
+    </div>
     <form method="POST" action="">
         {{ form.hidden_tag() }}
         <fieldset class="form-group">
@@ -108,10 +105,8 @@
                 {% endif %}
             </div>
             <div id="additional-info" class="hide">
-                <hr/>
-                <h5 class="text-main">Additional Customer Registration Info</h5>
-                <p style="color:White;">(Caution: The following info are required for creating a customer's account. If you leave one of them blank, we will create an owner's account for you.)</p>
                 <hr style="background-color:White;">
+                <h5 class="text-main">Additional Customer Registration Info</h5>
                 <div class="form-group">
                     {{ form.card.label(class="form-control-label text-main") }}
                     {% if form.card.errors %}
@@ -181,11 +176,18 @@
     $(function () {
         $(".account-type").click(function () {
             var account_type = $(this).val();
+            var registrationType = 'customer'
             if (account_type == 'customer'){
                 $("#additional-info").show('medium');
             }else{
+                registrationType = 'owner'
                 $("#additional-info").hide('medium');
             }
+            $.ajax({
+                url: "/set_registration_type",
+                type: 'POST',
+                data: {registrationType: registrationType},
+            });
         });
     });
 </script>

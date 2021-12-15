@@ -1,15 +1,17 @@
 {% extends "layout.html" %}
 {% block content %}
-    <div class="col-md-8">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                {{ message }}
-                </div>
-            {% endfor %}
-            {% endif %}
-        {% endwith %}
+    <div>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-success alert-dismissable" role="alert"> 
+            <button type="button" class="close" data-dismiss="alert" aria-label="close">         
+                <span aria-hidden="true">x</span>        
+            </button>        
+        {{message}}      
+        {% endfor %}    
+        {% endif %}
+        {% endwith %}         
     </div>
     <form method="POST" action="">
         {{ form.hidden_tag() }}

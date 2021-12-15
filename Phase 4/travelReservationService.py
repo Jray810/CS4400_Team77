@@ -11,7 +11,7 @@ username = ''
 adminAccess = False
 customerAccess = False
 ownerAccess = False
-
+registrationType = ''
 
 #######################################################
 # Main Pages
@@ -65,6 +65,9 @@ def login():
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
+    global registrationType
+    if registrationType == '':
+        registrationType = 'customer'
     form = RegistrationForm()
     if form.validate_on_submit():
         email = request.form['email']
@@ -76,25 +79,30 @@ def register():
         cvv = request.form['cvv']
         exp = request.form['exp']
         location = request.form['location']
-        if card and cvv and exp and location:
-            type = 'Customer'
-            q = text("call register_customer(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\', \'{5}\',\'{6}\',\'{7}\',\'{8}\')".format(email, first_name, last_name, password, phone_number, card, cvv, exp, location))
-        else:
-            type = 'Owner'
+        if registrationType == 'customer':
+            if card and cvv and exp and location:
+                q = text("call register_customer(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\', \'{5}\',\'{6}\',\'{7}\',\'{8}\')".format(email, first_name, last_name, password, phone_number, card, cvv, exp, location))
+            else:
+                flash('Not all fields filled out!')
+                registrationType = ''
+                return redirect(url_for('register'))
+        elif registrationType == 'owner':
             q = text("call register_owner(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\')".format(email, first_name, last_name, password, phone_number))
+        else:
+            flash('Something went wrong :(')
+            return redirect(url_for('register'))
         try:
             results = connection.execute(q)
             connection.execute('commit')
-            result = results.first()[0]
-            if result==1:
-                flash(f'{type} account created for {form.email.data}! Please login.')
-                return redirect(url_for('home'))
+            if results.rowcount != 0:
+                flash(f'{registrationType} account created for {form.email.data}! Please login.')
+                registrationType = ''
+                return redirect(url_for('login'))
             else:
                 flash(str(result))
         except Exception as e:
             flash(e)
-    else:
-        flash('Please enter valid info.')
+    registrationType = ''
     return render_template("register.html", homebar=-1, username=username, form=form)
 
 #######################################################
@@ -616,6 +624,12 @@ def register_owner():
         ownerAccess = False
         customerAccess = False
     return redirect(url_for('home'))
+
+@app.route("/set_registration_type", methods=['GET', 'POST'])
+def set_registration_type():
+    global registrationType
+    registrationType = request.form['registrationType']
+    return 'success'
 
 #######################################################
 # Testing
