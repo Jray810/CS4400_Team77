@@ -1,19 +1,19 @@
 {% extends "layout.html" %}
 {% block content %}
 {% for row in userdata %}
-    {% with messages = get_flashed_messages(with_categories=true) %}
+    <div>
+        {% with messages = get_flashed_messages() %}
         {% if messages %}
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">
-            {{ message }}
-            </div>
-            {% endfor %}
+        {% for message in messages %}
+        <div class="alert alert-success alert-dismissable" role="alert"> 
+            <button type="button" class="close" data-dismiss="alert" aria-label="close">         
+                <span aria-hidden="true">x</span>        
+            </button>        
+        {{message}}      
+        {% endfor %}    
         {% endif %}
-    {% endwith %}
-    <!-- The flash message doesn't work for deleting owner's account. Just use this to report messages. -->
-    {% if messages1 %}     
-        {{messages1}}           
-    {% endif %}
+        {% endwith %}         
+    </div>
     <h1>Welcome back, {{ row.First_Name }} {{ row.Last_Name }}</h1>
     <h3>We'll figure out what we want to put here soon!</h3>
     <hr/>
@@ -52,7 +52,7 @@
             <div class="col-sm text-left">
                 <div class="text-main" style="padding: 10px; background-color: #25274d;">
                     <h5 class="text-main">Delete Owner Account</h5>
-                    <button type="button" class="delete-owner btn btn-danger md-2" onclick="return confirm('Are You Sure You Want To Delete Your Account?')">Delete</button>
+                    <button type="button" class="btn btn-danger md-2" data-toggle="modal" data-target="#modal-delete-owner">Delete</button>
                 </div>
             </div>
             {% endif %}
@@ -98,6 +98,25 @@
                     <p>Date:  <input type="date" id="set-date" name="set-date"></p>
                     <a class="nav-item" href="/account">
                         <button type="button" class="set-date btn btn-danger me-2" data-dismiss="modal" aria-label="Close">Set Date</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-delete-owner" tabindex="-1" aria-labelledby="deleteOwnerLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-primary-color">
+                <div class="modal-header">
+                    <h5 class="modal-title text-main" id="deleteOwnerLabel">Confirm Delete Owner Account</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {{ modal_messages() }}
+                    <h5 class="text-main">Are You Sure You Want To Delete Your Account?</h5>
+                    <a class="nav-item" href="/account">
+                        <button type="button" class="delete-owner btn btn-danger me-2" data-dismiss="modal" aria-label="Close">Delete</button>
                     </a>
                 </div>
             </div>

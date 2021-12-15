@@ -561,15 +561,11 @@ def remove_owner():
         else:
             flash(str(result))
             messages1 = str(result)
-            # return redirect(url_for('account'))
             return redirect(url_for('account'), messages1)
     except Exception as e:
         flash(e)
         messages1 = str(e)
-        # return redirect(url_for('account'))
         return redirect(url_for('account'), messages1)
-#     connection.execute(q)
-#     connection.execute('commit')
     q = text("SELECT * FROM accounts WHERE Email=\'{0}\'".format(username))
     result = connection.execute(q)
     if result.rowcount != 0:
@@ -582,7 +578,6 @@ def remove_owner():
         q = text("SELECT * FROM customer WHERE Email=\'{0}\'".format(username))
         result = connection.execute(q)
         customerAccess = True if result.rowcount != 0 else False
-#         return redirect(url_for('account'))
         return redirect(url_for('account'), messages1)
     else:
         username = ''

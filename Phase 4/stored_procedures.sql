@@ -394,18 +394,22 @@ create procedure remove_owner (
 )
 sp_main: begin
 	IF i_owner_email NOT IN (SELECT Email FROM owners)
-		THEN LEAVE sp_main;
+		THEN SELECT concat(i_owner_email, ' doesn\'t exist. This can\'t be right.');
+        LEAVE sp_main;
 	END IF;
 	IF i_owner_email IN (SELECT Owner_Email FROM property)
-		THEN LEAVE sp_main;
+		THEN SELECT concat('You have properties listed. Please delete properties first before deleting the account.');
+        LEAVE sp_main;
 	END IF;
     IF i_owner_email IN (SELECT Email FROM customer)
 		THEN DELETE FROM owners WHERE Email = i_owner_email;
+        SELECT 1;
         LEAVE sp_main;
 	END IF;
 	DELETE FROM owners WHERE Email = i_owner_email;
 	DELETE FROM clients WHERE Email = i_owner_email;
 	DELETE FROM accounts WHERE Email = i_owner_email;
+    SELECT 1;
 end $
 
 
