@@ -452,19 +452,24 @@ create procedure schedule_flight (
 )
 sp_main: begin
     IF i_from_airport = i_to_airport
-		THEN LEAVE sp_main;
+		THEN select concat('The flight cannot have the same to_airport and from_airport '); LEAVE sp_main;
 	END IF;
+    -- Check if flight date is in the future
     IF i_flight_date <= i_current_date
-		THEN LEAVE sp_main;
+		THEN select concat('The flight date must be in the future '); LEAVE sp_main;
 	END IF;
+    -- Check if Airline and Flight Number combination already exists
     IF (i_airline_name, i_flight_num) IN (SELECT Airline_Name, Flight_Num FROM flight)
-		THEN LEAVE sp_main;
+		THEN select concat(i_airline_name, ' ', i_flight_num, ' is alreay exists.'); LEAVE sp_main;
 	END IF;
+    -- Check that Airline Name and Airports exist
     IF i_airline_name NOT IN (SELECT Airline_Name FROM airline) OR i_from_airport NOT IN (SELECT Airport_Id FROM airport) OR i_to_airport NOT IN (SELECT Airport_Id FROM airport)
-		THEN LEAVE sp_main;
+		THEN select concat(i_from_airport, ' or ', i_to_airport, ' airport doesn\'t exist.'); LEAVE sp_main;
 	END IF;
+    -- Add Airline and Flight Number combination
     INSERT INTO flight (Flight_Num, Airline_Name, From_Airport, To_Airport, Departure_Time, Arrival_Time, Flight_Date, Cost, Capacity)
 		VALUES (i_flight_num, i_airline_name, i_from_airport, i_to_airport, i_departure_time, i_arrival_time, i_flight_date, i_cost, i_capacity);
+        select 1;
 end $
 
 
