@@ -52,3 +52,13 @@ class AddPropertyForm(FlaskForm):
     nearest_airport_id = StringField('Nearest Airport', validators=[Length(max=3)], default=' ')
     dist_to_airport = IntegerField('Distance to Airport', default = 0)
     submit = SubmitField('Add')
+
+class ReservationForm(FlaskForm):
+    property_name = StringField('Property Name', render_kw = {'readonly': True})
+    owner_email = StringField('Owner Email', render_kw = {'readonly': True})
+    customer_email = StringField('Customer Email', render_kw = {'readonly': True}) 
+    start_date = DateField('Start Date', format='%Y-%m-%d', default = datetime.today())
+    end_date = DateField('End Date', format='%Y-%m-%d', default = datetime.today())
+    num_guests = IntegerField('Number of Guests', validators=[DataRequired()])
+    current_date = StringField('Current Date', render_kw = {'readonly': True})
+    submit = SubmitField('Reserve')

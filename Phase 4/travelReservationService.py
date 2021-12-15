@@ -2,7 +2,7 @@ from typing import Iterable
 from application import app
 from db import *
 from flask import render_template, url_for, flash, redirect, request, jsonify
-from forms import RegistrationForm, LoginForm, ScheduleFlightForm, AddPropertyForm
+from forms import RegistrationForm, LoginForm, ReservationForm, ScheduleFlightForm, AddPropertyForm
 from datetime import date
 from datetime import datetime
 
@@ -119,7 +119,17 @@ def book():
 
 @app.route("/reserve")
 def reserve():
-    q = text("SELECT * FROM view_properties")
+    # Select between date range
+    try:
+        start = request.args['start_intr']
+        end = request.args['end_intr']
+        if (start != "" and end != ""):
+            q = text("SELECT * FROM view_properties WHERE capacity_check(Property_Name, Owner_Email, \'{0}\', \'{1}\', 1)".format(start, end))
+        else:
+            raise KeyError()
+    except KeyError:
+        q = text("SELECT * FROM view_properties")
+
     property_view = connection.execute(q)
     return render_template("customer/reserve.html", table_data=property_view, homebar=3, username=username, pageSelect='reserve', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
@@ -316,6 +326,36 @@ def property_details():
     else:
         return redirect(url_for('my_reservations'))
     return jsonify({'htmlresponse': render_template('popups/property_details.html', table_data=propertyDetails, table_data_past=table_data_past, table_data_current=table_data_current, table_data_future=table_data_future, tableType=0)})
+
+@app.route("/reserve_form", methods=['GET', 'POST'])
+def reserve_property():
+    if request.method == 'GET':
+        form = ReservationForm()
+        name = request.args['property_name']
+        form.owner_email.data = request.args['owner_id']
+        form.property_name.data = request.args['property_name']
+        form.current_date.data = current_date
+        form.customer_email.data = username
+
+        cost = Property.query.filter_by(Property_Name = name, Owner_Email = request.args['owner_id']).first().Cost
+        return jsonify({'htmlresponse': render_template('popups/reserve_form.html', form=form, cost=cost)})
+    elif request.method == 'POST':
+        property_name = request.form['property_name']
+        owner_email = request.form['owner_email']
+        customer_email = username
+        start_date = request.form['start_date']
+        end_date = request.form['end_date']
+        num_guests = request.form['num_guests']
+
+        q = text("CALL reserve_property(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\', \'{5}\', \'{6}\')".format(
+            property_name, owner_email, customer_email, start_date, end_date, num_guests, current_date
+        ))
+        connection.execute(q)
+        return redirect(url_for('reserve'))
+
+    else:
+        return redirect(url_for('reserve'))
+
 
 #######################################################
 # Function Calls

@@ -1,0 +1,54 @@
+<!-- Reservation Form -->
+
+<div class="container">
+    <form method = 'post' action="reserve_form">
+        <fieldset class="form-group">
+            <div class="form-group">
+              {{ form.property_name.label }}
+              {{ form.property_name }}
+              <br>
+              {{ form.owner_email.label }}
+              {{ form.owner_email }}
+              <br>
+              {{ form.customer_email.label }}
+              {{ form.customer_email }}
+              <br>
+              {{ form.start_date.label }}
+              {{ form.start_date }}
+              <br>
+              {{ form.end_date.label }}
+              {{ form.end_date }}
+              <br>
+              {{ form.num_guests.label }}
+              {{ form.num_guests }}
+              <br>
+              {{ form.current_date.label }}
+              {{ form.current_date}}
+              <br>
+              <h3>Total Cost: <span id="cost">{{ cost }}</span></h3>
+              <br>
+              {{form.submit}}
+            </div>
+        </fieldset>
+    </form>
+    
+</div>
+<script type='text/javascript'>
+    var cost = {{ cost }};
+    $(function () {
+        var start_date, end_date;
+        $("#start_date").change(function () {updateCost()});
+        $("#end_date").change(function () {updateCost()});
+    });
+
+    function updateCost() {
+        start_date = new Date($("#start_date").val());
+        end_date = new Date($("#end_date").val());
+        days = Math.round((end_date-start_date)/(1000*60*60*24));
+        if (days > 0) {
+            $("#cost").text(cost * days);
+        } else {
+            $("#cost").text("Invalid Date");
+        }
+    }
+</script>

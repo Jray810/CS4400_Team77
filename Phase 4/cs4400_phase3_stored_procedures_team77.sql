@@ -731,6 +731,7 @@ delimiter ;
 -- Name: view_properties
 create or replace view view_properties (
     property_name, 
+    owner_email,
     average_rating_score, 
     description, 
     address, 
@@ -738,7 +739,7 @@ create or replace view view_properties (
     cost_per_night
 ) as
 -- TODO: replace this select query with your solution
-SELECT Property_Name, avg_review(property_name), Descr, CONCAT(Street, ', ', City, ', ', State, ', ', Zip), Capacity, Cost FROM property;
+SELECT Property_Name, Owner_email, avg_review(property_name), Descr, CONCAT(Street, ', ', City, ', ', State, ', ', Zip), Capacity, Cost FROM property;
 
 
 -- ID: 5e
