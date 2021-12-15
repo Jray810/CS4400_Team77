@@ -24,10 +24,10 @@
               <br>
               {{ form.current_date.label }}
               {{ form.current_date}}
+              <hr/>
+              <h4>Total Cost: <span id="cost"></span></h4>
               <br>
-              <h3>Total Cost: <span id="cost"></span></h3>
-              <br>
-              {{form.submit}}
+              {{form.submit(class="btn btn-warning md-2")}}
             </div>
         </fieldset>
     </form>

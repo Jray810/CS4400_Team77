@@ -121,18 +121,21 @@ def book():
 @app.route("/reserve")
 def reserve():
     # Select between date range
+    start = ""
+    end = ""
+    guests = ""
     try:
         start = request.args['start_intr']
         end = request.args['end_intr']
-        if (start != "" and end != ""):
-            q = text("SELECT * FROM view_properties WHERE capacity_check(Property_Name, Owner_Email, \'{0}\', \'{1}\', 1)".format(start, end))
+        guests = request.args['desired_guests']
+        if (start != "" and end != "" and guests != ""):
+            q = text("SELECT * FROM view_properties WHERE capacity_check(Property_Name, Owner_Email, \'{0}\', \'{1}\', {2})".format(start, end, guests))
         else:
             raise KeyError()
     except KeyError:
         q = text("SELECT * FROM view_properties")
-
     property_view = connection.execute(q)
-    return render_template("customer/reserve.html", table_data=property_view, homebar=3, username=username, pageSelect='reserve', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+    return render_template("customer/reserve.html", start=start, end=end, guests=guests, table_data=property_view, homebar=3, username=username, pageSelect='reserve', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 #######################################################
 # Owner Access
