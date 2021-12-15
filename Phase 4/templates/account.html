@@ -10,6 +10,10 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
+    <!-- The flash message doesn't work for deleting owner's account. Just use this to report messages. -->
+    {% if messages1 %}     
+        {{messages1}}           
+    {% endif %}
     <h1>Welcome back, {{ row.First_Name }} {{ row.Last_Name }}</h1>
     <h3>We'll figure out what we want to put here soon!</h3>
     <hr/>
