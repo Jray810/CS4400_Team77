@@ -339,19 +339,31 @@ sp_main: begin
 		THEN INSERT INTO accounts (Email, First_Name, Last_Name, Pass) VALUES (i_email, i_first_name, i_last_name, i_password);
 		INSERT INTO clients (Email, Phone_Number) VALUES (i_email, i_phone_number);
 		INSERT INTO customer (Email, CcNumber, Cvv, Exp_Date, Location) VALUES (i_email, i_cc_number, i_cvv, i_exp_date, i_location);
+        select 1;
         LEAVE sp_main;
 	END IF;
     IF (i_email, i_first_name, i_last_name, i_password) IN (SELECT Email, First_Name, Last_Name, Pass FROM accounts) AND i_email NOT IN (SELECT Email FROM clients) AND i_phone_number NOT IN (SELECT Phone_Number FROM clients) AND i_cc_number NOT IN (SELECT CcNumber FROM customer)
 		THEN INSERT INTO clients (Email, Phone_Number) VALUES (i_email, i_phone_number);
 		INSERT INTO customer (Email, CcNumber, Cvv, Exp_Date, Location) VALUES (i_email, i_cc_number, i_cvv, i_exp_date, i_location);
-		LEAVE sp_main;
+		select 1;
+        LEAVE sp_main;
 	END IF;
     IF (i_email, i_first_name, i_last_name, i_password) IN (SELECT Email, First_Name, Last_Name, Pass FROM accounts) AND (i_email, i_phone_number) IN (SELECT Email, Phone_Number FROM clients) AND i_cc_number NOT IN (SELECT CcNumber FROM customer)
 		THEN INSERT INTO customer (Email, CcNumber, Cvv, Exp_Date, Location) VALUES (i_email, i_cc_number, i_cvv, i_exp_date, i_location);
+        select 1;
         LEAVE sp_main;
     END IF;
+    if i_email IN (SELECT Email FROM accounts)
+		then select concat(i_email, ' is already in use. Please use the login or register with another email address.');
+	end if;
+    if i_phone_number IN (SELECT Phone_Number FROM clients)
+		then select concat(i_phone_number, ' is already in use. Please register with another phone number.');
+	end if;
+    if i_cc_number IN (SELECT CcNumber FROM customer)
+		then select concat(i_cc_number, ' is already in use. Please register with another credit card.');
+	end if;
+    select concat('Sorry. We cannot register your customer\'s account.');
 end $
-
 
 
 -- ID: 1b
@@ -370,17 +382,27 @@ sp_main: begin
 		THEN INSERT INTO accounts (Email, First_Name, Last_Name, Pass) VALUES (i_email, i_first_name, i_last_name, i_password);
 		INSERT INTO clients (Email, Phone_Number) VALUES (i_email, i_phone_number);
 		INSERT INTO owners (Email) VALUES (i_email);
+        select 1;
         LEAVE sp_main;
 	END IF;
     IF (i_email, i_first_name, i_last_name, i_password) IN (SELECT Email, First_Name, Last_Name, Pass FROM accounts) AND i_email NOT IN (SELECT Email FROM clients) AND i_phone_number NOT IN (SELECT Phone_Number FROM clients)
 		THEN INSERT INTO clients (Email, Phone_Number) VALUES (i_email, i_phone_number);
 		INSERT INTO owners (Email) VALUES (i_email);
+        select 1;
 		LEAVE sp_main;
 	END IF;
     IF (i_email, i_first_name, i_last_name, i_password) IN (SELECT Email, First_Name, Last_Name, Pass FROM accounts) AND (i_email, i_phone_number) IN (SELECT Email, Phone_Number FROM clients) AND i_email NOT IN (SELECT Email FROM owners)
 		THEN INSERT INTO owners (Email) VALUES (i_email);
+        select 1;
         LEAVE sp_main;
     END IF;
+    if i_email IN (SELECT Email FROM accounts)
+		then select concat(i_email, ' is already in use. Please use the login or register with another email address.');
+	end if;
+    if i_phone_number IN (SELECT Phone_Number FROM clients)
+		then select concat(i_phone_number, ' is already in use. Please register with another phone number.');
+	end if;
+    select concat('Sorry. We cannot register your owner\'s account.');
 end $
 
 
@@ -393,23 +415,21 @@ create procedure remove_owner (
     in i_owner_email varchar(50)
 )
 sp_main: begin
-	IF i_owner_email NOT IN (SELECT Email FROM owners)
-		THEN SELECT concat(i_owner_email, ' doesn\'t exist. This can\'t be right.');
-        LEAVE sp_main;
+    IF i_owner_email NOT IN (SELECT Email FROM owners)
+		THEN select concat(i_owner_email, ' doesn\'t exist. This can\'t be right.'); LEAVE sp_main;
 	END IF;
 	IF i_owner_email IN (SELECT Owner_Email FROM property)
-		THEN SELECT concat('You have properties listed. Please delete properties first before deleting the account.');
-        LEAVE sp_main;
+		THEN select concat('You have properties listed. Please delete properties first before deleting the account.'); LEAVE sp_main;
 	END IF;
     IF i_owner_email IN (SELECT Email FROM customer)
 		THEN DELETE FROM owners WHERE Email = i_owner_email;
-        SELECT 1;
+        select 1;
         LEAVE sp_main;
 	END IF;
 	DELETE FROM owners WHERE Email = i_owner_email;
 	DELETE FROM clients WHERE Email = i_owner_email;
 	DELETE FROM accounts WHERE Email = i_owner_email;
-    SELECT 1;
+    select 1;
 end $
 
 
@@ -553,20 +573,23 @@ create procedure add_property (
 ) 
 sp_main: begin
     IF EXISTS(SELECT * FROM property WHERE Property_Name = i_property_name AND Owner_Email = i_owner_email)
-		THEN LEAVE sp_main;
+		THEN select concat(i_property_name, ' ', i_owner_email, ' is alreay exists.'); LEAVE sp_main;
 	END IF;
     IF EXISTS(SELECT * FROM property WHERE Street = i_street AND City = i_city AND State = i_state AND Zip = i_zip)
-		THEN LEAVE sp_main;
+		THEN select concat( i_street, ', ', i_city, ', ',  i_state, ' ', i_zip, ' has existed. Please add your own property'); LEAVE sp_main;
 	END IF;
     INSERT INTO property (Property_Name, Owner_Email, Descr, Capacity, Cost, Street, City, State, Zip) VALUES (i_property_name, i_owner_email, i_description, i_capacity, i_cost, i_street, i_city, i_state, i_zip);
     IF NOT EXISTS(SELECT * FROM airport WHERE Airport_Id = i_nearest_airport_id)
-		THEN LEAVE sp_main;
+		THEN select concat('Airport doesn\'t exist. Your property has been added without the nearest airport.'); LEAVE sp_main;
 	END IF;
     IF i_dist_to_airport >= 0
 		THEN INSERT INTO is_close_to (Property_Name, Owner_Email, Airport, Distance) VALUES (i_property_name, i_owner_email, i_nearest_airport_id, i_dist_to_airport);
-	END IF;          
+	END IF;   
+    IF i_dist_to_airport < 0
+		then select concat('Distance to airport must be greater than zero.');
+	end if;
+    select 1;
 end $
-
 
 
 -- ID: 4b
