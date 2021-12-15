@@ -29,7 +29,7 @@ def about():
 def account():
     if username == '':
         return redirect(url_for('home'))
-    q = text("SELECT * FROM accounts AS A LEFT OUTER JOIN clients AS C ON A.Email = C.Email LEFT OUTER JOIN customer AS K ON C.Email = K.Email WHERE A.Email=\'{0}\'".format(username))
+    q = text("SELECT A.Email as Email, First_Name, Last_Name, Pass, Phone_Number, CcNumber, Cvv, Exp_date, Location FROM accounts AS A LEFT OUTER JOIN clients AS C ON A.Email = C.Email LEFT OUTER JOIN customer AS K ON C.Email = K.Email WHERE A.Email=\'{0}\'".format(username))
     userdata = connection.execute(q)
     return render_template("account.html", userdata=userdata, current_date=current_date, homebar=2, username=username, adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
