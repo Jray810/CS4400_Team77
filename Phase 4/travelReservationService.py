@@ -83,12 +83,18 @@ def register():
             type = 'Owner'
             q = text("call register_owner(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\')".format(email, first_name, last_name, password, phone_number))
         try:
-            connection.execute(q)
-            connection.execute("commit")
-            flash(f'{type} account created for {form.email.data}!', 'success')
-            return redirect(url_for('home'))
+            results = connection.execute(q)
+            connection.execute('commit')
+            result = results.first()[0]
+            if result==1:
+                flash(f'{type} account created for {form.email.data}! Please login.')
+                return redirect(url_for('home'))
+            else:
+                flash(str(result))
         except Exception as e:
             flash(e)
+    else:
+        flash('Please enter valid info.')
     return render_template("register.html", homebar=-1, username=username, form=form)
 
 #######################################################
@@ -168,13 +174,28 @@ def my_properties():
             zipcode = request.form['zipcode']
             nearest_airport_id = request.form['nearest_airport_id']
             dist_to_airport = request.form['dist_to_airport']
-            q = text("CALL add_property(\'{0}\', \'{1}\', \'{2}\', {3}, {4}, \'{5}\', \'{6}\', \'{7}\', \'{8}\', \'{9}\', {10})".format(property_name, username, description, capacity, cost, street, city, state, zipcode, nearest_airport_id, dist_to_airport))
+            if nearest_airport_id:
+                if not dist_to_airport:
+                    flash('Please enter the distance to the nearest airport.')
+                    return redirect(url_for('my_properties'))
+                else:
+                    q = text("CALL add_property(\'{0}\', \'{1}\', \'{2}\', {3}, {4}, \'{5}\', \'{6}\', \'{7}\', \'{8}\', \'{9}\', {10})".format(property_name, username, description, capacity, cost, street, city, state, zipcode, nearest_airport_id, dist_to_airport))
+            else:
+                q = text("CALL add_property(\'{0}\', \'{1}\', \'{2}\', {3}, {4}, \'{5}\', \'{6}\', \'{7}\', \'{8}\', null, null)".format(property_name, username, description, capacity, cost, street, city, state, zipcode))            
             try:
-                connection.execute(q)
-                connection.execute("commit")
-                return redirect(url_for('my_properties'))
+                results = connection.execute(q)
+                connection.execute('commit')
+                result = results.first()[0]
+                if result==1:
+                    flash('Property Added Successfully!')
+                    return redirect(url_for('my_properties'))
+                else:
+                    flash(str(result))
             except Exception as e:
                 flash(e)
+        else:
+            flash('Please enter valid info.')
+            print(form.errors)
     q = text("SELECT * FROM view_properties NATURAL JOIN property WHERE Owner_Email=\'{0}\'".format(username))
     properties_view = connection.execute(q)
     return render_template("owner/my_properties.html", form=form, table_data=properties_view, homebar=3, username=username, pageSelect='my_properties', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
@@ -228,11 +249,18 @@ def view_flights():
             capacity = request.form['capacity']
             q = text("CALL schedule_flight(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}:00\', \'{5}:00\', \'{6}\', {7}, {8}, \'{9}\')".format(flight_num, airline_name, from_airport, to_airport, departure_time, arrival_time, flight_date, cost, capacity, current_date))
             try:
-                connection.execute(q)
-                connection.execute("commit")
-                return redirect(url_for('view_flights'))
+                results = connection.execute(q)
+                connection.execute('commit')
+                result = results.first()[0]
+                if result==1:
+                    flash('Flights Scheduled Successfully!')
+                    return redirect(url_for('view_flights'))
+                else:
+                    flash(str(result))
             except Exception as e:
                 flash(e)
+        else:
+            flash('Please enter valid info.')
         print(form.errors)
     q = text("SELECT * FROM flight AS F JOIN view_flight ON Flight_Num=flight_id AND Airline_Name=airline WHERE F.Flight_Date < \'{0}\'".format(current_date))
     past_flights = connection.execute(q)
@@ -501,8 +529,25 @@ def remove_owner():
     global ownerAccess
     global customerAccess
     q = text("CALL remove_owner(\'{0}\')".format(username))
-    connection.execute(q)
-    connection.execute('commit')
+    try:
+        results = connection.execute(q)
+        connection.execute('commit')
+        result = results.first()[0]
+        if result==1:
+            flash('Owner\'s account has been removed.')
+            messages1 = 'Owner\'s account has been removed.'
+        else:
+            flash(str(result))
+            messages1 = str(result)
+            # return redirect(url_for('account'))
+            return redirect(url_for('account'), messages1)
+    except Exception as e:
+        flash(e)
+        messages1 = str(e)
+        # return redirect(url_for('account'))
+        return redirect(url_for('account'), messages1)
+#     connection.execute(q)
+#     connection.execute('commit')
     q = text("SELECT * FROM accounts WHERE Email=\'{0}\'".format(username))
     result = connection.execute(q)
     if result.rowcount != 0:
@@ -515,7 +560,8 @@ def remove_owner():
         q = text("SELECT * FROM customer WHERE Email=\'{0}\'".format(username))
         result = connection.execute(q)
         customerAccess = True if result.rowcount != 0 else False
-        return redirect(url_for('account'))
+#         return redirect(url_for('account'))
+        return redirect(url_for('account'), messages1)
     else:
         username = ''
         adminAccess = False
