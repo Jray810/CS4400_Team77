@@ -24,7 +24,7 @@
                     <td>{{ row.From_Airport }}</td>
                     <td>{{ row.To_Airport }}</td>
                     <td>{{ row.num_empty_seats }}</td>
-                    <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-reserve">Book</button></td>
+                    <td><button type="button" class="btn btn-warning" data-toggle="modal" data-target="#modal-reserve">Book</button></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -56,7 +56,7 @@
 
 <script type='text/javascript'>
     $(function () {
-        $(".btn-primary").click(function () {
+        $(".btn-warning").click(function () {
             var airline_name = $(this).parents("tr").find("#airline_name").text();
             var flight_num = $(this).parents("tr").find("#flight_num").text();
             $.ajax({

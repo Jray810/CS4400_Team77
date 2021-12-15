@@ -61,9 +61,9 @@ class ReservationForm(FlaskForm):
     submit = SubmitField('Reserve')
 
 class BookingForm(FlaskForm):
-    customer_email = StringField('Customer Email', render_kw = {'readonly': True})
-    airline_name = StringField('Airline Name', render_kw = {'readonly': True})
-    flight_num = StringField('Flight Number', render_kw = {'readonly': True})
+    customer_email = StringField('Customer Email', render_kw = {'readonly': 'readonly'})
+    airline_name = StringField('Airline Name', render_kw = {'readonly': 'readonly'})
+    flight_num = StringField('Flight Number', render_kw = {'readonly': 'readonly'})
     num_seats = IntegerField('Number of Seats', validators=[DataRequired()])
-    current_date = StringField('Current Date', render_kw = {'readonly': True})
+    current_date = StringField('Current Date', render_kw = {'readonly': 'readonly'})
     submit = SubmitField('Reserve')

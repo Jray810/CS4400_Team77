@@ -1,24 +1,33 @@
 <!-- Book Form -->
 
 <div class="container">
-    <form method = 'post' action="book_form">
+    <style>
+    form#book-form label {
+        width: 150px;
+        text-align: right;
+        display: inline-block;
+        padding-right: 5px;
+        font-weight: bold;
+    }
+    </style>
+    <form method = 'post' action="book_form" id="book-form">
         <fieldset class="form-group">
             <div class="form-group">
               {{ form.airline_name.label }}
-              {{ form.airline_name }}
+              {{ form.airline_name(style="background-color:#F8F8F8;color:#545454;border:0;border:solid 1.3px #D4D4D4;") }}
               <br>
               {{ form.flight_num.label }}
-              {{ form.flight_num }}
+              {{ form.flight_num(style="background-color:#F8F8F8;color:#545454;border:0;border:solid 1.3px #D4D4D4;") }}
               <br>
               {{ form.num_seats.label }}
               {{ form.num_seats }}
               <br>
               {{ form.current_date.label }}
-              {{ form.current_date}}
+              {{ form.current_date(style="background-color:#F8F8F8;color:#545454;border:0;border:solid 1.3px #D4D4D4;") }}
               <br>
               <h3>Total Cost: $<span id="cost">0</span></h3>
               <br>
-              {{form.submit}}
+              {{ form.submit(class="btn btn-warning md-2") }}
             </div>
         </fieldset>
     </form>

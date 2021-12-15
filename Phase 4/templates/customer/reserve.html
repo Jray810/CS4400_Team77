@@ -50,7 +50,7 @@
                         <td>{{ row.capacity }}</td>
                         <td>{{ row.cost_per_night }}</td>
                         <td> 
-                            <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#modal-reserve">Reserve</button>
+                            <button type="button" class="details btn btn-warning" data-toggle="modal" data-target="#modal-details">Details</button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -58,18 +58,34 @@
             </table>
         </div>
     </div>
-    <div class="modal fade" id="modal-reserve" tabindex="-1" aria-labelledby="detailsLabel" aria-hidden="true">
-        <div class="modal-dialog">
+    <div class="modal fade" id="modal-details" tabindex="-1" aria-labelledby="detailsLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sp">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-negative" id="detailsLabel">Reserve Property</h5>
+                    <h5 class="modal-title text-negative" id="detailsLabel">Property Details</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
                     {{ modal_messages() }}
-                    <div id="info"></div>
+                    <div id="property-info"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-reserve" tabindex="-1" aria-labelledby="reserveLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-primary-color">
+                <div class="modal-header">
+                    <h5 class="modal-title text-main" id="reserveLabel">Reserve Property</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {{ modal_messages() }}
+                    <div id="info" class="text-main"></div>
                 </div>
             </div>
         </div>
@@ -83,16 +99,17 @@
 </script>
 <script type='text/javascript'>
     $(function () {
-        $(".btn-warning").click(function () {
-            var property_name = $(this).parents("tr").find("#property_name").text();
+        $(".details").click(function () {
             var owner_id = $(this).parents("tr").find("#owner_id").text();
+            var property_name = $(this).parents("tr").find("#property_name").text();
+            var viewType = 2;
             $.ajax({
-                url: "/reserve_form",
-                type: 'GET',
-                data: {property_name: property_name, owner_id: owner_id},
+                url: "/property_details",
+                type: 'POST',
+                data: {owner_id: owner_id, property_name: property_name, viewType: viewType},
                 success: function(data) {
-                    $("#info").html(data);
-                    $("#info").append(data.htmlresponse);
+                    $("#property-info").html(data);
+                    $("#property-info").append(data.htmlresponse);
                 }
             });
         });

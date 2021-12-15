@@ -14,13 +14,13 @@
         <fieldset class="form-group">
             <div class="form-group">
               {{ form.property_name.label }}
-              {{ form.property_name(style="background-color:#F8F8F8;color:#545454;border:0;border:solid 1.3px #D4D4D4;") }}
+              {{ form.property_name(style="background-color:#545454;color:#FAFAFA;border:0;border:solid 1.3px #D4D4D4;") }}
               <br>
               {{ form.owner_email.label }}
-              {{ form.owner_email(style="background-color:#F8F8F8;color:#545454;border:0;border:solid 1.3px #D4D4D4;") }}
+              {{ form.owner_email(style="background-color:#545454;color:#FAFAFA;border:0;border:solid 1.3px #D4D4D4;") }}
               <br>
               {{ form.customer_email.label }}
-              {{ form.customer_email }}
+              {{ form.customer_email(style="background-color:#545454;color:#FAFAFA;border:0;border:solid 1.3px #D4D4D4;") }}
               <br>
               {{ form.start_date.label }}
               {{ form.start_date }}
@@ -32,15 +32,13 @@
               {{ form.num_guests }}
               <br>
               {{ form.current_date.label }}
-              {{ form.current_date}}
+              {{ form.current_date(style="background-color:#545454;color:#FAFAFA;border:0;border:solid 1.3px #D4D4D4;") }}
               <hr/>
-              <h4>Total Cost: <span id="cost"></span></h4>
-              <br>
-              {{form.submit(class="btn btn-warning md-2")}}
+              <h4 class="text-main">Total Cost: <span id="cost"></span></h4>
             </div>
         </fieldset>
+        {{form.submit(class="btn btn-warning md-2")}}
     </form>
-    
 </div>
 <script type='text/javascript'>
     var cost = {{ cost }};

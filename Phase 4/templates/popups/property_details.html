@@ -1,12 +1,12 @@
 {% for row in table_data %}
 <div class="container">
-    <h1 id="property_name">{{ row.Property_Name }}</h1>
-    <h1 id="customer_id" hidden>{{ row.Customer }}</h1>
+    <h1 id="property_name_details">{{ row.Property_Name }}</h1>
+    <h1 id="customer_id_details" hidden>{{ row.Customer }}</h1>
     <div class="row">
         <div class="col-sm text-left">
             <h6>Address: {{ row.Street }}, {{ row.City }}, {{ row.State }}, {{ row.Zip }}</h6>
-            <h6 id="owner_id">Owner Contact Info: {{ row.Owner_Email }}</h6>
-            {% if tableType == 0 %}
+            <h6 id="owner_id_details">Owner Contact Info: {{ row.Owner_Email }}</h6>
+            {% if tableType == 0 or tableType == 2 %}
             <h6>Capacity: {{ row.Capacity }}</h6>
             <h6>Cost per Night: {{ row.Cost }}</h6>
             {% endif %}
@@ -29,7 +29,7 @@
             {% endif %}
         </div>
         {% endif %}
-        {% if tableType >= 1 %}
+        {% if tableType == 1 %}
         <div class="col-sm text-left">
             <h6 class="font-weight-bold">Reservation Details</h6>
             <h6>Dates: {{ row.Start_Date }} to {{ row.End_Date }}</h6>
@@ -170,8 +170,10 @@
         </div>
     </div>
     {% endif %}
+    <button type="button" class="reserve btn btn-warning" data-toggle="modal" data-target="#modal-reserve">Reserve</button>
 </div>
 {% endfor %}
+
 <script>
     $(document).ready( function () {
     $('#myPopPastTable').DataTable({"pageLength": 25});
@@ -199,8 +201,8 @@
 <script>
     $(function () {
         $(".rate-property").click(function () {
-            var property_name = $(this).parents("div").find("#property_name").text();
-            var owner_id = $(this).parents("div").find("#owner_id").text();
+            var property_name = $(this).parents("div").find("#property_name_details").text();
+            var owner_id = $(this).parents("div").find("#owner_id_details").text();
             var s = "Rate " + property_name;
             $("#property-rating-info").html(s);
             $("#property-rating-owner").html(owner_id);
@@ -210,10 +212,10 @@
 <script>
     $(function () {
         $(".give-property-rating").click(function () {
-            var customer_id = $(this).parents("div").find("#customer_id").text();
-            var owner_id = $(this).parents("div").find("#owner_id").text();
+            var customer_id = $(this).parents("div").find("#customer_id_details").text();
+            var owner_id = $(this).parents("div").find("#owner_id_details").text();
             owner_id = owner_id.substring(20)
-            var property_name = $(this).parents("div").find("#property_name").text();
+            var property_name = $(this).parents("div").find("#property_name_details").text();
             var rating = $(this).parents("div").find("#set-property-rating").val();
             var content = $(this).parents("div").find("#rating-content").val();
             if (rating != '') {
@@ -226,6 +228,24 @@
                     }
                 });
             }
+        });
+    });
+</script>
+<script type='text/javascript'>
+    $(function () {
+        $(".reserve").click(function () {
+            var property_name = $(this).parents("div").find("#property_name_details").text();
+            var owner_id = $(this).parents("div").find("#owner_id_details").text();
+            owner_id = owner_id.substring(20)
+            $.ajax({
+                url: "/reserve_form",
+                type: 'GET',
+                data: {property_name: property_name, owner_id: owner_id},
+                success: function(data) {
+                    $("#info").html(data);
+                    $("#info").append(data.htmlresponse);
+                }
+            });
         });
     });
 </script>

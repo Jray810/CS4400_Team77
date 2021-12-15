@@ -344,6 +344,7 @@ def property_details():
     if request.method == 'POST':
         owner_id = request.form['owner_id']
         property_name = request.form['property_name']
+        tableType = 0 if request.form['viewType'] == '0' else 2
         q = text("CALL view_individual_property_reservations(\'{0}\', \'{1}\')".format(property_name, owner_id))
         connection.execute(q)
         q = text("SELECT * FROM property NATURAL JOIN view_properties WHERE Property_Name=\'{0}\' AND Owner_Email=\'{1}\'".format(property_name, owner_id))
@@ -360,7 +361,7 @@ def property_details():
         near_airport = connection.execute(q)
     else:
         return redirect(url_for('my_reservations'))
-    return jsonify({'htmlresponse': render_template('popups/property_details.html', property_amenities=property_amenities, near_airport=near_airport, table_data=propertyDetails, table_data_past=table_data_past, table_data_current=table_data_current, table_data_future=table_data_future, tableType=0)})
+    return jsonify({'htmlresponse': render_template('popups/property_details.html', property_amenities=property_amenities, near_airport=near_airport, table_data=propertyDetails, table_data_past=table_data_past, table_data_current=table_data_current, table_data_future=table_data_future, tableType=tableType)})
 
 @app.route("/reserve_form", methods=['GET', 'POST'])
 def reserve_property():
