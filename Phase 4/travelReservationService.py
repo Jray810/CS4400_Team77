@@ -196,9 +196,13 @@ def view_flights():
             except Exception as e:
                 flash(e)
         print(form.errors)
-    q = text("SELECT * FROM flight JOIN view_flight ON Flight_Num=flight_id AND Airline_Name=airline")
-    flight_view = connection.execute(q)
-    return render_template("admin/view_flights.html", form=form, table_data=flight_view, homebar=3, username=username, pageSelect='view_flights', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+    q = text("SELECT * FROM flight AS F JOIN view_flight ON Flight_Num=flight_id AND Airline_Name=airline WHERE F.Flight_Date < \'{0}\'".format(current_date))
+    past_flights = connection.execute(q)
+    q = text("SELECT * FROM flight AS F JOIN view_flight ON Flight_Num=flight_id AND Airline_Name=airline WHERE F.Flight_Date = \'{0}\'".format(current_date))
+    current_flights = connection.execute(q)
+    q = text("SELECT * FROM flight AS F JOIN view_flight ON Flight_Num=flight_id AND Airline_Name=airline WHERE F.Flight_Date > \'{0}\'".format(current_date))
+    future_flights = connection.execute(q)
+    return render_template("admin/view_flights.html", form=form, past_flights=past_flights, current_flights=current_flights, future_flights=future_flights, homebar=3, username=username, pageSelect='view_flights', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/view_customers")
 def view_customers():

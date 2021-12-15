@@ -5,9 +5,11 @@
     <div class="text-end">
         <button type="button" class="add-flight btn btn-signup me-2 mb-3" data-toggle="modal" data-target="#modal-add-flight">Add Flight</button>
     </div>
-    {% if table_data.rowcount != 0 %}
+    {% if past_flights.rowcount != 0 %}
+    <hr/>
+    <h3>Past Flights</h3>
     <div class="table-responsive">
-        <table class="table table-striped table-sm" id="myTable">
+        <table class="table table-striped table-sm" id="myPastTable">
             <thead>
                 <tr>
                     <th>Airline</th>
@@ -15,13 +17,13 @@
                     <th>Flight Date</th>
                     <th>Departure Airport</th>
                     <th>Destination Airport</th>
-                    <th>Seats Available</th>
+                    <th>Seats Reserved</th>
                     <th></th>
                 </tr>
             </thead>
 
             <tbody>
-                {% for row in table_data %}
+                {% for row in past_flights %}
                 <tr>
                     <td id="airline">{{ row.airline }}</td>
                     <td id="flightid">{{ row.Flight_Num }}</td>
@@ -37,7 +39,78 @@
             </tbody>
         </table>
     </div>
-    {% else %}
+    {% endif %}
+    {% if current_flights.rowcount != 0 %}
+    <hr/>
+    <h3>Current Flights</h3>
+    <div class="table-responsive">
+        <table class="table table-striped table-sm" id="myCurrentTable">
+            <thead>
+                <tr>
+                    <th>Airline</th>
+                    <th>Flight Number</th>
+                    <th>Flight Date</th>
+                    <th>Departure Airport</th>
+                    <th>Destination Airport</th>
+                    <th>Seats Reserved</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for row in current_flights %}
+                <tr>
+                    <td id="airline">{{ row.airline }}</td>
+                    <td id="flightid">{{ row.Flight_Num }}</td>
+                    <td>{{ row.Flight_Date }}</td>
+                    <td>{{ row.From_Airport }}</td>
+                    <td>{{ row.To_Airport }}</td>
+                    <td>{{ row.num_empty_seats }}</td>
+                    <td> 
+                        <button type="button" class="btn btn-warning me-2" data-toggle="modal" data-target="#modal-details">Details</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% if future_flights.rowcount != 0 %}
+    <hr/>
+    <h3>Future Flights</h3>
+    <div class="table-responsive">
+        <table class="table table-striped table-sm" id="myFutureTable">
+            <thead>
+                <tr>
+                    <th>Airline</th>
+                    <th>Flight Number</th>
+                    <th>Flight Date</th>
+                    <th>Departure Airport</th>
+                    <th>Destination Airport</th>
+                    <th>Seats Reserved</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for row in future_flights %}
+                <tr>
+                    <td id="airline">{{ row.airline }}</td>
+                    <td id="flightid">{{ row.Flight_Num }}</td>
+                    <td>{{ row.Flight_Date }}</td>
+                    <td>{{ row.From_Airport }}</td>
+                    <td>{{ row.To_Airport }}</td>
+                    <td>{{ row.num_empty_seats }}</td>
+                    <td> 
+                        <button type="button" class="btn btn-warning me-2" data-toggle="modal" data-target="#modal-details">Details</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% if past_flights.rowcount == 0 and current_flights.rowcount == 0 and future_flights.rowcount == 0 %}
     <hr/>
     <h3>No Flights Found</h3>
     {% endif %}
@@ -131,6 +204,21 @@
     </div>
 {% endblock content %}
 {% block scripts %}
+<script>
+    $(document).ready( function () {
+    $('#myPastTable').DataTable({"pageLength": 25});
+} );
+</script>
+<script>
+    $(document).ready( function () {
+    $('#myCurrentTable').DataTable({"pageLength": 25});
+} );
+</script>
+<script>
+    $(document).ready( function () {
+    $('#myFutureTable').DataTable({"pageLength": 25});
+} );
+</script>
 <script>
     $(document).ready( function () {
     $('#myTable').DataTable({"pageLength": 25});
