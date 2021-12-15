@@ -4,7 +4,6 @@ from db import *
 from flask import render_template, url_for, flash, redirect, request, jsonify
 from forms import RegistrationForm, LoginForm, ReservationForm, ScheduleFlightForm, AddPropertyForm
 from datetime import date
-from datetime import datetime
 
 current_date = '1999-01-01'
 
@@ -28,7 +27,11 @@ def about():
 
 @app.route("/account")
 def account():
-    return render_template("account.html", current_date=current_date, homebar=2, username=username, adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+    if username == '':
+        return redirect(url_for('home'))
+    q = text("SELECT * FROM accounts WHERE Email=\'{0}\'".format(username))
+    userdata = connection.execute(q)
+    return render_template("account.html", userdata=userdata, current_date=current_date, homebar=2, username=username, adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
@@ -38,12 +41,21 @@ def login():
     global customerAccess
     form = LoginForm()
     if form.validate_on_submit():
-        if Accounts.query.filter_by(Email = form.email.data, \
-            Pass = form.password.data).first():
-            adminAccess = Admins.query.filter_by(Email = form.email.data).first()
-            ownerAccess = Owners.query.filter_by(Email = form.email.data).first()
-            customerAccess = Customers.query.filter_by(Email = form.email.data).first()
-            username = form.email.data
+        email = form.email.data
+        password = form.password.data
+        q = text("SELECT * FROM accounts WHERE Email=\'{0}\' AND Pass=\'{1}\'".format(email, password))
+        result = connection.execute(q)
+        if result.rowcount != 0:
+            q = text("SELECT * FROM admins WHERE Email=\'{0}\'".format(email))
+            result = connection.execute(q)
+            adminAccess = True if result.rowcount != 0 else False
+            q = text("SELECT * FROM owners WHERE Email=\'{0}\'".format(email))
+            result = connection.execute(q)
+            ownerAccess = True if result.rowcount != 0 else False
+            q = text("SELECT * FROM customer WHERE Email=\'{0}\'".format(email))
+            result = connection.execute(q)
+            customerAccess = True if result.rowcount != 0 else False
+            username = email
             return redirect(url_for('account'))
         else:
             flash('Login Unsuccessful. Please check username and password', 'danger')
@@ -52,40 +64,29 @@ def login():
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
-    if request.method == 'POST': 
-        if form.validate_on_submit():
-            email = request.form['email']
-            first_name = request.form['first_name']
-            last_name = request.form['last_name']
-            password = request.form['password']
-            phone_number = request.form['phone_number']
-            card = request.form['card']
-            cvv = request.form['cvv']
-            exp = request.form['exp']
-            location = request.form['location']
-            if card and cvv and exp and location:
-                type = 'Customer'
-                q = text("call register_customer(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\', \'{5}\',\'{6}\',\'{7}\',\'{8}\')".format(email, first_name, last_name, password, phone_number, card, cvv, exp, location))
-            else:
-                type = 'Owner'
-                q = text("call register_owner(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\')".format(email, first_name, last_name, password, phone_number))
-            try:
-                cursor = conn.cursor()
-                cursor.execute(str(q))
-                results = cursor.fetchall()
-                cursor.close()
-                conn.commit()
-                if results:
-                    flash(str(results[0][0]))
-                # connection.execute(q)
-                # connection.execute("commit")
-                else:
-                    flash(f'{type} account created for {form.email.data}!', 'success')
-                    return redirect(url_for('home'))
-            except Exception as e:
-                flash(e)
+    if form.validate_on_submit():
+        email = request.form['email']
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
+        password = request.form['password']
+        phone_number = request.form['phone_number']
+        card = request.form['card']
+        cvv = request.form['cvv']
+        exp = request.form['exp']
+        location = request.form['location']
+        if card and cvv and exp and location:
+            type = 'Customer'
+            q = text("call register_customer(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\', \'{5}\',\'{6}\',\'{7}\',\'{8}\')".format(email, first_name, last_name, password, phone_number, card, cvv, exp, location))
         else:
-            flash('All fields are required.')            
+            type = 'Owner'
+            q = text("call register_owner(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\')".format(email, first_name, last_name, password, phone_number))
+        try:
+            connection.execute(q)
+            connection.execute("commit")
+            flash(f'{type} account created for {form.email.data}!', 'success')
+            return redirect(url_for('home'))
+        except Exception as e:
+            flash(e)
     return render_template("register.html", homebar=-1, username=username, form=form)
 
 #######################################################
@@ -113,7 +114,7 @@ def my_reservations():
 
 @app.route("/book")
 def book():
-    q = text("SELECT * FROM view_flight JOIN flight ON airline=Airline_Name AND flight_id=Flight_Num")
+    q = text("SELECT * FROM view_flight AS V JOIN flight AS F ON airline=Airline_Name AND flight_id=Flight_Num WHERE F.Flight_Date > \'{0}\'".format(current_date))
     flight_view = connection.execute(q)
     return render_template("customer/book.html", table_data=flight_view, homebar=3, username=username, pageSelect='book', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
@@ -136,62 +137,33 @@ def reserve():
 #######################################################
 # Owner Access
 #######################################################
-@app.route("/my_properties")
+@app.route("/my_properties", methods=['GET', 'POST'])
 def my_properties():
-    q = text("SELECT * FROM view_properties NATURAL JOIN property WHERE Owner_Email=\'{0}\'".format(username))
-    properties_view = connection.execute(q)
-    return render_template("owner/my_properties.html", table_data=properties_view, homebar=3, username=username, pageSelect='my_properties', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
-
-@app.route("/add_property", methods=['GET', 'POST'])
-def add_property():
     form = AddPropertyForm()
-    # state_names = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"]
     state_names = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC', 'AS', 'GU', 'MP', 'PR', 'UM', 'VI']
     form.state.choices = [states for states in state_names]
-    if request.method == 'POST': 
-        property_name = request.form['property_name']
-        description = request.form['description']
-        capacity = request.form['capacity']
-        cost = request.form['cost']
-        street = request.form['street']
-        city = request.form['city']
-        state = request.form['state']
-        zipcode = request.form['zipcode']
-        nearest_airport_id = request.form['nearest_airport_id']
-        dist_to_airport = request.form['dist_to_airport']
-        q = text("call add_property(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\',\'{5}\',\'{6}\',\'{7}\',\'{8}\',\'{9}\', \'{10}\')".format(property_name, username, description, capacity, cost, street, city, state, zipcode, nearest_airport_id, dist_to_airport))
-        try:
-            cursor = conn.cursor()
-            cursor.execute(str(q))
-            results = cursor.fetchall()
-            cursor.close()
-            conn.commit()
-            if results:
-                flash(str(results[0][0]))
-            # connection.execute(q)
-            # connection.execute("commit")
-            else:
-                flash(f'Property Added Successfully!')
-        except Exception as e:
-            flash(e)
-    return render_template("owner/add_property.html", form=form, homebar=3, username=username, pageSelect='add_property', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
-
-
-@app.route("/remove_owner", methods=['GET', 'POST'])
-def remove_owner():
-    global username
-    global ownerAccess
-    global customerAccess
     if request.method == 'POST':
-        q = text("CALL remove_owner(\'{0}\')".format(username))
-        connection.execute(q)
-        connection.execute('commit')
-        ownerAccess = False
-        if customerAccess == True:
-            return redirect(url_for('account'))
-        username = ''
-        return redirect(url_for('home'))
-    return render_template("owner/remove_owner.html", homebar=3, username=username, pageSelect='remove_owner', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+        if form.validate_on_submit(): 
+            property_name = request.form['property_name']
+            description = request.form['description']
+            capacity = request.form['capacity']
+            cost = request.form['cost']
+            street = request.form['street']
+            city = request.form['city']
+            state = request.form['state']
+            zipcode = request.form['zipcode']
+            nearest_airport_id = request.form['nearest_airport_id']
+            dist_to_airport = request.form['dist_to_airport']
+            q = text("CALL add_property(\'{0}\', \'{1}\', \'{2}\', {3}, {4}, \'{5}\', \'{6}\', \'{7}\', \'{8}\', \'{9}\', {10})".format(property_name, username, description, capacity, cost, street, city, state, zipcode, nearest_airport_id, dist_to_airport))
+            try:
+                connection.execute(q)
+                connection.execute("commit")
+                return redirect(url_for('my_properties'))
+            except Exception as e:
+                flash(e)
+    q = text("SELECT * FROM view_properties NATURAL JOIN property WHERE Owner_Email=\'{0}\'".format(username))
+    properties_view = connection.execute(q)
+    return render_template("owner/my_properties.html", form=form, table_data=properties_view, homebar=3, username=username, pageSelect='my_properties', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 #######################################################
 # Administrative Access
@@ -208,11 +180,39 @@ def view_airlines():
     airline_view = connection.execute(q)
     return render_template("admin/view_airlines.html", table_data=airline_view, homebar=3, username=username, pageSelect='view_airlines', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
-@app.route("/view_flights")
+@app.route("/view_flights", methods=['GET', 'POST'])
 def view_flights():
-    q = text("SELECT * FROM flight JOIN view_flight ON Flight_Num=flight_id AND Airline_Name=airline")
-    flight_view = connection.execute(q)
-    return render_template("admin/view_flights.html", table_data=flight_view, homebar=3, username=username, pageSelect='view_flights', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+    q = text("SELECT airline_name FROM view_airlines")
+    airline_view = connection.execute(q)
+    form = ScheduleFlightForm()
+    form.airline_name.choices = [airline[0] for airline in airline_view]
+    form.current_date.data = current_date
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            flight_num = request.form['flight_num']
+            airline_name = request.form['airline_name']
+            from_airport = request.form['from_airport']
+            to_airport = request.form['to_airport']
+            departure_time = request.form['departure_time']
+            arrival_time = request.form['arrival_time']
+            flight_date = request.form['flight_date']
+            cost = request.form['cost']
+            capacity = request.form['capacity']
+            q = text("CALL schedule_flight(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}:00\', \'{5}:00\', \'{6}\', {7}, {8}, \'{9}\')".format(flight_num, airline_name, from_airport, to_airport, departure_time, arrival_time, flight_date, cost, capacity, current_date))
+            try:
+                connection.execute(q)
+                connection.execute("commit")
+                return redirect(url_for('view_flights'))
+            except Exception as e:
+                flash(e)
+        print(form.errors)
+    q = text("SELECT * FROM flight AS F JOIN view_flight ON Flight_Num=flight_id AND Airline_Name=airline WHERE F.Flight_Date < \'{0}\'".format(current_date))
+    past_flights = connection.execute(q)
+    q = text("SELECT * FROM flight AS F JOIN view_flight ON Flight_Num=flight_id AND Airline_Name=airline WHERE F.Flight_Date = \'{0}\'".format(current_date))
+    current_flights = connection.execute(q)
+    q = text("SELECT * FROM flight AS F JOIN view_flight ON Flight_Num=flight_id AND Airline_Name=airline WHERE F.Flight_Date > \'{0}\'".format(current_date))
+    future_flights = connection.execute(q)
+    return render_template("admin/view_flights.html", form=form, past_flights=past_flights, current_flights=current_flights, future_flights=future_flights, homebar=3, username=username, pageSelect='view_flights', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
 
 @app.route("/view_customers")
 def view_customers():
@@ -231,43 +231,6 @@ def view_properties():
     q = text("SELECT * FROM view_properties NATURAL JOIN property")
     property_view = connection.execute(q)
     return render_template("admin/view_properties.html", table_data=property_view, homebar=3, username=username, pageSelect='view_properties', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
-
-@app.route('/schedule_flight', methods = ['GET', 'POST'])
-def schedule_flight():
-    print(current_date)
-    q = text("SELECT airline_name FROM view_airlines")
-    airline_view = connection.execute(q)
-    form = ScheduleFlightForm()
-    form.airline_name.choices = [airline[0] for airline in airline_view]
-    form.current_date.default = current_date
-    form.process()
-    if request.method == 'POST': 
-        flight_num = request.form['flight_num']
-        airline_name = request.form['airline_name']
-        from_airport = request.form['from_airport']
-        to_airport = request.form['to_airport']
-        departure_time = request.form['departure_time']
-        arrival_time = request.form['arrival_time']
-        flight_date = request.form['flight_date']
-        cost = request.form['cost']
-        capacity = request.form['capacity']
-        q = text("call schedule_flight(\'{0}\', \'{1}\', \'{2}\', \'{3}\', \'{4}\',\'{5}\',\'{6}\',\'{7}\',\'{8}\',\'{9}\')".format(flight_num, airline_name, from_airport, to_airport, departure_time, arrival_time, flight_date, cost, capacity, current_date))
-        try:
-            cursor = conn.cursor()
-            cursor.execute(str(q))
-            results = cursor.fetchall()
-            cursor.close()
-            conn.commit()
-            if results:
-                flash(str(results[0][0]))
-            # connection.execute(q)
-            # connection.execute("commit")
-            else:
-                flash(f'Flight Scheduled Successfully!')
-        except Exception as e:
-            flash(e)
-    return render_template("admin/schedule_flight.html", form=form, homebar=3, username=username, pageSelect='schedule_flight', adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
-         
 
 #######################################################
 # Popup Boxes
@@ -457,6 +420,35 @@ def customer_review_property():
         q = text("CALL customer_review_property(\'{0}\', \'{1}\', \'{2}\', \'{3}\', {4}, \'{5}\')".format(property_name, owner_id, customer_id, content, rating, current_date))
         connection.execute(q)
     return redirect(url_for('my_reservations'))
+
+@app.route("/remove_owner", methods=['GET', 'POST'])
+def remove_owner():
+    global username
+    global adminAccess
+    global ownerAccess
+    global customerAccess
+    q = text("CALL remove_owner(\'{0}\')".format(username))
+    connection.execute(q)
+    connection.execute('commit')
+    q = text("SELECT * FROM accounts WHERE Email=\'{0}\'".format(username))
+    result = connection.execute(q)
+    if result.rowcount != 0:
+        q = text("SELECT * FROM admins WHERE Email=\'{0}\'".format(username))
+        result = connection.execute(q)
+        adminAccess = True if result.rowcount != 0 else False
+        q = text("SELECT * FROM owners WHERE Email=\'{0}\'".format(username))
+        result = connection.execute(q)
+        ownerAccess = True if result.rowcount != 0 else False
+        q = text("SELECT * FROM customer WHERE Email=\'{0}\'".format(username))
+        result = connection.execute(q)
+        customerAccess = True if result.rowcount != 0 else False
+        return redirect(url_for('account'))
+    else:
+        username = ''
+        adminAccess = False
+        ownerAccess = False
+        customerAccess = False
+    return redirect(url_for('home'))
 
 #######################################################
 # Testing
