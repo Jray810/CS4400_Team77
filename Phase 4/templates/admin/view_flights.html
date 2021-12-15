@@ -252,10 +252,11 @@
             var airline_name = $(this).parents("tr").find("#airline").text();
             var flight_num = $(this).parents("tr").find("#flightid").text();
             var timekeeper = $(this).parents("div").find("#timekeeper").text();
+            var tableType = 0;
             $.ajax({
                 url: "/flight_details",
                 type: 'POST',
-                data: {airline_name: airline_name, flight_num: flight_num, timekeeper:timekeeper},
+                data: {airline_name: airline_name, flight_num: flight_num, timekeeper: timekeeper, tableType: tableType},
                 success: function(data) {
                     $("#info").html(data);
                     $("#info").append(data.htmlresponse);
