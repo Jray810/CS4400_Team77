@@ -94,7 +94,8 @@ def register():
         try:
             results = connection.execute(q)
             connection.execute('commit')
-            if results.rowcount != 0:
+            result = results.first()[0]
+            if result==1:
                 flash(f'{registrationType} account created for {form.email.data}! Please login.')
                 registrationType = ''
                 return redirect(url_for('login'))
@@ -102,6 +103,8 @@ def register():
                 flash(str(result))
         except Exception as e:
             flash(e)
+    else:
+        flash('Please enter valid info.')
     registrationType = ''
     return render_template("register.html", homebar=-1, username=username, form=form)
 
