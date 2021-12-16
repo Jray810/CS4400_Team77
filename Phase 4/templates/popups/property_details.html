@@ -25,7 +25,7 @@
             {% if near_airport.rowcount != 0 %}
             <br>
             <h6 class="font-weight-bold">Nearest Airport:</h6>
-            <h6>{% for row in near_airport %}{{ row.Airport }} is {{ row.Distance }} miles away{% endfor %}</h6>
+            {% for row in near_airport %}<h6>{{ row.Airport }} is {{ row.Distance }} miles away</h6>{% endfor %}
             {% endif %}
         </div>
         {% endif %}
