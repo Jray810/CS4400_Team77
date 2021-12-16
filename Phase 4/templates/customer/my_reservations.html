@@ -262,10 +262,9 @@
 <script type='text/javascript'>
     $(function () {
         $(".removal").click(function () {
-            var customer_id = $(this).parents("div").find("#customer_id").text();
-            var property_name = $(this).parents("div").find("#property_name").text();
-            var owner_id = $(this).parents("div").find("#owner_id").text();
-            owner_id = owner_id.substring(20)
+            var customer_id = document.getElementById("customer_id_details").innerHTML;
+            var property_name = document.getElementById("property_name_details").innerHTML;
+            var owner_id = document.getElementById("owner_id_details").innerHTML.split(': ')[1];
             $.ajax({
                 url: "/cancel_reservation",
                 type: 'POST',
