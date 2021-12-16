@@ -200,8 +200,8 @@
 <script>
     $(function () {
         $(".removal").click(function () {
-            var property_name = $(this).parents("div").find("#property_name").text();
-            var owner_id = $(this).parents("div").find("#owner_id").text();
+            var property_name = document.getElementById("property_name_details").innerHTML;
+            var owner_id = document.getElementById("owner_id_details").innerHTML;
             owner_id = owner_id.substring(20);
             $.ajax({
                 url: "/remove_property",
