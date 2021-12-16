@@ -219,7 +219,7 @@
         $(".give-rating").click(function () {
             var customer_id = $(this).parents("div").find("#rating-info").text();
             customer_id = customer_id.substring(5);
-            var owner_id = $(this).parents("div").find("#owner_id").text();
+            var owner_id = document.getElementById("owner_id_details").innerHTML;
             owner_id = owner_id.substring(20);
             var rating = $(this).parents("div").find("#set-rating").val();
             if (rating != '') {
