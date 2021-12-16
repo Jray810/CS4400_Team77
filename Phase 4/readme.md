@@ -25,6 +25,9 @@ pip install -r requirements.txt
 
 # Running instructions
 
+Go to the db.py file in and edit the conn string at the top with your MySQL password and hosting port. It should look like this:
+```conn = "mysql+pymysql://root:[YOUR PASSWORD HERE]@localhost:[YOUR PORT UMBER HERE]/travel_reservation_service"```
+
 Open up your MySQL Workbench and start a SQL server.
 
 For a clean start, please run ```DROP DATABASE IF EXISTS travel_reservation_service;``` in MySQL before running the instructions below. The website will only setup the database for you if it does not already exist.
