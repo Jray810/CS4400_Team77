@@ -168,9 +168,9 @@
 <script type='text/javascript'>
     $(function () {
         $(".removal").click(function () {
-            var customer_id = $(this).parents("div").find("#customer_id").text();
-            var airline_name = $(this).parents("div").find("#airline_name").text();
-            var flight_num = $(this).parents("div").find("#flight_num").text();
+            customer_id = document.getElementById("customer_id_details").innerHTML;
+            airline_name = document.getElementById("airline_name_details").innerHTML;
+            flight_num = document.getElementById("flight_num_details").innerHTML;
             flight_num = flight_num.substring(15)
             $.ajax({
                 url: "/cancel_booking",
