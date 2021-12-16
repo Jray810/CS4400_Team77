@@ -60,19 +60,33 @@
                     <th>End Date</th>
                     <th>Number of Guests</th>
                     <th>Address</th>
+                    <th></th>
                 </tr>
             </thead>
 
             <tbody>
                 {% for row in current_reservation %}
-                <h1 id="customer" hidden>{{ row.Customer }}</h1>
+                <h1 id="customer-current" hidden>{{ row.Customer }}</h1>
                 <tr>
-                    <td id="property">{{ row.Property_Name }}</td>
-                    <td id="owner"><u>{{ row.Owner_Email }}</u></td>
+                    <td id="property-current">{{ row.Property_Name }}</td>
+                    <td><u id="owner-current">{{ row.Owner_Email }}</u><br>
+                        {% if not row.Score %}
+                        <button type="button" class="rate-current btn btn-warning me-2" data-toggle="modal" data-target="#modal-rate-current">Rate</button>
+                        {% else %}
+                            {% if row.Score >= 1 %}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+                            {% if row.Score >= 2 %}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+                            {% if row.Score >= 3 %}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+                            {% if row.Score >= 4 %}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+                            {% if row.Score >= 5%}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+                        {% endif %}
+                    </td>
                     <td>{{ row.Start_Date }}</td>
                     <td>{{ row.End_Date }}</td>
                     <td>{{ row.Num_Guests }}</td>
                     <td>{{ row.Street }}, {{ row.City }}, {{ row.State }}, {{ row.Zip }}</td>
+                    <td> 
+                        <button type="button" class="details-current btn btn-warning me-2" data-toggle="modal" data-target="#modal-details">Details</button>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -98,17 +112,17 @@
 
             <tbody>
                 {% for row in future_reservations %}
-                <h1 id="customer" hidden>{{ row.Customer }}</h1>
+                <h1 id="customer-future" hidden>{{ row.Customer }}</h1>
                 <tr>
-                    <td id="property">{{ row.Property_Name }}</td>
-                    <td id="owner"><u>{{ row.Owner_Email }}</u></td>
+                    <td id="property-future">{{ row.Property_Name }}</td>
+                    <td id="owner-future"><u>{{ row.Owner_Email }}</u></td>
                     <td>{{ row.Start_Date }}</td>
                     <td>{{ row.End_Date }}</td>
                     <td>{{ row.Num_Guests }}</td>
                     <td>{{ row.Street }}, {{ row.City }}, {{ row.State }}, {{ row.Zip }}</td>
                     <td> 
                         {% if row.Was_Cancelled == 0 %}
-                        <button type="button" class="cancel btn btn-danger me-2" data-toggle="modal" data-target="#modal-cancel">Cancel</button>
+                        <button type="button" class="details-future btn btn-warning me-2" data-toggle="modal" data-target="#modal-cancel">Details</button>
                         {% else %}
                         Cancelled
                         {% endif %}
@@ -143,25 +157,6 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="modal-cancel" tabindex="-1" aria-labelledby="cancelLabel" aria-hidden="true">
-        <div class="modal-dialog modal-sp">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title text-negative" id="cancelLabel">Reservation Details</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    {{ modal_messages() }}
-                    <h1 id="info"></h1>
-                    <a class="nav-item" href="/my_reservations">
-                        <button type="button" class="removal btn btn-danger me-2" data-dismiss="modal" aria-label="Close">Cancel Reservation</button>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
     <div class="modal fade" id="modal-rate" tabindex="-1" aria-labelledby="rating-info" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content bg-primary-color">
@@ -176,6 +171,25 @@
                     <p class="text-main">Rating:  <input type="number" id="set-rating" name="set-rating" min="1" max="5" value="5"></p>
                     <a class="nav-item" href="/my_reservations">
                         <button type="button" class="give-rating btn btn-warning me-2" data-dismiss="modal" aria-label="Close">Give Rating</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-rate-current" tabindex="-1" aria-labelledby="rating-info-current" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-primary-color">
+                <div class="modal-header">
+                    <h5 class="modal-title text-main" id="rating-info-current"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {{ modal_messages() }}
+                    <p class="text-main">Rating:  <input type="number" id="set-current" name="set-current" min="1" max="5" value="5"></p>
+                    <a class="nav-item" href="/my_reservations">
+                        <button type="button" class="give-rating-current btn btn-warning me-2" data-dismiss="modal" aria-label="Close">Give Rating</button>
                     </a>
                 </div>
             </div>
@@ -199,6 +213,25 @@
                     <br>
                     <a class="nav-item" href="/my_reservations">
                         <button type="button" class="give-property-rating btn btn-warning me-2" data-dismiss="modal" aria-label="Close">Give Rating</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-cancel" tabindex="-1" aria-labelledby="cancelLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sp">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-negative" id="cancelLabel">Reservation Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {{ modal_messages() }}
+                    <h1 id="info"></h1>
+                    <a class="nav-item" href="/my_reservations">
+                        <button type="button" class="removal btn btn-danger me-2" data-dismiss="modal" aria-label="Close">Cancel Reservation</button>
                     </a>
                 </div>
             </div>
@@ -242,11 +275,30 @@
 </script>
 <script type='text/javascript'>
     $(function () {
-        $(".cancel").click(function () {
-            var customer_id = $(this).parents("div").find("#customer").text();
-            var property_name = $(this).parents("tr").find("#property").text();
-            var owner_id = $(this).parents("tr").find("#owner").text();
-            var viewType = 2;
+        $(".details-current").click(function () {
+            var customer_id = $(this).parents("div").find("#customer-current").text();
+            var property_name = $(this).parents("tr").find("#property-current").text();
+            var owner_id = $(this).parents("tr").find("#owner-current").text();
+            var viewType = 1;
+            $.ajax({
+                url: "/reservation_details",
+                type: 'POST',
+                data: {customer_id: customer_id, property_name: property_name, owner_id: owner_id, viewType: viewType},
+                success: function(data) {
+                    $("#info-details").html(data);
+                    $("#info-details").append(data.htmlresponse);
+                }
+            });
+        });
+    });
+</script>
+<script type='text/javascript'>
+    $(function () {
+        $(".details-future").click(function () {
+            var customer_id = $(this).parents("div").find("#customer-future").text();
+            var property_name = $(this).parents("tr").find("#property-future").text();
+            var owner_id = $(this).parents("tr").find("#owner-future").text();
+            var viewType = 3;
             $.ajax({
                 url: "/reservation_details",
                 type: 'POST',
@@ -287,10 +339,38 @@
 </script>
 <script>
     $(function () {
+        $(".rate-current").click(function () {
+            var owner_id = $(this).parents("div").find("#owner-current").text();
+            var s = "Rate " + owner_id;
+            $("#rating-info-current").html(s);
+        });
+    });
+</script>
+<script>
+    $(function () {
         $(".give-rating").click(function () {
             var customer_id = $(this).parents("div").find("#customer-rate").text();
             var owner_id = $(this).parents("div").find("#owner-rate").text();
             var rating = $(this).parents("div").find("#set-rating").val();
+            if (rating != '') {
+                $.ajax({
+                    url: "/customer_rates_owner",
+                    type: 'POST',
+                    data: {customer_id: customer_id, owner_id: owner_id, rating: rating},
+                    success: function() {
+                        window.location.reload();
+                    }
+                });
+            }
+        });
+    });
+</script>
+<script>
+    $(function () {
+        $(".give-rating-current").click(function () {
+            var customer_id = $(this).parents("div").find("#customer-current").text();
+            var owner_id = $(this).parents("div").find("#owner-current").text();
+            var rating = $(this).parents("div").find("#set-current").val();
             if (rating != '') {
                 $.ajax({
                     url: "/customer_rates_owner",

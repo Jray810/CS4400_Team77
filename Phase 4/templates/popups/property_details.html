@@ -29,29 +29,33 @@
             {% endif %}
         </div>
         {% endif %}
-        {% if tableType == 1 %}
+        {% if tableType == 1 or tableType == 3 %}
         <div class="col-sm text-left">
             <h6 class="font-weight-bold">Reservation Details</h6>
             <h6>Dates: {{ row.Start_Date }} to {{ row.End_Date }}</h6>
             <h6>Number of Guests: {{ row.Num_Guests }}</h6>
-            <br>
-            <h6>Your Review:</h6>
-            {% if not row.Score %}
-                <button type="button" class="rate-property btn btn-warning me-2" data-toggle="modal" data-target="#modal-rate-property">Rate</button>
-            {% else %}
-                <h6>
-                {% if row.Score == 0 %}<span style="font-size:150%;">&star;</span>{% endif %}
-                {% if row.Score >= 1 %}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
-                {% if row.Score >= 2 %}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
-                {% if row.Score >= 3 %}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
-                {% if row.Score >= 4 %}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
-                {% if row.Score >= 5%}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+            {% if tableType == 1 %}
                 <br>
-                {{ row.Content }}
-                </h6>
+                <h6>Your Review:</h6>
+                {% if not row.Score %}
+                    <button type="button" class="rate-property btn btn-warning me-2" data-toggle="modal" data-target="#modal-rate-property">Rate</button>
+                {% else %}
+                    <h6>
+                    {% if row.Score == 0 %}<span style="font-size:150%;">&star;</span>{% endif %}
+                    {% if row.Score >= 1 %}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+                    {% if row.Score >= 2 %}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+                    {% if row.Score >= 3 %}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+                    {% if row.Score >= 4 %}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+                    {% if row.Score >= 5%}<span style="font-size:150%;color:#ffc107;">&starf;</span>{% endif %}
+                    <br>
+                    {{ row.Content }}
+                    </h6>
+                {% endif %}
             {% endif %}
+            {% if tableType == 3 %}
             <br>
             <h6>Estimated Refund: ${{ '%0.2f'|format(((row.End_Date - row.Start_Date).days|float)*(row.Cost|float)*0.8) }}</h6>
+            {% endif %}
         </div>
         {% endif %}
     </div>
@@ -166,7 +170,9 @@
         </div>
     </div>
     {% endif %}
+    {% if tableType == 2 %}
     <button type="button" class="reserve btn btn-warning" data-toggle="modal" data-target="#modal-reserve">Reserve</button>
+    {% endif %}
 </div>
 {% endfor %}
 

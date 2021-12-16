@@ -126,7 +126,7 @@ def my_reservations():
         return redirect(url_for('account'))
     q = text("SELECT * FROM customers_rate_owners AS O RIGHT OUTER JOIN reserve AS R ON R.Owner_Email = O.Owner_Email AND R.Customer = O.Customer LEFT OUTER JOIN property AS P ON R.Owner_Email = P.Owner_Email AND R.Property_Name = P.Property_Name WHERE R.Customer=\'{0}\' AND ((End_Date < \'{1}\') OR (\'{1}\' BETWEEN Start_Date AND End_Date AND Was_Cancelled = 1))".format(username, current_date))
     past_reservations = connection.execute(q)
-    q = text("SELECT * FROM reserve NATURAL JOIN property WHERE Customer=\'{0}\' AND \'{1}\' BETWEEN Start_Date AND End_Date AND Was_Cancelled = 0".format(username, current_date))
+    q = text("SELECT * FROM customers_rate_owners AS O RIGHT OUTER JOIN reserve AS R ON R.Owner_Email = O.Owner_Email AND R.Customer = O.Customer LEFT OUTER JOIN property AS P ON R.Owner_Email = P.Owner_Email AND R.Property_Name = P.Property_Name WHERE R.Customer=\'{0}\' AND \'{1}\' BETWEEN Start_Date AND End_Date AND Was_Cancelled = 0".format(username, current_date))
     current_reservation = connection.execute(q)
     q = text("SELECT * FROM reserve NATURAL JOIN property WHERE Customer=\'{0}\' AND Start_Date > \'{1}\'".format(username, current_date))
     future_reservations = connection.execute(q)
@@ -337,7 +337,13 @@ def reservation_details():
         customer_id = request.form['customer_id']
         property_name = request.form['property_name']
         owner_id = request.form['owner_id']
-        tableType = 1 if request.form['viewType'] == '1' else 2
+        tableType = 2
+        if request.form['viewType'] == '1':
+            tableType = 1
+        elif request.form['viewType'] == '3':
+            tableType = 3
+        else:
+            tableType = 2
         q = text("SELECT * FROM review AS O RIGHT OUTER JOIN reserve AS R ON R.Customer = O.Customer AND R.Owner_Email = O.Owner_Email AND R.Property_Name = O.Property_Name JOIN property AS P ON R.Property_Name = P.Property_Name AND R.Owner_Email = P.Owner_Email WHERE R.Customer=\'{0}\' AND R.Property_Name=\'{1}\' AND R.Owner_Email=\'{2}\'".format(customer_id, property_name, owner_id))
         reservationDetails = connection.execute(q)
         q = text("SELECT * FROM amenity WHERE Property_Name=\'{0}\' AND Property_Owner=\'{1}\'".format(property_name, owner_id))
