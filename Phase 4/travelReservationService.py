@@ -639,7 +639,7 @@ def testing():
     adminAccess = True
     ownerAccess = True
     customerAccess = True
-    return render_template('testing.html', homebar=3, username=username, adminAccess=adminAccess, customerAccess=customerAccess, ownerAccess=ownerAccess)
+    return redirect(url_for('account'))
 
 #######################################################
 # Run App
